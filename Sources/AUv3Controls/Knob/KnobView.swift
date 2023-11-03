@@ -108,15 +108,7 @@ public struct KnobReducer: Reducer {
 
     case let .dragChanged(dragValue):
       let lastY = state.lastY ?? dragValue.startLocation.y
-      let dY = lastY - dragValue.location.y
-      // Calculate dX for dY scaling effect -- max value must be < 1/2 of controlSize
-      let dX = min(abs(dragValue.location.x - state.config.halfControlSize), state.config.halfControlSize - 1)
-      // Calculate scaling effect -- no scaling if in small vertical path in the middle of the knob, otherwise the
-      // value gets smaller than 1.0 as the touch moves farther away from the center.
-      let scrubberScaling = (dX < state.config.maxChangeRegionWidthHalf ? 1.0 : (1.0 - dX / state.config.halfControlSize))
-      // Finally, calculate change to `norm` value
-      let normChange = dY * state.config.dragScaling * scrubberScaling
-      // print(lastY, dragValue.location.y)
+      let normChange = state.config.dragChangeValue(lastY: lastY, dragValue: dragValue)
       let newNorm = max(min(normChange + state.norm, 1.0), 0.0)
       state.norm = newNorm
       state.lastY = dragValue.location.y
@@ -167,7 +159,7 @@ struct KnobView: View {
                 .rotation(.degrees(-270))
                 .trim(from: viewStore.config.minimumAngle.degrees / 360.0,
                       to: viewStore.config.maximumAngle.degrees / 360.0)
-                .stroke(Color("knobBackground", bundle: nil),
+                .stroke(viewStore.config.theme.controlBackgroundColor,
                         style: StrokeStyle(lineWidth: 2, lineCap: .round))
                 .frame(width: viewStore.config.controlWidth,
                        height: viewStore.config.controlWidth,
@@ -177,8 +169,9 @@ struct KnobView: View {
                 .rotation(.degrees(-270))
                 .trim(from: viewStore.config.minimumAngle.degrees / 360.0, 
                       to: viewStore.config.normToTrim(viewStore.norm))
-                .stroke(Color("knobForeground", bundle: nil),
-                        style: StrokeStyle(lineWidth: viewStore.config.valueStrokeWidth, lineCap: .round))
+                .stroke(viewStore.config.theme.controlForegroundColor,
+                        style: StrokeStyle(lineWidth: viewStore.config.valueStrokeWidth,
+                                           lineCap: .round))
                 .frame(width: viewStore.config.controlWidth, height: viewStore.config.controlWidth, alignment: .center)
             } // NOTE: coordinateSpace *must* be `.local` for the drag scaling calculations
             .gesture(DragGesture(minimumDistance: 0.0, coordinateSpace: .local)
@@ -194,8 +187,8 @@ struct KnobView: View {
             Text(viewStore.formattedValue)
               .opacity(viewStore.showingValue ? 1.0 : 0.0)  // fade IN when value changes
           }
-          .font(viewStore.config.font)
-          .foregroundColor(Color("textColor", bundle: nil))
+          .font(viewStore.config.theme.font)
+          .foregroundColor(viewStore.config.theme.textColor)
           .animation(.linear, value: viewStore.showingValue)
           .onTapGesture(count: 1) {
             viewStore.send(.labelTapped, animation: .smooth)
@@ -227,11 +220,15 @@ struct KnobView: View {
           HStack(spacing: 24) {
             Button(action: { viewStore.send(.acceptButtonPressed, animation: .smooth) }) {
               Text("Accept")
-            }.buttonStyle(.bordered)
+            }
+            .buttonStyle(.bordered)
+            .foregroundColor(viewStore.config.theme.textColor)
 
             Button(action: { viewStore.send(.cancelButtonPressed, animation: .smooth) }) {
               Text("Cancel")
-            }.buttonStyle(.borderless)
+            }
+            .buttonStyle(.borderless)
+            .foregroundColor(viewStore.config.theme.textColor)
           }
         }
         .padding()
@@ -251,7 +248,7 @@ struct KnobView: View {
 
 struct KnobViewPreview : PreviewProvider {
   static let config = KnobConfig(title: "Release", id: 1, minimumValue: 0.0, maximumValue: 100.0,
-                                 logScale: false)
+                                 logScale: false, theme: Theme())
   static let param = AUParameterTree.createParameter(withIdentifier: "RELEASE", name: "Release", address: 1,
                                                      min: 0.0, max: 100.0, unit: .generic, unitName: nil,
                                                      valueStrings: nil, dependentParameters: nil)

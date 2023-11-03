@@ -15,7 +15,7 @@ final class KnobViewTests: XCTestCase {
 
   override func setUpWithError() throws {
     let config = KnobConfig(title: "Release", id: 1, minimumValue: 0.0, maximumValue: 100.0,
-                            logScale: false)
+                            logScale: false, theme: Theme())
     // NOTE: parameter needs to be part of a tree for KVO to work
     tree = AUParameterTree.createTree(withChildren: [param])
     store = TestStore(initialState: KnobReducer.State(parameter: param, value: 0.0, config: config)) {

@@ -1,7 +1,7 @@
 import ComposableArchitecture
 import AVFoundation
 
-extension AUParameter {
+public extension AUParameter {
 
   /// Obtain a stream of value changes from a parameter, presumably changed by another entity such as MIDI.
   func startObserving(_ observerToken: inout AUParameterObserverToken?) -> AsyncStream<AUValue> {
@@ -28,18 +28,29 @@ extension AUParameter {
   }
 }
 
-extension Bool {
+public extension AUParameter {
+  var range: ClosedRange<AUValue> { return self.minValue...self.maxValue }
+}
+
+public extension Bool {
   var asValue: AUValue { self ? 1.0 : 0.0 }
 }
 
-extension AUValue {
+public extension AUValue {
   var asBool: Bool { self >= 0.5 }
 }
 
-extension AUParameterTree {
+public extension AUParameterTree {
   static func createBoolean(withIdentifier identifier: String, name: String, address: AUParameterAddress) -> AUParameter {
     createParameter(withIdentifier: identifier, name: name, address: address,
                     min: 0, max: 1, unit: .boolean, unitName: nil, valueStrings: nil,
+                    dependentParameters: nil)
+  }
+
+  static func createFloat(withIdentifier identifier: String, name: String, address: AUParameterAddress,
+                          range: ClosedRange<AUValue>, unit: AudioUnitParameterUnit = .generic) -> AUParameter {
+    createParameter(withIdentifier: identifier, name: name, address: address,
+                    min: range.lowerBound, max: range.upperBound, unit: unit, unitName: nil, valueStrings: nil,
                     dependentParameters: nil)
   }
 }

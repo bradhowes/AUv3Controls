@@ -53,11 +53,12 @@ public struct ToggleReducer: Reducer {
 
 public struct ToggleView : View {
   let store: StoreOf<ToggleReducer>
+  let theme: Theme
 
   public var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
       Toggle(isOn: viewStore.binding(get: \.isOn, send: .toggleTapped)) { Text(viewStore.parameter.displayName) }
-        .toggleStyle(.checked(indicatorColor: Color("knobForeground"), labelColor: Color("textColor")))
+        .toggleStyle(.checked(theme: theme))
         .task { await viewStore.send(.viewAppeared).finish() }
     }
   }
@@ -77,8 +78,8 @@ struct ToggleViewPreview : PreviewProvider {
 
   static var previews: some View {
     VStack(alignment: .leading, spacing: 12) {
-      ToggleView(store: store1)
-      ToggleView(store: store2)
+      ToggleView(store: store1, theme: Theme())
+      ToggleView(store: store2, theme: Theme())
     }
   }
 }

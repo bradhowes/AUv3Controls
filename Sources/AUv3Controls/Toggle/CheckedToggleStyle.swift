@@ -2,8 +2,7 @@ import SwiftUI
 
 public struct CheckedToggleStyle: ToggleStyle {
 
-  public let indicatorColor: Color
-  public let labelColor: Color
+  public let theme: Theme
 
   public func makeBody(configuration: Configuration) -> some View {
     Button {
@@ -12,19 +11,19 @@ public struct CheckedToggleStyle: ToggleStyle {
       Label {
         configuration.label
       } icon: {
-        Image(systemName: configuration.isOn ? "circle.inset.filled" : "circle")
-          .foregroundColor(indicatorColor)
+        Image(systemName: configuration.isOn ? theme.toggleOnIndicator : theme.toggleOffIndicator)
+          .foregroundColor(theme.controlForegroundColor)
           .accessibility(label: Text(configuration.isOn ? "Checked" : "Unchecked"))
           .imageScale(.large)
       }
     }
     .buttonStyle(.plain)
-    .foregroundColor(labelColor)
+    .foregroundColor(theme.textColor)
   }
 }
 
 extension ToggleStyle where Self == CheckedToggleStyle {
-  static public func checked(indicatorColor: Color, labelColor: Color) -> CheckedToggleStyle {
-    .init(indicatorColor: indicatorColor, labelColor: labelColor)
+  static public func checked(theme: Theme) -> CheckedToggleStyle {
+    .init(theme: theme)
   }
 }

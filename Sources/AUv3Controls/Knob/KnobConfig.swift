@@ -1,6 +1,6 @@
 import SwiftUI
 
-public struct KnobConfig : Equatable {
+public struct KnobConfig: Equatable {
   public let minTrim: CGFloat = 0.11111115 // Use non-zero value to leave a tiny circle at "zero"
   public var maxTrim: CGFloat { 1 - minTrim }
 
@@ -14,8 +14,9 @@ public struct KnobConfig : Equatable {
   public let dragScaling: CGFloat
 
   public let valueStrokeWidth: CGFloat
-  public let font: Font
   public let formatter: NumberFormatter = Self.formatter
+
+  public let theme: Theme
 
   /// How much travel is need to change the knob from `minimumValue` to `maximumValue`.
   /// By default this is 1x the `controlSize` value. Setting it to 2 will require 2x the `controlSize` to go from
@@ -35,7 +36,7 @@ public struct KnobConfig : Equatable {
 
   public init(title: String, id: Int, minimumValue: Double, maximumValue: Double, controlSize: CGFloat = 80.0,
               maxHeight: CGFloat = 100.0, touchSensitivity: CGFloat = 2.0, logScale: Bool = false,
-              valueStrokeWidth: CGFloat = 6.0, font: Font = .callout) {
+              valueStrokeWidth: CGFloat = 6.0, theme: Theme) {
     self.title = title
     self.id = id
     self.minimumValue = minimumValue
@@ -48,7 +49,7 @@ public struct KnobConfig : Equatable {
     self.maxChangeRegionWidthHalf = max(8, controlSize * maxChangeRegionWidthPercentage) / 2
     self.halfControlSize =  controlSize / 2
     self.valueStrokeWidth = valueStrokeWidth
-    self.font = font
+    self.theme = theme
   }
 
   func normToTrim(_ norm: Double) -> Double {
@@ -70,7 +71,19 @@ public struct KnobConfig : Equatable {
     return logScale ? log(1.0 + norm * 9.0) / 10.0 : norm
   }
 
-  static public var formatter: NumberFormatter {
+  func dragChangeValue(lastY: CGFloat, dragValue: DragGesture.Value) -> CGFloat {
+    let dY = lastY - dragValue.location.y
+    // Calculate dX for dY scaling effect -- max value must be < 1/2 of controlSize
+    let dX = min(abs(dragValue.location.x - halfControlSize), halfControlSize - 1)
+    // Calculate scaling effect -- no scaling if in small vertical path in the middle of the knob, otherwise the
+    // value gets smaller than 1.0 as the touch moves farther away from the center.
+    let scrubberScaling = (dX < maxChangeRegionWidthHalf ? 1.0 : (1.0 - dX / halfControlSize))
+    // Finally, calculate change to `norm` value
+    let normChange = dY * dragScaling * scrubberScaling
+    return normChange
+  }
+
+  static private var formatter: NumberFormatter {
     let formatter = NumberFormatter()
     formatter.minimumFractionDigits = 0
     formatter.maximumFractionDigits = 3
