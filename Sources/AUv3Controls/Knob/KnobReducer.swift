@@ -58,7 +58,7 @@ extension KnobReducer {
       state.focusedField = nil
       state.showingValueEditor = false
       if let newValue = Double(state.formattedValue) {
-        setNorm(state: &state, config: config, norm: config.valueToNorm(newValue))
+        setNorm(state: &state, norm: config.valueToNorm(newValue))
       }
       return showingValueEffect(state: &state)
 
@@ -93,10 +93,9 @@ extension KnobReducer {
 
     case let .dragChanged(dragValue):
       setNorm(state: &state,
-              config: config,
-              norm: max(min(config.dragChangeValue(lastY: state.lastY ?? dragValue.startLocation.y,
-                                                   dragValue: dragValue) +
-                            state.norm, 1.0), 0.0))
+              norm: (state.norm + 
+                     config.dragChangeValue(lastY: state.lastY ?? dragValue.startLocation.y, dragValue: dragValue))
+                .clamped(to: 0.0...1.0))
       state.lastY = dragValue.location.y
       state.showingValue = true
       return .cancel(id: CancelID.showingValueTask)
@@ -130,10 +129,10 @@ extension KnobReducer {
 
 extension KnobReducer {
 
-  func setNorm(state: inout State, config: KnobConfig, norm: Double) {
+  func setNorm(state: inout State, norm: Double) {
     state.norm = norm
     state.value = config.normToValue(norm)
-    state.formattedValue = config.normToFormattedValue(norm)
+    state.formattedValue = config.formattedValue(state.value)
   }
 
   func showingValueEffect(state: inout State) -> Effect<Action> {

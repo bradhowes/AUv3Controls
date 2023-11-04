@@ -9,12 +9,12 @@ public struct KnobConfig: Equatable {
   let minimumValue: Double
   let maximumValue: Double
   let logScale: Bool
-  let controlSize: CGFloat
+
+  let controlRadius: CGFloat
   let maxHeight: CGFloat
   let dragScaling: CGFloat
 
-  let valueStrokeWidth: CGFloat
-  let formatter: NumberFormatter = Self.formatter
+  let indicatorStrokeWidth: CGFloat
 
   let theme: Theme
 
@@ -41,20 +41,18 @@ public struct KnobConfig: Equatable {
     self.id = id
     self.minimumValue = minimumValue
     self.maximumValue = maximumValue
-    self.controlSize = controlSize
+    self.controlRadius = controlSize
     self.maxHeight = 100.0
     self.touchSensitivity = touchSensitivity
     self.dragScaling = 1.0 / (controlSize * touchSensitivity)
     self.logScale = logScale
     self.maxChangeRegionWidthHalf = max(8, controlSize * maxChangeRegionWidthPercentage) / 2
     self.halfControlSize =  controlSize / 2
-    self.valueStrokeWidth = valueStrokeWidth
+    self.indicatorStrokeWidth = valueStrokeWidth
     self.theme = theme
   }
 
-  func controlWidthIf(showingValueEditor: Bool) -> CGFloat {
-    showingValueEditor ? 200 : controlSize
-  }
+  func controlWidthIf(_ value: Bool) -> CGFloat { value ? 200 : controlRadius }
 
   func normToTrim(_ norm: Double) -> Double {
     (logScale ? (pow(10, norm) - 1.0) / 9.0 : norm) * (maxTrim - minTrim) + minTrim
@@ -64,11 +62,9 @@ public struct KnobConfig: Equatable {
     (logScale ? (pow(10, norm) - 1.0) / 9.0 : norm) * (maximumValue - minimumValue) + minimumValue
   }
 
-  func formattedValue(_ value: Double) -> String { formatter.string(from: NSNumber(floatLiteral: value)) ?? "NaN" }
+  func formattedValue(_ value: Double) -> String { theme.format(value: value) }
 
   func formattedValue(_ value: Float) -> String { formattedValue(Double(value)) }
-
-  func normToFormattedValue(_ norm: Double) -> String { formattedValue(normToValue(norm)) }
 
   func valueToNorm(_ value: Double) -> Double {
     let norm = (value - minimumValue) / (maximumValue - minimumValue)

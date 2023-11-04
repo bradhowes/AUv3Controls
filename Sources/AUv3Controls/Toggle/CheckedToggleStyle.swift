@@ -11,7 +11,7 @@ public struct CheckedToggleStyle: ToggleStyle {
       Label {
         configuration.label
       } icon: {
-        Image(systemName: configuration.isOn ? theme.toggleOnIndicator : theme.toggleOffIndicator)
+        Image(systemName: configuration.isOn ? theme.toggleOnIndicatorSystemName : theme.toggleOffIndicatorSystemName)
           .foregroundColor(theme.controlForegroundColor)
           .accessibility(label: Text(configuration.isOn ? "Checked" : "Unchecked"))
           .imageScale(.large)

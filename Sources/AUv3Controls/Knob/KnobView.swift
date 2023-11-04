@@ -20,10 +20,8 @@ struct KnobView: View {
         editor
           .bind(viewStore.$focusedField, to: self.$focusedField)
       }
-      .frame(maxWidth: config.controlWidthIf(showingValueEditor: viewStore.showingValueEditor),
-             maxHeight: config.maxHeight)
-      .frame(width: config.controlWidthIf(showingValueEditor: viewStore.showingValueEditor),
-             height: config.maxHeight)
+      .frame(maxWidth: config.controlWidthIf(viewStore.showingValueEditor), maxHeight: config.maxHeight)
+      .frame(width: config.controlWidthIf(viewStore.showingValueEditor), height: config.maxHeight)
       .id(viewStore.parameter.address)
       .animation(.linear, value: viewStore.showingValueEditor)
     }
@@ -40,33 +38,43 @@ extension KnobView {
   }
 
   var track: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      rotatedCircle
-        .trim(from: config.minimumAngle.degrees / 360.0,
-              to: config.maximumAngle.degrees / 360.0)
-        .stroke(config.theme.controlBackgroundColor,
-                style: StrokeStyle(lineWidth: 2, lineCap: .round))
-        .frame(width: config.controlSize,
-               height: config.controlSize,
-               alignment: .center)
-        .padding(.horizontal, 4.0)
-    }
+    rotatedCircle
+      .trim(from: config.minimumAngle.degrees / 360.0,
+            to: config.maximumAngle.degrees / 360.0)
+      .stroke(config.theme.controlBackgroundColor,
+              style: StrokeStyle(lineWidth: 2, lineCap: .round))
+      .frame(width: config.controlRadius,
+             height: config.controlRadius,
+             alignment: .center)
+      .padding(.horizontal, 4.0)
   }
 
   var indicator: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
+    WithViewStore(store, observe: \.norm) { norm in
       rotatedCircle
         .trim(from: config.minimumAngle.degrees / 360.0,
-              to: config.normToTrim(viewStore.norm))
+              to: config.normToTrim(norm.state))
         .stroke(config.theme.controlForegroundColor,
-                style: StrokeStyle(lineWidth: config.valueStrokeWidth,
+                style: StrokeStyle(lineWidth: config.indicatorStrokeWidth,
                                    lineCap: .round))
-        .frame(width: config.controlSize, height: config.controlSize, alignment: .center)
+        .frame(width: config.controlRadius, height: config.controlRadius, alignment: .center)
+    }
+  }
+
+  struct LabelsState: Equatable {
+    var showingValue: Bool
+    var formattedValue: String
+    let id: AUParameterAddress
+
+    init(state: KnobReducer.State) {
+      self.showingValue = state.showingValue
+      self.formattedValue = state.formattedValue
+      self.id = state.parameter.address
     }
   }
 
   var labels: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
+    WithViewStore(self.store, observe: LabelsState.init) { viewStore in
       ZStack {
         Text(config.title)
           .opacity(viewStore.showingValue ? 0.0 : 1.0)  // fade OUT when value changes
@@ -78,7 +86,7 @@ extension KnobView {
       .animation(.linear, value: viewStore.showingValue)
       .onTapGesture(count: 1) {
         viewStore.send(.labelTapped, animation: .smooth)
-        scrollViewProxy?.scrollTo(viewStore.parameter.address)
+        scrollViewProxy?.scrollTo(viewStore.id)
       }
     }
   }
@@ -87,12 +95,11 @@ extension KnobView {
   var dragGesture: DragGesture { DragGesture(minimumDistance: 0.0, coordinateSpace: .local) }
 
   var control: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
+    WithViewStore(self.store, observe: \.showingValueEditor) { viewStore in
       VStack(spacing: 0.0) {
         Rectangle()
           .fill(.background)
-          .frame(width: config.controlWidthIf(showingValueEditor: viewStore.showingValueEditor),
-                 height: config.controlSize)
+          .frame(width: config.controlWidthIf(viewStore.state), height: config.controlRadius)
           .overlay {
             track
             indicator
@@ -103,14 +110,13 @@ extension KnobView {
           )
         labels
       }
-      .opacity(viewStore.showingValueEditor ? 0.0 : 1.0)
-      .scaleEffect(viewStore.showingValueEditor ? 0.0 : 1.0)
+      .opacity(viewStore.state ? 0.0 : 1.0)
+      .scaleEffect(viewStore.state ? 0.0 : 1.0)
     }
   }
 
   var editor: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      // Editor
+    WithViewStore(self.store, observe: \.showingValueEditor) { viewStore in
       VStack(alignment: .center, spacing: 12) {
         editorField
         editorButtons
@@ -118,18 +124,25 @@ extension KnobView {
       .padding()
       .background(.quaternary)
       .clipShape(.rect(cornerRadius: 6))
-      .opacity(viewStore.showingValueEditor ? 1.0 : 0.0)
-      .scaleEffect(viewStore.showingValueEditor ? 1.0 : 0.0)
+      .opacity(viewStore.state ? 1.0 : 0.0)
+      .scaleEffect(viewStore.state ? 1.0 : 0.0)
+    }
+  }
+
+  struct EditorState: Equatable {
+    var formattedValue: String
+
+    init(state: KnobReducer.State) {
+      self.formattedValue = state.formattedValue
     }
   }
 
   var editorField: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
+    WithViewStore(self.store, observe: EditorState.init) { viewStore in
       HStack(spacing: 12) {
         Text(config.title)
         ZStack(alignment: .trailing) {
-          TextField("",
-                    text: viewStore.binding(get: \.formattedValue, send: { .textChanged($0) }))
+          TextField("", text: viewStore.binding(get: \.formattedValue, send: { .textChanged($0) }))
           .keyboardType(.numbersAndPunctuation)
           .focused($focusedField, equals: .value)
           .submitLabel(.go)

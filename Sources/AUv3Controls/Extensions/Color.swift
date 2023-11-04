@@ -4,6 +4,15 @@ import SwiftUI
 
 extension Color {
 
+  /**
+   Create new Color instance with color components taken from hex color specification. Supports
+
+   - 3-characters (12-bit RGB) with 4 bits per RGB channel
+   - 6-characters (24-bit RGB) with 8 bits per RGB channel
+   - 8-characters (32-bit ARGB) with 8 bits per RGB channel + alpha
+
+   - parameter hex: the color specification to decode
+   */
   init(hex: String) {
     let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
     var int: UInt64 = 0
