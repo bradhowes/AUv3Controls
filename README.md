@@ -8,4 +8,4 @@ The controls are attached to AUParameter entities, so changes in the control wil
 value. This works the other way as well: external changes to the AUParameter -- say from a MIDI controller or
 preset load -- will be reflected in the control.
 
-[!](demo.gif)
+![](https://github.com/bradhowes/AUv3Controls/blob/main/demo.gif?raw=true)
