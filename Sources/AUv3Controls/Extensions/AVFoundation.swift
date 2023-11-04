@@ -3,12 +3,13 @@ import AVFoundation
 
 public extension AUParameter {
 
-  /// Obtain a stream of value changes from a parameter, presumably changed by another entity such as MIDI.
+  /// Obtain a stream of value changes from a parameter, presumably changed by another entity such as a MIDI
+  /// connection.
   func startObserving(_ observerToken: inout AUParameterObserverToken?) -> AsyncStream<AUValue> {
 
     let (stream, continuation) = AsyncStream<AUValue>.makeStream()
 
-    // Monitor the parameter for value changes and send them to the stream
+    // Monitor the parameter for value changes to itself and send them to the stream
     let token = self.token(byAddingParameterObserver: { address, value in
       if address == self.address {
         continuation.yield(value)

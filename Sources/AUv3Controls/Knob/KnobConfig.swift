@@ -1,32 +1,32 @@
 import SwiftUI
 
 public struct KnobConfig: Equatable {
-  public let minTrim: CGFloat = 0.11111115 // Use non-zero value to leave a tiny circle at "zero"
-  public var maxTrim: CGFloat { 1 - minTrim }
+  let minTrim: CGFloat = 0.11111115 // Use non-zero value to leave a tiny circle at "zero"
+  var maxTrim: CGFloat { 1 - minTrim }
 
-  public let title: String
-  public let id: Int
-  public let minimumValue: Double
-  public let maximumValue: Double
-  public let logScale: Bool
-  public let controlWidth: CGFloat
-  public let maxHeight: CGFloat
-  public let dragScaling: CGFloat
+  let title: String
+  let id: Int
+  let minimumValue: Double
+  let maximumValue: Double
+  let logScale: Bool
+  let controlSize: CGFloat
+  let maxHeight: CGFloat
+  let dragScaling: CGFloat
 
-  public let valueStrokeWidth: CGFloat
-  public let formatter: NumberFormatter = Self.formatter
+  let valueStrokeWidth: CGFloat
+  let formatter: NumberFormatter = Self.formatter
 
-  public let theme: Theme
+  let theme: Theme
 
   /// How much travel is need to change the knob from `minimumValue` to `maximumValue`.
   /// By default this is 1x the `controlSize` value. Setting it to 2 will require 2x the `controlSize` to go from
   /// `minimumValue` to `maximumValue`.
-  public let touchSensitivity: CGFloat
+  let touchSensitivity: CGFloat
 
   /// Percentage of `controlSize` where a touch/mouse event will perform maximum value change. This defines a
   /// vertical region in the middle of the view. Events outside of this region will have finer sensitivity and control
   /// over value changes.
-  public let maxChangeRegionWidthPercentage: CGFloat = 0.1
+  let maxChangeRegionWidthPercentage: CGFloat = 0.1
 
   let minimumAngle = Angle(degrees: 40)
   let maximumAngle = Angle(degrees: 320)
@@ -41,7 +41,7 @@ public struct KnobConfig: Equatable {
     self.id = id
     self.minimumValue = minimumValue
     self.maximumValue = maximumValue
-    self.controlWidth = controlSize
+    self.controlSize = controlSize
     self.maxHeight = 100.0
     self.touchSensitivity = touchSensitivity
     self.dragScaling = 1.0 / (controlSize * touchSensitivity)
@@ -50,6 +50,10 @@ public struct KnobConfig: Equatable {
     self.halfControlSize =  controlSize / 2
     self.valueStrokeWidth = valueStrokeWidth
     self.theme = theme
+  }
+
+  func controlWidthIf(showingValueEditor: Bool) -> CGFloat {
+    showingValueEditor ? 200 : controlSize
   }
 
   func normToTrim(_ norm: Double) -> Double {

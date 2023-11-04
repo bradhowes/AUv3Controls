@@ -2,246 +2,164 @@ import ComposableArchitecture
 import AVFoundation
 import SwiftUI
 
-public struct KnobReducer: Reducer {
-
-  public struct State: Equatable {
-
-    let parameter: AUParameter
-    var value: Double
-    let config: KnobConfig
-
-    var formattedValue: String = ""
-    var observerToken: AUParameterObserverToken?
-    var showingValue: Bool = false
-    var showingValueEditor: Bool = false
-    var lastY: CGFloat?
-    @BindingState var focusedField: Field?
-    
-    var controlWidth: CGFloat { showingValueEditor ? 200 : config.controlWidth }
-
-    var norm: Double = 0.0 {
-      didSet {
-        self.value = config.normToValue(norm)
-        self.formattedValue = config.normToFormattedValue(norm)
-      }
-    }
-
-    public init(parameter: AUParameter, value: Double = 0.0, config: KnobConfig) {
-      self.parameter = parameter
-      self.value = value
-      self.parameter.setValue(AUValue(value), originator: nil)
-      self.config = config
-    }
-  }
-
-  @Dependency(\.continuousClock) var clock
-
-  private enum CancelID { case showingValueTask }
-
-  public enum Field: Hashable { case value }
-
-  public enum Action: BindableAction, Equatable {
-    case binding(BindingAction<State>)
-    case acceptButtonPressed
-    case cancelButtonPressed
-    case clearButtonPressed
-    case gainedFocus
-    case labelTapped
-    case observedValueChanged(AUValue)
-    case stoppedObserving
-    case dragChanged(DragGesture.Value)
-    case dragEnded(DragGesture.Value)
-    case showingValueTimerStopped
-    case textChanged(String)
-    case viewAppeared
-    case viewDisappeared
-  }
-
-  func showingValueEffect(state: inout State) -> Effect<Action> {
-    state.showingValue = true
-    state.formattedValue = state.config.formattedValue(state.value)
-    return .run { send in
-      try await Task.sleep(for: .seconds(1.25))
-      await send(.showingValueTimerStopped)
-    }
-  }
-
-  public func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
-
-    case .acceptButtonPressed:
-      state.focusedField = nil
-      state.showingValueEditor = false
-      if let newValue = Double(state.formattedValue) {
-        state.norm = state.config.valueToNorm(newValue)
-      }
-      return showingValueEffect(state: &state)
-
-    case .binding:
-      return .none
-
-    case .cancelButtonPressed:
-      state.focusedField = nil
-      state.showingValueEditor = false
-      return .none
-
-    case .clearButtonPressed:
-      state.formattedValue = ""
-      return .none
-
-    case .gainedFocus:
-      return .none
-
-    case .labelTapped:
-      state.showingValueEditor = true
-      state.formattedValue = state.config.formattedValue(state.value)
-      state.focusedField = .value
-      return .none
-
-    case let.observedValueChanged(value):
-      state.value = Double(value)
-      return showingValueEffect(state: &state)
-
-    case .stoppedObserving:
-      state.observerToken = nil
-      return .none
-
-    case let .dragChanged(dragValue):
-      let lastY = state.lastY ?? dragValue.startLocation.y
-      let normChange = state.config.dragChangeValue(lastY: lastY, dragValue: dragValue)
-      let newNorm = max(min(normChange + state.norm, 1.0), 0.0)
-      state.norm = newNorm
-      state.lastY = dragValue.location.y
-      state.showingValue = true
-      return .cancel(id: CancelID.showingValueTask)
-
-    case .dragEnded:
-      state.lastY = nil
-      return showingValueEffect(state: &state)
-
-    case .showingValueTimerStopped:
-      state.showingValue = false
-      return .none
-
-    case let .textChanged(newValue):
-      state.formattedValue = newValue
-      return .none
-
-    case .viewAppeared:
-      let valueUpdates = state.parameter.startObserving(&state.observerToken)
-      return .run { send in
-        for await value in valueUpdates {
-          await send(.observedValueChanged(value))
-        }
-        await send(.stoppedObserving)
-      }
-
-    case .viewDisappeared:
-      return .cancel(id: CancelID.showingValueTask)
-    }
-  }
-}
-
+/**
+ A circular knob that whose value is controlled by vertical motion inside it. Changing the value causes the current
+ value to be displayed instead of the control's name. Tapping on the name transforms the know into a dialog box with
+ a text field containing the current value and two buttons to accept and cancel any changes made to the value.
+ */
 struct KnobView: View {
+
   let store: StoreOf<KnobReducer>
+  let config: KnobConfig
   let scrollViewProxy: ScrollViewProxy?
-  @FocusState var focusedField: KnobReducer.Field?
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
       ZStack(alignment: .bottom) {
-        VStack(spacing: 0.0) {
-          Rectangle()
-            .fill(.background)
-            .frame(width: viewStore.config.controlWidth, height: viewStore.config.controlWidth)
-            .overlay {
-              Circle()
-                .rotation(.degrees(-270))
-                .trim(from: viewStore.config.minimumAngle.degrees / 360.0,
-                      to: viewStore.config.maximumAngle.degrees / 360.0)
-                .stroke(viewStore.config.theme.controlBackgroundColor,
-                        style: StrokeStyle(lineWidth: 2, lineCap: .round))
-                .frame(width: viewStore.config.controlWidth,
-                       height: viewStore.config.controlWidth,
-                       alignment: .center)
-                .padding(.horizontal, 4.0)
-              Circle()
-                .rotation(.degrees(-270))
-                .trim(from: viewStore.config.minimumAngle.degrees / 360.0, 
-                      to: viewStore.config.normToTrim(viewStore.norm))
-                .stroke(viewStore.config.theme.controlForegroundColor,
-                        style: StrokeStyle(lineWidth: viewStore.config.valueStrokeWidth,
-                                           lineCap: .round))
-                .frame(width: viewStore.config.controlWidth, height: viewStore.config.controlWidth, alignment: .center)
-            } // NOTE: coordinateSpace *must* be `.local` for the drag scaling calculations
-            .gesture(DragGesture(minimumDistance: 0.0, coordinateSpace: .local)
-              .onChanged { value in
-                viewStore.send(.dragChanged(value))
-              }
-              .onEnded { value in
-                viewStore.send(.dragEnded(value))
-              })
-          ZStack {
-            Text(viewStore.config.title)
-              .opacity(viewStore.showingValue ? 0.0 : 1.0)  // fade OUT when value changes
-            Text(viewStore.formattedValue)
-              .opacity(viewStore.showingValue ? 1.0 : 0.0)  // fade IN when value changes
-          }
-          .font(viewStore.config.theme.font)
-          .foregroundColor(viewStore.config.theme.textColor)
-          .animation(.linear, value: viewStore.showingValue)
-          .onTapGesture(count: 1) {
-            viewStore.send(.labelTapped, animation: .smooth)
-            scrollViewProxy?.scrollTo(viewStore.parameter.address)
-          }
-        }
-        .opacity(viewStore.showingValueEditor ? 0.0 : 1.0)
-        .scaleEffect(viewStore.showingValueEditor ? 0.0 : 1.0)
-
-        // Editor
-        VStack(alignment: .center, spacing: 12) {
-          HStack(spacing: 12) {
-            Text(viewStore.config.title)
-            ZStack(alignment: .trailing) {
-              TextField("",
-                        text: viewStore.binding(get: \.formattedValue, send: { .textChanged($0) }))
-                .keyboardType(.numbersAndPunctuation)
-                .focused($focusedField, equals: .value)
-                .submitLabel(.go)
-                .onSubmit { viewStore.send(.acceptButtonPressed, animation: .smooth) }
-                .disableAutocorrection(true)
-                .textFieldStyle(.roundedBorder)
-              Image(systemName: "xmark.circle.fill")
-                .foregroundColor(.secondary)
-                .onTapGesture(count: 1) { viewStore.send(.clearButtonPressed, animation: .smooth) }
-                .padding(.trailing, 4)
-            }
-          }
-          HStack(spacing: 24) {
-            Button(action: { viewStore.send(.acceptButtonPressed, animation: .smooth) }) {
-              Text("Accept")
-            }
-            .buttonStyle(.bordered)
-            .foregroundColor(viewStore.config.theme.textColor)
-
-            Button(action: { viewStore.send(.cancelButtonPressed, animation: .smooth) }) {
-              Text("Cancel")
-            }
-            .buttonStyle(.borderless)
-            .foregroundColor(viewStore.config.theme.textColor)
-          }
-        }
-        .padding()
-        .background(.quaternary)
-        .clipShape(.rect(cornerRadius: 6))
-        .opacity(viewStore.showingValueEditor ? 1.0 : 0.0)
-        .scaleEffect(viewStore.showingValueEditor ? 1.0 : 0.0)
-        .bind(viewStore.$focusedField, to: self.$focusedField)
+        control
+        editor
+          .bind(viewStore.$focusedField, to: self.$focusedField)
       }
-      .frame(maxWidth: viewStore.controlWidth, maxHeight: viewStore.config.maxHeight)
-      .frame(width: viewStore.controlWidth, height: viewStore.config.maxHeight)
+      .frame(maxWidth: config.controlWidthIf(showingValueEditor: viewStore.showingValueEditor),
+             maxHeight: config.maxHeight)
+      .frame(width: config.controlWidthIf(showingValueEditor: viewStore.showingValueEditor),
+             height: config.maxHeight)
       .id(viewStore.parameter.address)
       .animation(.linear, value: viewStore.showingValueEditor)
+    }
+  }
+
+  @FocusState var focusedField: KnobReducer.Field?
+}
+
+extension KnobView {
+
+  var rotatedCircle: some Shape {
+    Circle()
+      .rotation(.degrees(-270))
+  }
+
+  var track: some View {
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
+      rotatedCircle
+        .trim(from: config.minimumAngle.degrees / 360.0,
+              to: config.maximumAngle.degrees / 360.0)
+        .stroke(config.theme.controlBackgroundColor,
+                style: StrokeStyle(lineWidth: 2, lineCap: .round))
+        .frame(width: config.controlSize,
+               height: config.controlSize,
+               alignment: .center)
+        .padding(.horizontal, 4.0)
+    }
+  }
+
+  var indicator: some View {
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
+      rotatedCircle
+        .trim(from: config.minimumAngle.degrees / 360.0,
+              to: config.normToTrim(viewStore.norm))
+        .stroke(config.theme.controlForegroundColor,
+                style: StrokeStyle(lineWidth: config.valueStrokeWidth,
+                                   lineCap: .round))
+        .frame(width: config.controlSize, height: config.controlSize, alignment: .center)
+    }
+  }
+
+  var labels: some View {
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
+      ZStack {
+        Text(config.title)
+          .opacity(viewStore.showingValue ? 0.0 : 1.0)  // fade OUT when value changes
+        Text(viewStore.formattedValue)
+          .opacity(viewStore.showingValue ? 1.0 : 0.0)  // fade IN when value changes
+      }
+      .font(config.theme.font)
+      .foregroundColor(config.theme.textColor)
+      .animation(.linear, value: viewStore.showingValue)
+      .onTapGesture(count: 1) {
+        viewStore.send(.labelTapped, animation: .smooth)
+        scrollViewProxy?.scrollTo(viewStore.parameter.address)
+      }
+    }
+  }
+
+  // NOTE: coordinateSpace *must* be `.local` for the drag scaling calculations
+  var dragGesture: DragGesture { DragGesture(minimumDistance: 0.0, coordinateSpace: .local) }
+
+  var control: some View {
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
+      VStack(spacing: 0.0) {
+        Rectangle()
+          .fill(.background)
+          .frame(width: config.controlWidthIf(showingValueEditor: viewStore.showingValueEditor),
+                 height: config.controlSize)
+          .overlay {
+            track
+            indicator
+          }
+          .gesture(dragGesture
+            .onChanged { viewStore.send(.dragChanged($0)) }
+            .onEnded { viewStore.send(.dragEnded($0)) }
+          )
+        labels
+      }
+      .opacity(viewStore.showingValueEditor ? 0.0 : 1.0)
+      .scaleEffect(viewStore.showingValueEditor ? 0.0 : 1.0)
+    }
+  }
+
+  var editor: some View {
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
+      // Editor
+      VStack(alignment: .center, spacing: 12) {
+        editorField
+        editorButtons
+      }
+      .padding()
+      .background(.quaternary)
+      .clipShape(.rect(cornerRadius: 6))
+      .opacity(viewStore.showingValueEditor ? 1.0 : 0.0)
+      .scaleEffect(viewStore.showingValueEditor ? 1.0 : 0.0)
+    }
+  }
+
+  var editorField: some View {
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
+      HStack(spacing: 12) {
+        Text(config.title)
+        ZStack(alignment: .trailing) {
+          TextField("",
+                    text: viewStore.binding(get: \.formattedValue, send: { .textChanged($0) }))
+          .keyboardType(.numbersAndPunctuation)
+          .focused($focusedField, equals: .value)
+          .submitLabel(.go)
+          .onSubmit { viewStore.send(.acceptButtonPressed, animation: .smooth) }
+          .disableAutocorrection(true)
+          .textFieldStyle(.roundedBorder)
+          Image(systemName: "xmark.circle.fill")
+            .foregroundColor(.secondary)
+            .onTapGesture(count: 1) { viewStore.send(.clearButtonPressed, animation: .smooth) }
+            .padding(.trailing, 4)
+        }
+      }
+    }
+  }
+
+  var editorButtons: some View {
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
+      HStack(spacing: 24) {
+        Button(action: { viewStore.send(.acceptButtonPressed, animation: .smooth) }) {
+          Text("Accept")
+        }
+        .buttonStyle(.bordered)
+        .foregroundColor(config.theme.textColor)
+
+        Button(action: { viewStore.send(.cancelButtonPressed, animation: .smooth) }) {
+          Text("Cancel")
+        }
+        .buttonStyle(.borderless)
+        .foregroundColor(config.theme.textColor)
+      }
     }
   }
 }
@@ -252,11 +170,11 @@ struct KnobViewPreview : PreviewProvider {
   static let param = AUParameterTree.createParameter(withIdentifier: "RELEASE", name: "Release", address: 1,
                                                      min: 0.0, max: 100.0, unit: .generic, unitName: nil,
                                                      valueStrings: nil, dependentParameters: nil)
-  @State static var store = Store(initialState: KnobReducer.State(parameter: param, value: 0.0, config: config)) {
-    KnobReducer()
+  @State static var store = Store(initialState: KnobReducer.State(parameter: param, value: 0.0)) {
+    KnobReducer(config: config)
   }
 
   static var previews: some View {
-    KnobView(store: store, scrollViewProxy: nil)
+    KnobView(store: store, config: config, scrollViewProxy: nil)
   }
 }

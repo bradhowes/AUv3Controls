@@ -18,8 +18,8 @@ final class KnobViewTests: XCTestCase {
                             logScale: false, theme: Theme())
     // NOTE: parameter needs to be part of a tree for KVO to work
     tree = AUParameterTree.createTree(withChildren: [param])
-    store = TestStore(initialState: KnobReducer.State(parameter: param, value: 0.0, config: config)) {
-      KnobReducer()
+    store = TestStore(initialState: KnobReducer.State(parameter: param, value: 0.0)) {
+      KnobReducer(config: config)
     }
   }
 
