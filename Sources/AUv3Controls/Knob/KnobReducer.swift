@@ -1,5 +1,6 @@
-import ComposableArchitecture
 import AVFoundation
+import Clocks
+import ComposableArchitecture
 import SwiftUI
 
 public struct KnobReducer: Reducer {
@@ -19,7 +20,7 @@ public struct KnobReducer: Reducer {
     var observerToken: AUParameterObserverToken?
     var showingValue: Bool = false
     var showingValueEditor: Bool = false
-    var lastY: CGFloat?
+    var lastDrag: CGPoint?
     @BindingState var focusedField: Field?
 
     var norm: Double = 0.0
@@ -31,20 +32,20 @@ public struct KnobReducer: Reducer {
 
   public enum Action: BindableAction, Equatable {
     case binding(BindingAction<State>)
-    case acceptButtonPressed
-    case cancelButtonPressed
-    case clearButtonPressed
-    case gainedFocus
+    case acceptButtonTapped
+    case cancelButtonTapped
+    case clearButtonTapped
     case labelTapped
     case observedValueChanged(AUValue)
     case stoppedObserving
-    case dragChanged(DragGesture.Value)
-    case dragEnded(DragGesture.Value)
+    case dragChanged(start: CGPoint, position: CGPoint)
+    case dragEnded(start: CGPoint, position: CGPoint)
     case showingValueTimerStopped
     case textChanged(String)
     case viewAppeared
-    case viewDisappeared
   }
+
+  @Dependency(\.continuousClock) var clock
 
   let config: KnobConfig
 }
@@ -54,7 +55,7 @@ extension KnobReducer {
   public func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
 
-    case .acceptButtonPressed:
+    case .acceptButtonTapped:
       state.focusedField = nil
       state.showingValueEditor = false
       if let newValue = Double(state.formattedValue) {
@@ -65,16 +66,13 @@ extension KnobReducer {
     case .binding:
       return .none
 
-    case .cancelButtonPressed:
+    case .cancelButtonTapped:
       state.focusedField = nil
       state.showingValueEditor = false
       return .none
 
-    case .clearButtonPressed:
+    case .clearButtonTapped:
       state.formattedValue = ""
-      return .none
-
-    case .gainedFocus:
       return .none
 
     case .labelTapped:
@@ -91,17 +89,17 @@ extension KnobReducer {
       state.observerToken = nil
       return .none
 
-    case let .dragChanged(dragValue):
+    case let .dragChanged(start, position):
       setNorm(state: &state,
               norm: (state.norm +
-                     config.dragChangeValue(lastY: state.lastY ?? dragValue.startLocation.y, dragValue: dragValue))
+                     config.dragChangeValue(last: state.lastDrag ?? start, position: position))
                 .clamped(to: 0.0...1.0))
-      state.lastY = dragValue.location.y
+      state.lastDrag = position
       state.showingValue = true
       return .cancel(id: CancelID.showingValueTask)
 
     case .dragEnded:
-      state.lastY = nil
+      state.lastDrag = nil
       return showingValueEffect(state: &state)
 
     case .showingValueTimerStopped:
@@ -119,10 +117,7 @@ extension KnobReducer {
           await send(.observedValueChanged(value))
         }
         await send(.stoppedObserving)
-      }.cancellable(id: CancelID.showingValueTask)
-
-    case .viewDisappeared:
-      return .cancel(id: CancelID.showingValueTask)
+      }
     }
   }
 }
@@ -139,7 +134,7 @@ extension KnobReducer {
     state.showingValue = true
     state.formattedValue = config.formattedValue(state.value)
     return .run { send in
-      try await Task.sleep(for: .seconds(1.25))
+      try await self.clock.sleep(for: .seconds(config.showValueDuration))
       await send(.showingValueTimerStopped)
     }
   }

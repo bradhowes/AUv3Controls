@@ -24,6 +24,7 @@ struct KnobView: View {
       .frame(width: config.controlWidthIf(viewStore.showingValueEditor), height: config.maxHeight)
       .id(viewStore.parameter.address)
       .animation(.linear, value: viewStore.showingValueEditor)
+      .task { await viewStore.send(.viewAppeared).finish() }
     }
   }
 
@@ -39,12 +40,12 @@ extension KnobView {
 
   var track: some View {
     rotatedCircle
-      .trim(from: config.minimumAngle.degrees / 360.0,
-            to: config.maximumAngle.degrees / 360.0)
+      .trim(from: config.indicatorStartAngle.normalized,
+            to: config.indicatorEndAngle.normalized)
       .stroke(config.theme.controlBackgroundColor,
               style: StrokeStyle(lineWidth: 2, lineCap: .round))
-      .frame(width: config.controlRadius,
-             height: config.controlRadius,
+      .frame(width: config.controlDiameter,
+             height: config.controlDiameter,
              alignment: .center)
       .padding(.horizontal, 4.0)
   }
@@ -52,12 +53,12 @@ extension KnobView {
   var indicator: some View {
     WithViewStore(store, observe: \.norm) { norm in
       rotatedCircle
-        .trim(from: config.minimumAngle.degrees / 360.0,
+        .trim(from: config.indicatorStartAngle.normalized,
               to: config.normToTrim(norm.state))
         .stroke(config.theme.controlForegroundColor,
                 style: StrokeStyle(lineWidth: config.indicatorStrokeWidth,
                                    lineCap: .round))
-        .frame(width: config.controlRadius, height: config.controlRadius, alignment: .center)
+        .frame(width: config.controlDiameter, height: config.controlDiameter, alignment: .center)
     }
   }
 
@@ -99,14 +100,14 @@ extension KnobView {
       VStack(spacing: 0.0) {
         Rectangle()
           .fill(.background)
-          .frame(width: config.controlWidthIf(viewStore.state), height: config.controlRadius)
+          .frame(width: config.controlWidthIf(viewStore.state), height: config.controlDiameter)
           .overlay {
             track
             indicator
           }
           .gesture(dragGesture
-            .onChanged { viewStore.send(.dragChanged($0)) }
-            .onEnded { viewStore.send(.dragEnded($0)) }
+            .onChanged { viewStore.send(.dragChanged(start: $0.startLocation, position: $0.location)) }
+            .onEnded { viewStore.send(.dragEnded(start: $0.startLocation, position: $0.location)) }
           )
         labels
       }
@@ -145,7 +146,7 @@ extension KnobView {
           textField
           Image(systemName: "xmark.circle.fill")
             .foregroundColor(.secondary)
-            .onTapGesture(count: 1) { viewStore.send(.clearButtonPressed, animation: .linear) }
+            .onTapGesture(count: 1) { viewStore.send(.clearButtonTapped, animation: .linear) }
             .padding(.trailing, 4)
         }
       }
@@ -159,7 +160,7 @@ extension KnobView {
         .keyboardType(.numbersAndPunctuation)
         .focused($focusedField, equals: .value)
         .submitLabel(.go)
-        .onSubmit { viewStore.send(.acceptButtonPressed, animation: .linear) }
+        .onSubmit { viewStore.send(.acceptButtonTapped, animation: .linear) }
         .disableAutocorrection(true)
         .textFieldStyle(.roundedBorder)
     }
@@ -169,7 +170,7 @@ extension KnobView {
     WithViewStore(self.store, observe: EditorState.init) { viewStore in
       TextField("", text: viewStore.binding(get: \.formattedValue, send: { .textChanged($0) }))
         .focused($focusedField, equals: .value)
-        .onSubmit { viewStore.send(.acceptButtonPressed, animation: .linear) }
+        .onSubmit { viewStore.send(.acceptButtonTapped, animation: .linear) }
         .textFieldStyle(.roundedBorder)
     }
   }
@@ -178,13 +179,13 @@ extension KnobView {
   var editorButtons: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
       HStack(spacing: 24) {
-        Button(action: { viewStore.send(.acceptButtonPressed, animation: .linear) }) {
+        Button(action: { viewStore.send(.acceptButtonTapped, animation: .linear) }) {
           Text("Accept")
         }
         .buttonStyle(.bordered)
         .foregroundColor(config.theme.textColor)
 
-        Button(action: { viewStore.send(.cancelButtonPressed, animation: .linear) }) {
+        Button(action: { viewStore.send(.cancelButtonTapped, animation: .linear) }) {
           Text("Cancel")
         }
         .buttonStyle(.borderless)
