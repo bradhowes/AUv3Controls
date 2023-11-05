@@ -81,26 +81,18 @@ test-macos: build-macos
 		-destination platform="$(PLATFORM_MACOS)" \
 		-enableCodeCoverage YES
 
-test-linux: lint
-	docker build -t swiftlang -f swiftlang.dockerfile .
-	docker run \
-		--rm \
-		-v "$(PWD):$(PWD)" \
-		-w "$(PWD)" \
-		swift57 \
-		bash -c 'make test-swift'
+coverage-ios: test-ios
+	xcrun xccov view --report --only-targets $(PWD)/.DerivedData-ios/Logs/Test/*.xcresult > coverage.txt
+	cat coverage.txt
 
-test-swift: lint
-	swift test --parallel
-
-coverage: test-macos
+coverage-macos: test-macos
 	xcrun xccov view --report --only-targets $(PWD)/.DerivedData-macos/Logs/Test/*.xcresult > coverage.txt
 	cat coverage.txt
 
-percentage: coverage
+percentage: coverage-ios
 	awk '/ $(TARGET) / { if ($$3 > 0) print $$4; }' coverage.txt > percentage.txt
 	cat percentage.txt
 
-test: test-ios test-tvos percentage
+test: test-ios test-macos test-tvos
 
-.PHONY: test test-ios test-macos test-tvos coverage percentage test-linux test-swift
+.PHONY: test test-ios test-macos test-tvos coverage percentage
