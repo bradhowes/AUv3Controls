@@ -36,7 +36,8 @@ test-ios: build-ios
 		-clonedSourcePackagesDirPath "$(WORKSPACE)" \
 		-scheme $(TARGET) \
 		-derivedDataPath "$(PWD)/.DerivedData-ios" \
-		-destination platform="$(PLATFORM_IOS)"
+		-destination platform="$(PLATFORM_IOS)" \
+		-enableCodeCoverage YES
 
 build-tvos: resolve-deps
 	xcodebuild build-for-testing \
@@ -61,7 +62,8 @@ build-macos: resolve-deps
 		-clonedSourcePackagesDirPath "$(WORKSPACE)" \
 		-scheme $(TARGET) \
 		-derivedDataPath "$(PWD)/.DerivedData-macos" \
-		-destination platform="$(PLATFORM_MACOS)"
+		-destination platform="$(PLATFORM_MACOS)" \
+		-enableCodeCoverage YES
 
 test-macos: build-macos
 	xcodebuild test-without-building \
@@ -78,6 +80,10 @@ coverage-ios: test-ios
 
 coverage-macos: test-macos
 	xcrun xccov view --report --only-targets $(PWD)/.DerivedData-macos/Logs/Test/*.xcresult > coverage.txt
+	cat coverage.txt
+
+coverage-tvos: test-tvos
+	xcrun xccov view --report --only-targets $(PWD)/.DerivedData-tvos/Logs/Test/*.xcresult > coverage.txt
 	cat coverage.txt
 
 percentage: coverage-ios
