@@ -11,10 +11,9 @@ jobs:
   build_macos:
     runs-on: macos-13
     steps:
-    - uses: maxim-lobanov/setup-xcode@v1
-      with:
-        xcode-version: latest-stable
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
+    - name: Select Xcode 14.3
+      run: sudo xcode-select -s /Applications/Xcode_14.3.app
     - name: Build, test, and code coverage
       run: make
     - name: Get Test Coverage
@@ -30,17 +29,3 @@ jobs:
         label: Coverage
         message: ${{ env.PERCENTAGE }}
         color: success
-
-  build_ubuntu:
-    strategy:
-      matrix:
-        os: [ubuntu-20.04]
-
-    runs-on: ${{ matrix.os }}
-
-    steps:
-      - uses: actions/checkout@v3
-      - name: Build
-        run: swift build
-      - name: Run tests
-        run: swift test
