@@ -24,8 +24,8 @@ jobs:
       uses: schneegans/dynamic-badges-action@v1.1.0
       with:
         auth: ${{ secrets.GIST_UPDATE }}
-        gistID: UNSET
-        filename: AUv3Controls.json
+        gistID: 09b95180719ff3c213d0d57a87f5202e
+        filename: AUv3Controls-coverage.json
         label: Coverage
         message: ${{ env.PERCENTAGE }}
         color: success
