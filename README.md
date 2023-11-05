@@ -19,6 +19,7 @@ The toggle view just works on boolean values:
 
 ![](https://github.com/bradhowes/AUv3Controls/blob/main/toggle.gif?raw=true)
 
-Here is a combination of several knobs as a group:
+Here is a combination of several knobs into two distinct groups. The groups are embedded in a scroll view so as to
+operate under narrow device width constrains:
 
 ![](https://github.com/bradhowes/AUv3Controls/blob/main/envelopes.gif?raw=true)
