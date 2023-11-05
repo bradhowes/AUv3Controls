@@ -1,3 +1,6 @@
+[![CI](https://github.com/bradhowes/AUv3Controls/workflows/CI/badge.svg)](https://github.com/bradhowes/AUv3Controls)
+[![COV](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/bradhowes/09b95180719ff3c213d0d57a87f5202e/raw/AUv3Controls-coverage.json)](https://github.com/bradhowes/AUv3Controls/blob/main/.github/workflows/CI.yml)
+
 # AUv3Controls
 
 SwiftUI knob and toggle controls for use with AUv3 components. Uses the excellent
