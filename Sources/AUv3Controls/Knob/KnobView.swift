@@ -123,7 +123,7 @@ extension KnobView {
       }
       .padding()
       .background(.quaternary)
-      .clipShape(.rect(cornerRadius: 6))
+      .clipShape(RoundedRectangle(cornerRadius: 12))
       .opacity(viewStore.state ? 1.0 : 0.0)
       .scaleEffect(viewStore.state ? 1.0 : 0.0)
     }
