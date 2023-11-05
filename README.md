@@ -13,6 +13,7 @@ preset load -- will be reflected in the control.
 * Vertical dragging changes the value of the knob
 * Moving horizontally away from the center of the knob will increase resolution of vertical movements
 * Touching the title will show an editor to allow typing a value
+* When present, uses `ScrollViewProxy` to make sure that the editor is visible when it appears
 
 The toggle view just works on boolean values:
 
