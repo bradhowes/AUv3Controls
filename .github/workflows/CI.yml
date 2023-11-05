@@ -1,0 +1,46 @@
+name: CI
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+    - main
+
+jobs:
+  build_macos:
+    runs-on: macos-13
+    steps:
+    - uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: latest-stable
+    - uses: actions/checkout@v3
+    - name: Build, test, and code coverage
+      run: make
+    - name: Get Test Coverage
+      run: |
+        set -- $(< percentage.txt)
+        echo "PERCENTAGE=${1}" >> $GITHUB_ENV
+    - name: Create Coverage Badge
+      uses: schneegans/dynamic-badges-action@v1.1.0
+      with:
+        auth: ${{ secrets.GIST_UPDATE }}
+        gistID: UNSET
+        filename: AUv3Controls.json
+        label: Coverage
+        message: ${{ env.PERCENTAGE }}
+        color: success
+
+  build_ubuntu:
+    strategy:
+      matrix:
+        os: [ubuntu-20.04]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build
+        run: swift build
+      - name: Run tests
+        run: swift test
