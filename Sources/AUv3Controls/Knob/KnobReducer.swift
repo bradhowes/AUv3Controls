@@ -82,7 +82,7 @@ extension KnobReducer {
       return .none
 
     case let.observedValueChanged(value):
-      state.value = Double(value)
+      self.setNorm(state: &state, norm: config.valueToNorm(Double(value)))
       return showingValueEffect(state: &state)
 
     case .stoppedObserving:

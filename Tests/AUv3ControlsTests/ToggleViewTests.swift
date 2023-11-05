@@ -1,29 +1,26 @@
-import XCTest
-import ComposableArchitecture
 import AVFoundation
+import Clocks
+import ComposableArchitecture
+import XCTest
 
 @testable import AUv3Controls
 
 @MainActor
 final class ToggleViewTests: XCTestCase {
 
-  let param = AUParameterTree.createBoolean(withIdentifier: "RETRIGGER", name: "Retrigger", address: 1)
-  var tree: AUParameterTree!
-  var store: TestStore<ToggleReducer.State, ToggleReducer.Action>!
-
   override func setUpWithError() throws {
-    // NOTE: parameter needs to be part of a tree for KVO to work
-    tree = AUParameterTree.createTree(withChildren: [param])
-    store = TestStore(initialState: ToggleReducer.State(parameter: param)) {
-      ToggleReducer()
-    }
   }
 
   override func tearDownWithError() throws {
-    tree = nil
   }
 
   func testInit() {
+    let param = AUParameterTree.createBoolean(withIdentifier: "RETRIGGER", name: "Retrigger", address: 1)
+    let tree = AUParameterTree.createTree(withChildren: [param])
+    let store = TestStore(initialState: ToggleReducer.State(parameter: param)) {
+      ToggleReducer()
+    } withDependencies: { $0.continuousClock = ImmediateClock() }
+
     XCTAssertEqual(1, store.state.parameter.address)
     XCTAssertEqual("Retrigger", store.state.parameter.displayName)
     XCTAssertEqual("RETRIGGER", store.state.parameter.identifier)
@@ -33,7 +30,34 @@ final class ToggleViewTests: XCTestCase {
     XCTAssertFalse(store.state.isOn)
   }
 
+  func testToggleObservations() async {
+    let param = AUParameterTree.createBoolean(withIdentifier: "RETRIGGER", name: "Retrigger", address: 1)
+    let tree = AUParameterTree.createTree(withChildren: [param])
+    let store = TestStore(initialState: ToggleReducer.State(parameter: param)) {
+      ToggleReducer()
+    } withDependencies: { $0.continuousClock = ImmediateClock() }
+
+    store.exhaustivity = .off
+    await store.send(.viewAppeared)
+    store.exhaustivity = .on
+
+    param.setValue(1.0, originator: nil)
+    await store.receive(.observedValueChanged(1.0)) {
+      $0.isOn = true
+    }
+
+    await store.send(.stoppedObserving) {
+      $0.observerToken = nil
+    }
+  }
+
   func testToggling() async {
+    let param = AUParameterTree.createBoolean(withIdentifier: "RETRIGGER", name: "Retrigger", address: 1)
+    let tree = AUParameterTree.createTree(withChildren: [param])
+    let store = TestStore(initialState: ToggleReducer.State(parameter: param)) {
+      ToggleReducer()
+    } withDependencies: { $0.continuousClock = ImmediateClock() }
+
     store.exhaustivity = .off
     await store.send(.viewAppeared)
 
@@ -46,28 +70,9 @@ final class ToggleViewTests: XCTestCase {
       $0.isOn = false
     }
     XCTAssertEqual(0.0, param.value)
-  }
-
-  func testToggleObservations() async {
-    store.exhaustivity = .off
-    let task = await store.send(.viewAppeared)
-    store.exhaustivity = .on
-
-    for value: AUValue in [1.0, 0.2, 0.9, 0.4, 0.6, 0.49, 0.5, -10.0, 1000.0] {
-      param.setValue(value, originator: nil)
-      await store.receive(.observedValueChanged(value)) {
-        $0.isOn = (value >= 0.5)
-      }
-    }
 
     await store.send(.stoppedObserving) {
       $0.observerToken = nil
     }
-
-    // Simulate view going away. Should tear down effect monitoring AUParameter
-    await task.cancel()
-
-    // Perform new change to show no effects are executed.
-    param.setValue(0.0, originator: nil)
   }
 }

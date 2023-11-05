@@ -72,7 +72,7 @@ public struct KnobConfig: Equatable {
   func formattedValue(_ value: Float) -> String { formattedValue(Double(value)) }
 
   func valueToNorm(_ value: Double) -> Double {
-    let norm = (value - minimumValue) / (maximumValue - minimumValue)
+    let norm = (value.clamped(to: minimumValue...maximumValue) - minimumValue) / (maximumValue - minimumValue)
     return logScale ? log(1.0 + norm * 9.0) / 10.0 : norm
   }
 

@@ -12,6 +12,7 @@ public extension AUParameter {
     // Monitor the parameter for value changes to itself and send them to the stream
     let token = self.token(byAddingParameterObserver: { address, value in
       if address == self.address {
+        print("value: \(value)")
         continuation.yield(value)
       }
     })
@@ -19,6 +20,7 @@ public extension AUParameter {
     // When the stream is torn down remove the observations. NOTE: we are not updating the state to nil out the
     // `observerToken` but the view should be gone anyway.
     continuation.onTermination = { @Sendable _ in
+      print("terminating AUParameter observer")
       self.removeParameterObserver(token)
     }
 

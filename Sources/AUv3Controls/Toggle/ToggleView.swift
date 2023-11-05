@@ -1,5 +1,6 @@
-import ComposableArchitecture
 import AVFoundation
+import Clocks
+import ComposableArchitecture
 import SwiftUI
 
 public struct ToggleReducer: Reducer {
@@ -23,6 +24,10 @@ public struct ToggleReducer: Reducer {
     case viewAppeared
   }
 
+  private enum CancelID { case observingParameterTask }
+
+  @Dependency(\.continuousClock) var clock
+
   public func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
 
@@ -32,7 +37,7 @@ public struct ToggleReducer: Reducer {
 
     case .stoppedObserving:
       state.observerToken = nil
-      return .none
+      return .cancel(id: CancelID.observingParameterTask)
 
     case .toggleTapped:
       state.isOn.toggle()
@@ -46,7 +51,7 @@ public struct ToggleReducer: Reducer {
           await send(.observedValueChanged(value))
         }
         await send(.stoppedObserving)
-      }
+      }.cancellable(id: CancelID.observingParameterTask, cancelInFlight: true)
     }
   }
 }
