@@ -11,17 +11,6 @@ default: percentage
 clean:
 	rm -rf "$(PWD)/.DerivedData-macos" "$(PWD)/.DerivedData-ios" "$(PWD)/.DerivedData-tvos" "$(WORKSPACE)"
 
-docc:
-	DOCC_JSON_PRETTYPRINT="YES" \
-	swift package \
-		--allow-writing-to-directory $(DOCC_DIR) \
-		generate-documentation \
-		--target $(TARGET) \
-		--disable-indexing \
-		--transform-for-static-hosting \
-		--hosting-base-path swift-math-parser \
-		--output-path $(DOCC_DIR)
-
 lint: clean
 	@if command -v swiftlint; then swiftlint; fi
 
@@ -38,7 +27,8 @@ build-ios: resolve-deps
 		-clonedSourcePackagesDirPath "$(WORKSPACE)" \
 		-scheme $(TARGET) \
 		-derivedDataPath "$(PWD)/.DerivedData-ios" \
-		-destination platform="$(PLATFORM_IOS)"
+		-destination platform="$(PLATFORM_IOS)" \
+		-enableCodeCoverage YES
 
 test-ios: build-ios
 	xcodebuild test-without-building \
@@ -54,7 +44,8 @@ build-tvos: resolve-deps
 		-clonedSourcePackagesDirPath "$(WORKSPACE)" \
 		-scheme $(TARGET) \
 		-derivedDataPath "$(PWD)/.DerivedData-tvos" \
-		-destination platform="$(PLATFORM_TVOS)"
+		-destination platform="$(PLATFORM_TVOS)" \
+		-enableCodeCoverage YES
 
 test-tvos: build-tvos
 	xcodebuild test-without-building \
