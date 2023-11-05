@@ -142,13 +142,7 @@ extension KnobView {
       HStack(spacing: 12) {
         Text(config.title)
         ZStack(alignment: .trailing) {
-          TextField("", text: viewStore.binding(get: \.formattedValue, send: { .textChanged($0) }))
-          .keyboardType(.numbersAndPunctuation)
-          .focused($focusedField, equals: .value)
-          .submitLabel(.go)
-          .onSubmit { viewStore.send(.acceptButtonPressed, animation: .smooth) }
-          .disableAutocorrection(true)
-          .textFieldStyle(.roundedBorder)
+          textField
           Image(systemName: "xmark.circle.fill")
             .foregroundColor(.secondary)
             .onTapGesture(count: 1) { viewStore.send(.clearButtonPressed, animation: .smooth) }
@@ -157,6 +151,29 @@ extension KnobView {
       }
     }
   }
+
+#if os(iOS)
+  var textField: some View {
+    WithViewStore(self.store, observe: EditorState.init) { viewStore in
+      TextField("", text: viewStore.binding(get: \.formattedValue, send: { .textChanged($0) }))
+        .keyboardType(.numbersAndPunctuation)
+        .focused($focusedField, equals: .value)
+        .submitLabel(.go)
+        .onSubmit { viewStore.send(.acceptButtonPressed, animation: .smooth) }
+        .disableAutocorrection(true)
+        .textFieldStyle(.roundedBorder)
+    }
+  }
+#elseif os(macOS)
+  var textField: some View {
+    WithViewStore(self.store, observe: EditorState.init) { viewStore in
+      TextField("", text: viewStore.binding(get: \.formattedValue, send: { .textChanged($0) }))
+        .focused($focusedField, equals: .value)
+        .onSubmit { viewStore.send(.acceptButtonPressed, animation: .smooth) }
+        .textFieldStyle(.roundedBorder)
+    }
+  }
+#endif
 
   var editorButtons: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
@@ -177,7 +194,7 @@ extension KnobView {
   }
 }
 
-struct EnvelopeView : View {
+struct EnvelopeView: View {
   let title: String
   let theme = Theme()
 
@@ -213,7 +230,7 @@ struct EnvelopeView : View {
     let decayParam = AUParameterTree.createParameter(withIdentifier: "DECAY", name: "Decay", address: 4, min: 0.0,
                                                      max: 100.0, unit: .generic, unitName: nil, flags: [],
                                                      valueStrings: nil, dependentParameters: nil)
-    let decayConfig = KnobConfig(parameter:decayParam, theme: theme)
+    let decayConfig = KnobConfig(parameter: decayParam, theme: theme)
     let decayStore = Store(initialState: KnobReducer.State(parameter: decayParam, value: 0.0)) {
       KnobReducer(config: decayConfig)
     }
@@ -253,7 +270,7 @@ struct EnvelopeView : View {
   }
 }
 
-struct KnobViewPreview : PreviewProvider {
+struct KnobViewPreview: PreviewProvider {
   static let param = AUParameterTree.createParameter(withIdentifier: "RELEASE", name: "Release", address: 1,
                                                      min: 0.0, max: 100.0, unit: .generic, unitName: nil,
                                                      valueStrings: nil, dependentParameters: nil)
@@ -267,7 +284,7 @@ struct KnobViewPreview : PreviewProvider {
   }
 }
 
-struct EnvelopeViewPreview : PreviewProvider {
+struct EnvelopeViewPreview: PreviewProvider {
   static var previews: some View {
     VStack {
       EnvelopeView(title: "Volume")

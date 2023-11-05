@@ -55,7 +55,8 @@ public extension AUParameterTree {
    - parameter address: the unique address for the parameter
    - returns: new `AUParameter`
    */
-  static func createBoolean(withIdentifier identifier: String, name: String, address: AUParameterAddress) -> AUParameter {
+  static func createBoolean(withIdentifier identifier: String, name: String,
+                            address: AUParameterAddress) -> AUParameter {
     createParameter(withIdentifier: identifier, name: name, address: address,
                     min: 0, max: 1, unit: .boolean, unitName: nil, valueStrings: nil,
                     dependentParameters: nil)

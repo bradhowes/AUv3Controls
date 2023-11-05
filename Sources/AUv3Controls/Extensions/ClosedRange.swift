@@ -1,4 +1,3 @@
-
 extension ClosedRange {
 
   /**
@@ -11,7 +10,7 @@ extension ClosedRange {
    - parameter value: the value to clamp
    - returns: the bounded value
    */
-  func clamp(_ value : Bound) -> Bound {
+  func clamp(_ value: Bound) -> Bound {
     lowerBound > value ? lowerBound : (upperBound < value ? upperBound : value)
   }
 }

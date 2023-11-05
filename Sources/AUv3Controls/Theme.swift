@@ -8,20 +8,7 @@ public enum ThemeColorTag: String {
   case textColor
 }
 
-public protocol ThemeProtocol: Equatable {
-
-  var controlBackgroundColor: Color { get }
-  var controlForegroundColor: Color { get }
-  var textColor: Color { get }
-  var font: Font { get }
-
-  var toggleOnIndicatorSystemName: String { get }
-  var toggleOffIndicatorSystemName: String { get }
-
-  var formatter: NumberFormatter { get }
-}
-
-public struct Theme: ThemeProtocol {
+public struct Theme: Equatable {
 
   public let controlBackgroundColor: Color
   public let controlForegroundColor: Color
@@ -40,7 +27,7 @@ public struct Theme: ThemeProtocol {
     formatter = valueFormatter ?? Self.formatter
   }
 
-  func format(value: Double) -> String { formatter.string(from: NSNumber(floatLiteral: value)) ?? "NaN" }
+  func format(value: Double) -> String { formatter.string(from: NSNumber(value: value)) ?? "NaN" }
 
   private static func color(_ tag: ThemeColorTag, from bundle: Bundle?, default: Color) -> Color {
     bundle != nil ? Color(tag.rawValue, bundle: bundle) : `default`

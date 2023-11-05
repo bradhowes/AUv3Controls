@@ -93,7 +93,7 @@ extension KnobReducer {
 
     case let .dragChanged(dragValue):
       setNorm(state: &state,
-              norm: (state.norm + 
+              norm: (state.norm +
                      config.dragChangeValue(lastY: state.lastY ?? dragValue.startLocation.y, dragValue: dragValue))
                 .clamped(to: 0.0...1.0))
       state.lastY = dragValue.location.y

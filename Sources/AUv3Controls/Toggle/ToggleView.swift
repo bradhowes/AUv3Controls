@@ -51,20 +51,20 @@ public struct ToggleReducer: Reducer {
   }
 }
 
-public struct ToggleView : View {
+public struct ToggleView: View {
   let store: StoreOf<ToggleReducer>
   let theme: Theme
 
   public var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
+    WithViewStore(self.store, observe: { $0 }, content: { viewStore in
       Toggle(isOn: viewStore.binding(get: \.isOn, send: .toggleTapped)) { Text(viewStore.parameter.displayName) }
         .toggleStyle(.checked(theme: theme))
         .task { await viewStore.send(.viewAppeared).finish() }
-    }
+    })
   }
 }
 
-struct ToggleViewPreview : PreviewProvider {
+struct ToggleViewPreview: PreviewProvider {
   static let param1 = AUParameterTree.createBoolean(withIdentifier: "Retrigger", name: "Retrigger", address: 1)
   static let param2 = AUParameterTree.createBoolean(withIdentifier: "Monophonic", name: "Monophonic", address: 2)
 
