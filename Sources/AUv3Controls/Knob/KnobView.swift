@@ -85,7 +85,7 @@ extension KnobView {
       .foregroundColor(config.theme.textColor)
       .animation(.linear, value: viewStore.showingValue)
       .onTapGesture(count: 1) {
-        viewStore.send(.labelTapped, animation: .smooth)
+        viewStore.send(.labelTapped, animation: .linear)
         scrollViewProxy?.scrollTo(viewStore.id)
       }
     }
@@ -145,7 +145,7 @@ extension KnobView {
           textField
           Image(systemName: "xmark.circle.fill")
             .foregroundColor(.secondary)
-            .onTapGesture(count: 1) { viewStore.send(.clearButtonPressed, animation: .smooth) }
+            .onTapGesture(count: 1) { viewStore.send(.clearButtonPressed, animation: .linear) }
             .padding(.trailing, 4)
         }
       }
@@ -159,7 +159,7 @@ extension KnobView {
         .keyboardType(.numbersAndPunctuation)
         .focused($focusedField, equals: .value)
         .submitLabel(.go)
-        .onSubmit { viewStore.send(.acceptButtonPressed, animation: .smooth) }
+        .onSubmit { viewStore.send(.acceptButtonPressed, animation: .linear) }
         .disableAutocorrection(true)
         .textFieldStyle(.roundedBorder)
     }
@@ -169,7 +169,7 @@ extension KnobView {
     WithViewStore(self.store, observe: EditorState.init) { viewStore in
       TextField("", text: viewStore.binding(get: \.formattedValue, send: { .textChanged($0) }))
         .focused($focusedField, equals: .value)
-        .onSubmit { viewStore.send(.acceptButtonPressed, animation: .smooth) }
+        .onSubmit { viewStore.send(.acceptButtonPressed, animation: .linear) }
         .textFieldStyle(.roundedBorder)
     }
   }
@@ -178,13 +178,13 @@ extension KnobView {
   var editorButtons: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
       HStack(spacing: 24) {
-        Button(action: { viewStore.send(.acceptButtonPressed, animation: .smooth) }) {
+        Button(action: { viewStore.send(.acceptButtonPressed, animation: .linear) }) {
           Text("Accept")
         }
         .buttonStyle(.bordered)
         .foregroundColor(config.theme.textColor)
 
-        Button(action: { viewStore.send(.cancelButtonPressed, animation: .smooth) }) {
+        Button(action: { viewStore.send(.cancelButtonPressed, animation: .linear) }) {
           Text("Cancel")
         }
         .buttonStyle(.borderless)
