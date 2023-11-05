@@ -1,3 +1,4 @@
+import AVFoundation
 import SwiftUI
 
 public struct KnobConfig: Equatable {
@@ -5,7 +6,6 @@ public struct KnobConfig: Equatable {
   var maxTrim: CGFloat { 1 - minTrim }
 
   let title: String
-  let id: Int
   let minimumValue: Double
   let maximumValue: Double
   let logScale: Bool
@@ -34,13 +34,12 @@ public struct KnobConfig: Equatable {
   let maxChangeRegionWidthHalf: CGFloat
   let halfControlSize: CGFloat
 
-  public init(title: String, id: Int, minimumValue: Double, maximumValue: Double, controlSize: CGFloat = 80.0,
+  public init(parameter: AUParameter, controlSize: CGFloat = 80.0,
               maxHeight: CGFloat = 100.0, touchSensitivity: CGFloat = 2.0, logScale: Bool = false,
               valueStrokeWidth: CGFloat = 6.0, theme: Theme) {
-    self.title = title
-    self.id = id
-    self.minimumValue = minimumValue
-    self.maximumValue = maximumValue
+    self.title = parameter.displayName
+    self.minimumValue = Double(parameter.minValue)
+    self.maximumValue = Double(parameter.maxValue)
     self.controlRadius = controlSize
     self.maxHeight = 100.0
     self.touchSensitivity = touchSensitivity

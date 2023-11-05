@@ -17,3 +17,7 @@ preset load -- will be reflected in the control.
 The toggle view just works on boolean values:
 
 ![](https://github.com/bradhowes/AUv3Controls/blob/main/toggle.gif?raw=true)
+
+Here is a combination of several knobs as a group:
+
+![](https://github.com/bradhowes/AUv3Controls/blob/main/envelopes.gif?raw=true)
