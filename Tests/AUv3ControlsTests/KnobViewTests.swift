@@ -1,8 +1,6 @@
 import AVFoundation
 import Clocks
 import ComposableArchitecture
-import SnapshotTesting
-import SwiftUI
 import XCTest
 
 @testable import AUv3Controls
@@ -192,68 +190,4 @@ final class KnobViewTests: XCTestCase {
       $0.formattedValue = ""
     }
   }
-
-//  func testInitialRendering() {
-//    struct MyView: SwiftUI.View {
-//      @State var store: StoreOf<KnobReducer>
-//      let config: KnobConfig
-//
-//      var body: some SwiftUI.View {
-//        KnobView(store: store, config: config, scrollViewProxy: nil)
-//      }
-//    }
-//
-//    let view = MyView(store: Store(initialState: KnobReducer.State(parameter: param, value: 0.0)) {
-//      KnobReducer(config: config)
-//    }, config: config)
-//
-//    assertSnapshot(
-//      of: view,
-//      as: .image(layout: .device(config: .iPhoneSe), traits: .init(userInterfaceStyle: .dark)),
-//      named: "device")
-//  }
-//
-//  func testShowingValue() {
-//    struct MyView: SwiftUI.View {
-//      @State var store: StoreOf<KnobReducer>
-//      let config: KnobConfig
-//
-//      var body: some SwiftUI.View {
-//        KnobView(store: store, config: config, scrollViewProxy: nil)
-//      }
-//    }
-//
-//    let view = MyView(store: Store(initialState: KnobReducer.State(parameter: param, value: 0.0)) {
-//      KnobReducer(config: config)
-//    }, config: config)
-//
-//    view.store.send(.observedValueChanged(50.0))
-//
-//    assertSnapshot(
-//      of: view,
-//      as: .image(layout: .device(config: .iPhoneSe), traits: .init(userInterfaceStyle: .dark)),
-//      named: "device")
-//  }
-//
-//  func testShowingEditor() {
-//    struct MyView: SwiftUI.View {
-//      @State var store: StoreOf<KnobReducer>
-//      let config: KnobConfig
-//
-//      var body: some SwiftUI.View {
-//        KnobView(store: store, config: config, scrollViewProxy: nil)
-//      }
-//    }
-//
-//    let view = MyView(store: Store(initialState: KnobReducer.State(parameter: param, value: 23.45)) {
-//      KnobReducer(config: config)
-//    }, config: config)
-//
-//    view.store.send(.labelTapped)
-//
-//    assertSnapshot(
-//      of: view,
-//      as: .image(layout: .device(config: .iPhoneSe), traits: .init(userInterfaceStyle: .dark)),
-//      named: "device")
-//  }
 }

@@ -7,21 +7,22 @@ import XCTest
 
 @MainActor
 final class ToggleViewTests: XCTestCase {
-
+  let param = AUParameterTree.createBoolean(withIdentifier: "RETRIGGER", name: "Retrigger", address: 10)
+  var tree: AUParameterTree!
+  var store: TestStore<ToggleReducer.State, ToggleReducer.Action>!
+  
   override func setUpWithError() throws {
+    tree = AUParameterTree.createTree(withChildren: [param])
+    store = TestStore(initialState: ToggleReducer.State(parameter: param)) {
+      ToggleReducer()
+    } withDependencies: { $0.continuousClock = ImmediateClock() }
   }
 
   override func tearDownWithError() throws {
   }
 
   func testInit() {
-    let param = AUParameterTree.createBoolean(withIdentifier: "RETRIGGER", name: "Retrigger", address: 1)
-    let tree = AUParameterTree.createTree(withChildren: [param])
-    let store = TestStore(initialState: ToggleReducer.State(parameter: param)) {
-      ToggleReducer()
-    } withDependencies: { $0.continuousClock = ImmediateClock() }
-
-    XCTAssertEqual(1, store.state.parameter.address)
+    XCTAssertEqual(10, store.state.parameter.address)
     XCTAssertEqual("Retrigger", store.state.parameter.displayName)
     XCTAssertEqual("RETRIGGER", store.state.parameter.identifier)
     XCTAssertEqual(0.0, store.state.parameter.minValue)
@@ -31,12 +32,6 @@ final class ToggleViewTests: XCTestCase {
   }
 
   func testToggleObservations() async {
-    let param = AUParameterTree.createBoolean(withIdentifier: "RETRIGGER", name: "Retrigger", address: 1)
-    let tree = AUParameterTree.createTree(withChildren: [param])
-    let store = TestStore(initialState: ToggleReducer.State(parameter: param)) {
-      ToggleReducer()
-    } withDependencies: { $0.continuousClock = ImmediateClock() }
-
     store.exhaustivity = .off
     await store.send(.viewAppeared)
     store.exhaustivity = .on
@@ -52,12 +47,6 @@ final class ToggleViewTests: XCTestCase {
   }
 
   func testToggling() async {
-    let param = AUParameterTree.createBoolean(withIdentifier: "RETRIGGER", name: "Retrigger", address: 1)
-    let tree = AUParameterTree.createTree(withChildren: [param])
-    let store = TestStore(initialState: ToggleReducer.State(parameter: param)) {
-      ToggleReducer()
-    } withDependencies: { $0.continuousClock = ImmediateClock() }
-
     store.exhaustivity = .off
     await store.send(.viewAppeared)
 
