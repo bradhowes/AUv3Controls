@@ -2,6 +2,8 @@ import AVFoundation
 import SwiftUI
 
 public struct KnobConfig: Equatable {
+  let parameter: AUParameter
+  
   let minTrim: CGFloat = 0.11111115 // Use non-zero value to leave a tiny circle at "zero"
   var maxTrim: CGFloat { 1 - minTrim }
 
@@ -38,6 +40,7 @@ public struct KnobConfig: Equatable {
   public init(parameter: AUParameter, controlDiameter: CGFloat = 80.0,
               maxHeight: CGFloat = 100.0, touchSensitivity: CGFloat = 2.0, logScale: Bool = false,
               valueStrokeWidth: CGFloat = 6.0, theme: Theme) {
+    self.parameter = parameter
     self.title = parameter.displayName
     self.controlDiameter = controlDiameter
     self.minimumValue = Double(parameter.minValue)
@@ -58,6 +61,8 @@ public struct KnobConfig: Equatable {
   }
 
   func controlWidthIf(_ value: Bool) -> CGFloat { value ? 200 : controlDiameter }
+
+  func controlWidthIf<T>(_ value: T?) -> CGFloat { controlWidthIf(value != nil) }
 
   func normToTrim(_ norm: Double) -> Double {
     (logScale ? (pow(10, norm) - 1.0) / 9.0 : norm) * (maxTrim - minTrim) + minTrim

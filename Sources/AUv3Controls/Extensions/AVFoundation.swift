@@ -3,36 +3,34 @@ import AVFoundation
 
 public extension AUParameter {
 
+  struct ObservationState {
+    let observerToken: AUParameterObserverToken
+    let stream: AsyncStream<AUValue>
+
+    public init(observerToken: AUParameterObserverToken, stream: AsyncStream<AUValue>) {
+      self.observerToken = observerToken
+      self.stream = stream
+    }
+  }
+  
   /// Obtain a stream of value changes from a parameter, presumably changed by another entity such as a MIDI
   /// connection.
-  func startObserving(_ observerToken: inout AUParameterObserverToken?) -> AsyncStream<AUValue> {
-
-    let (stream, continuation) = AsyncStream<AUValue>.makeStream()
+  func startObserving() -> ObservationState {
+    let (stream, continuation) = AsyncStream<AUValue>.makeStream(bufferingPolicy: .bufferingNewest(1))
 
     // Monitor the parameter for value changes to itself and send them to the stream
     let token = self.token(byAddingParameterObserver: { address, value in
       if address == self.address {
-        print("value: \(value)")
+        print("observer saw value: \(value)")
         continuation.yield(value)
       }
     })
 
-    // When the stream is torn down remove the observations. NOTE: we are not updating the state to nil out the
-    // `observerToken` but the view should be gone anyway.
-    continuation.onTermination = { @Sendable _ in
-      print("terminating AUParameter observer")
-      self.removeParameterObserver(token)
-    }
-
-    // Record the observation token in the view state so to keep from seeing our own updates.
-    observerToken = token
-
-    return stream
+    return .init(observerToken: token, stream: stream)
   }
 }
 
 public extension AUParameter {
-
   /// Returns a `ClosedRange` made up of the `AUParameter` min and max values
   var range: ClosedRange<AUValue> { return self.minValue...self.maxValue }
 }

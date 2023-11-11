@@ -26,7 +26,14 @@ let package = Package(
       name: "AUv3Controls",
       dependencies: [
         .product(name: "ComposableArchitecture", package: "swift-composable-architecture")
-      ]),
+      ],
+      swiftSettings: [
+        /// Xcode 14:j
+        SwiftSetting.unsafeFlags(["-Xfrontend", "-strict-concurrency=complete"]),
+        /// Xcode 15. Remove `=targeted` to use the default `complete`.
+        .enableExperimentalFeature("StrictConcurrency=complete")
+      ]
+    ),
     .testTarget(
       name: "AUv3ControlsTests",
       dependencies: [
