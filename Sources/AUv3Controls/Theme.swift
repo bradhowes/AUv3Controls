@@ -2,12 +2,6 @@ import SwiftUI
 
 /// Experiment to extract out attributes that would be part of some theme of an app/view
 
-public enum ThemeColorTag: String {
-  case controlBackgroundColor
-  case controlForegroundColor
-  case textColor
-}
-
 public struct Theme: Equatable {
 
   public let controlBackgroundColor: Color
@@ -20,6 +14,12 @@ public struct Theme: Equatable {
 
   public let formatter: NumberFormatter
 
+  public enum ColorTag: String {
+    case controlBackgroundColor
+    case controlForegroundColor
+    case textColor
+  }
+
   public init(bundle: Bundle? = nil, valueFormatter: NumberFormatter? = nil) {
     controlBackgroundColor = Self.color(.controlBackgroundColor, from: bundle, default: .init(hex: "333333"))
     controlForegroundColor = Self.color(.controlForegroundColor, from: bundle, default: .init(hex: "FF9500"))
@@ -29,7 +29,7 @@ public struct Theme: Equatable {
 
   func format(value: Double) -> String { formatter.string(from: NSNumber(value: value)) ?? "NaN" }
 
-  private static func color(_ tag: ThemeColorTag, from bundle: Bundle?, default: Color) -> Color {
+  private static func color(_ tag: ColorTag, from bundle: Bundle?, default: Color) -> Color {
     bundle != nil ? Color(tag.rawValue, bundle: bundle) : `default`
   }
 

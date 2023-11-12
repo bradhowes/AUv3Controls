@@ -14,9 +14,42 @@ extension Color {
    - parameter hex: the color specification to decode
    */
   init(hex: String) {
-    let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+    self.init(hex: Substring(hex))
+  }
+
+  /**
+   Create new Color instance with color components taken from hex color specification. Supports
+
+   - 3-characters (12-bit RGB) with 4 bits per RGB channel
+   - 6-characters (24-bit RGB) with 8 bits per RGB channel
+   - 8-characters (32-bit ARGB) with 8 bits per RGB channel + alpha
+
+   - parameter hex: the color specification to decode
+   */
+  init(hex: Substring) {
+
+    func dropPrefix(_ hex: Substring) -> Substring {
+      var hex = hex
+      while hex.first == " " {
+        hex = hex.dropFirst()
+      }
+      if hex.first == "#" {
+        return hex.dropFirst()
+      } else if hex.first == "0" && hex.dropFirst().first == "x" {
+        return hex.dropFirst(2)
+      }
+      return hex
+    }
+
+    let hex = String(dropPrefix(hex))
+    let scanner = Scanner(string: hex)
+
     var int: UInt64 = 0
-    Scanner(string: hex).scanHexInt64(&int)
+    guard scanner.scanHexInt64(&int) else {
+      self.init(.sRGB, red: 0, green: 0, blue: 0, opacity: 1)
+      return
+    }
+
     let alpha, red, green, blue: UInt64
     switch hex.count {
     case 3: // RGB (12-bit)

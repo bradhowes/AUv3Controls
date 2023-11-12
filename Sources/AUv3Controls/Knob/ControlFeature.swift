@@ -17,11 +17,6 @@ struct ControlFeature: Reducer {
     var track: TrackFeature.State
     var title: TitleFeature.State
 
-    init(track: TrackFeature.State, title: TitleFeature.State) {
-      self.track = track
-      self.title = title
-    }
-
     init(config: KnobConfig) {
       self.track = .init(norm: config.valueToNorm(Double(config.parameter.value)))
       self.title = .init()
@@ -42,12 +37,14 @@ struct ControlFeature: Reducer {
     }
     Reduce { state, action in
       switch action {
+
       case let .track(trackAction):
         switch trackAction {
+
         case .dragChanged:
           let value = config.normToValue(state.track.norm)
-          return titleFeature.reduce(into: &state.title, action: .valueChanged(value))
-            .map { Action.title($0) }
+          return titleFeature.updateValue(state: &state.title, value: value).map(Action.title)
+
         case .dragEnded:
             return .none
         }
@@ -55,6 +52,15 @@ struct ControlFeature: Reducer {
         return .none
       }
     }
+  }
+}
+
+extension ControlFeature {
+
+  func updateValue(state: inout State, value: Double) -> Effect<Action> {
+    state.track.norm = config.valueToNorm(value)
+    return titleFeature.updateValue(state: &state.title, value: value)
+      .map(Action.title)
   }
 }
 

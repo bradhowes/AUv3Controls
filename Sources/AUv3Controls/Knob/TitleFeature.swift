@@ -24,13 +24,7 @@ struct TitleFeature: Reducer {
     switch action {
 
     case let .valueChanged(value):
-      state.formattedValue = config.formattedValue(value)
-      let duration: Duration = .seconds(config.showValueDuration)
-      let clock = self.clock
-      return .run { send in
-        try await clock.sleep(for: duration)
-        await send(.stoppedShowingValue)
-      }.cancellable(id: CancelID.showingValueTask, cancelInFlight: true)
+      return updateValue(state: &state, value: value)
 
     case .stoppedShowingValue:
       state.formattedValue = nil
@@ -39,6 +33,19 @@ struct TitleFeature: Reducer {
     case .tapped:
       return .cancel(id: CancelID.showingValueTask)
     }
+  }
+}
+
+extension TitleFeature {
+
+  func updateValue(state: inout State, value: Double) -> Effect<TitleFeature.Action> {
+    state.formattedValue = config.formattedValue(value)
+    let duration: Duration = .seconds(config.showValueDuration)
+    let clock = self.clock
+    return .run { send in
+      try await clock.sleep(for: duration)
+      await send(.stoppedShowingValue)
+    }.cancellable(id: CancelID.showingValueTask, cancelInFlight: true)
   }
 }
 

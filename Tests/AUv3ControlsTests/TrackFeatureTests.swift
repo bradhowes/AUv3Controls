@@ -78,6 +78,8 @@ final class TrackFeatureTests: XCTestCase {
     }
   }
   
+#if os(iOS)
+
   func testIndicatorAtMininum() async throws {
     struct MyView: SwiftUI.View {
       let config: KnobConfig
@@ -150,4 +152,13 @@ final class TrackFeatureTests: XCTestCase {
     assertSnapshot(of: view, as: .image(layout: .fixed(width: 220, height: 220),
                                         traits: .init(userInterfaceStyle: .dark)))
   }
+
+  func testPreview() async throws {
+    let view = TrackViewPreview.previews
+    assertSnapshot(of: view, as: .image(layout: .fixed(width: 220, height: 220),
+                                        traits: .init(userInterfaceStyle: .dark)))
+  }
+
+#endif
+
 }

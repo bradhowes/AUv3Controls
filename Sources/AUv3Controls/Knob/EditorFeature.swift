@@ -24,7 +24,7 @@ struct EditorFeature: Reducer {
     case binding(BindingAction<State>)
     case cancelButtonTapped
     case clearButtonTapped
-    case editing(Double)
+    case start(Double)
     case valueChanged(String)
   }
 
@@ -45,15 +45,22 @@ struct EditorFeature: Reducer {
       state.value = ""
       return .none
 
-    case let .editing(value):
-      state.value = config.formattedValue(value)
-      state.focus = .value
-      return .none
+    case .start(let value):
+      return start(state: &state, value: value)
 
     case let .valueChanged(newValue):
       state.value = newValue
       return .none
     }
+  }
+}
+
+extension EditorFeature {
+
+  func start(state: inout State, value: Double) -> Effect<Action> {
+    state.value = config.formattedValue(value)
+    state.focus = .value
+    return .none
   }
 }
 

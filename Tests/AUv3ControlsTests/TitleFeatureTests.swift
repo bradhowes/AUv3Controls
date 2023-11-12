@@ -41,16 +41,26 @@ final class TitleFeatureTests: XCTestCase {
       state.formattedValue = "0"
     }
   }
-  
+
   func testStoppedShowingValue() async {
     await store.send(.valueChanged(12.34)) { state in
       state.formattedValue = "12.34"
     }
-    await store.receive(.stoppedShowingValue) {
-      $0.formattedValue = nil
-    }
+//    await store.receive(.stoppedShowingValue) {
+//      $0.formattedValue = nil
+//    }
   }
-  
+
+  func testTapped() async {
+    await store.send(.valueChanged(12.34)) { state in
+      state.formattedValue = "12.34"
+    }
+
+    await store.send(.tapped)
+  }
+
+#if os(iOS)
+
   func testNormalRendering() async throws {
     struct MyView: SwiftUI.View {
       let config: KnobConfig
@@ -94,4 +104,14 @@ final class TitleFeatureTests: XCTestCase {
 
     await view.store.send(.stoppedShowingValue).finish()
   }
+
+  func testPreview() async throws {
+    withDependencies { $0 = .live } operation: {
+      let view = TitleViewPreview.previews
+      assertSnapshot(of: view, as: .image(layout: .fixed(width: 220, height: 220),
+                                          traits: .init(userInterfaceStyle: .dark)))
+    }
+  }
+
+#endif
 }

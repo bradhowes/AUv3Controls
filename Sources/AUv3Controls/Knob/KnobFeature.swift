@@ -42,8 +42,8 @@ struct KnobFeature: Reducer {
         case let .title(titleAction):
           switch titleAction {
           case .tapped:
-            return editor.reduce(into: &state.editor, action: .editing(config.normToValue(state.control.track.norm)))
-              .map { Action.editor($0) }
+            let value = config.normToValue(state.control.track.norm)
+            return editor.start(state: &state.editor, value: value).map(Action.editor)
           default:
             return .none
           }
@@ -53,10 +53,8 @@ struct KnobFeature: Reducer {
       case let .editor(editorAction):
         switch editorAction {
         case .acceptButtonTapped:
-          if let newValue = Double(state.editor.value) {
-            state.control.track.norm = config.valueToNorm(newValue)
-            return control.reduce(into: &state.control, action: .title(.valueChanged(newValue)))
-              .map { Action.control($0) }
+          if let value = Double(state.editor.value) {
+            return control.updateValue(state: &state.control, value: value).map(Action.control)
           }
           return .none
         default:

@@ -7,6 +7,7 @@ public extension AUParameter {
    Holds the result of `startObserving` on an AUParameter.
    */
   struct ObservationState {
+
     /// The observer token. Use in future call to `removeParameterObserver` when done observing.
     let observerToken: AUParameterObserverToken
     /// The stream of observed values.
