@@ -102,10 +102,11 @@ struct EditorView: View {
           .foregroundColor(config.theme.textColor)
         }
       }
+      .padding()
+      .background(.quaternary)
+      .clipShape(RoundedRectangle(cornerRadius: 12))
+      .bind(viewStore.$focus, to: self.$focus)
     }
-    .padding()
-    .background(.quaternary)
-    .clipShape(RoundedRectangle(cornerRadius: 12))
   }
 }
 

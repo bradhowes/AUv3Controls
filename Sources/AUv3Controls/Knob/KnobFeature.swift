@@ -74,18 +74,28 @@ struct KnobView: View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
       ZStack {
         ControlView(store: store.scope(state: \.control, action: { .control($0) }), config: config)
-          .opacity(viewStore.editor.focus != nil ? 0.0 : 1.0)
-          .scaleEffect(viewStore.editor.focus != nil ? 0.0 : 1.0)
+          .controlVisible(viewStore.editor.focus)
         EditorView(store: store.scope(state: \.editor, action: { .editor($0) }), config: config)
-          .opacity(viewStore.editor.focus == nil ? 0.0 : 1.0)
-          .scaleEffect(viewStore.editor.focus == nil ? 0.0 : 1.0)
+          .editorVisible(viewStore.editor.focus)
       }
       .frame(maxWidth: config.controlWidthIf(viewStore.editor.focus), maxHeight: config.maxHeight)
       .frame(width: config.controlWidthIf(viewStore.editor.focus), height: config.maxHeight)
       .id(config.parameter.address)
       .animation(.linear, value: viewStore.editor.focus != nil)
-      // .task { await viewStore.send(.viewAppeared).finish() }
     }
+  }
+}
+
+private extension View {
+
+  func controlVisible(_ field: EditorFeature.State.Field?) -> some View {
+    self.opacity(field != nil ? 0.0 : 1.0)
+      .scaleEffect(field != nil ? 0.0 : 1.0)
+  }
+
+  func editorVisible(_ field: EditorFeature.State.Field?) -> some View {
+    self.opacity(field == nil ? 0.0 : 1.0)
+      .scaleEffect(field == nil ? 0.0 : 1.0)
   }
 }
 
