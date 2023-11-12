@@ -2,7 +2,6 @@ PLATFORM_IOS = iOS Simulator,name=iPhone 14 Pro
 PLATFORM_MACOS = macOS
 PLATFORM_TVOS = tvOS Simulator,name=Apple TV 4K (3rd generation) (at 1080p)
 TARGET = AUv3Controls
-DOCC_DIR = ./docs
 QUIET = -quiet
 WORKSPACE = $(PWD)/.workspace
 
@@ -32,7 +31,6 @@ build-ios: resolve-deps
 
 test-ios: build-ios
 	xcodebuild test-without-building \
-		$(QUIET) \
 		-clonedSourcePackagesDirPath "$(WORKSPACE)" \
 		-scheme $(TARGET) \
 		-derivedDataPath "$(PWD)/.DerivedData-ios" \
@@ -50,7 +48,6 @@ build-tvos: resolve-deps
 
 test-tvos: build-tvos
 	xcodebuild test-without-building \
-		$(QUIET) \
 		-clonedSourcePackagesDirPath "$(WORKSPACE)" \
 		-scheme $(TARGET) \
 		-derivedDataPath "$(PWD)/.DerivedData-tvos" \
@@ -67,7 +64,6 @@ build-macos: resolve-deps
 
 test-macos: build-macos
 	xcodebuild test-without-building \
-		$(QUIET) \
 		-clonedSourcePackagesDirPath "$(WORKSPACE)" \
 		-scheme $(TARGET) \
 		-derivedDataPath "$(PWD)/.DerivedData-macos" \

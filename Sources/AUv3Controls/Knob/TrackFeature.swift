@@ -1,12 +1,10 @@
 import AVFoundation
-import Clocks
 import ComposableArchitecture
 import SwiftUI
 
-
 struct TrackFeature: Reducer {
   let config: KnobConfig
-  
+
   struct State: Equatable {
     var norm: Double
     var lastDrag: CGPoint?
@@ -18,22 +16,19 @@ struct TrackFeature: Reducer {
   }
 
   func reduce(into state: inout State, action: Action) -> Effect<Action> {
+
+    func calcNorm(last: CGPoint, position: CGPoint) -> Double {
+      (state.norm + config.dragChangeValue(last: last, position: position)).clamped(to: 0.0...1.0)
+    }
+
     switch action {
     case let .dragChanged(start, position):
-      print("dragChanged:", start, position)
-      let newNorm = (state.norm +
-                     config.dragChangeValue(last: state.lastDrag ?? start, position: position))
-        .clamped(to: 0.0...1.0)
-      state.norm = newNorm
+      state.norm = calcNorm(last: state.lastDrag ?? start, position: position)
       state.lastDrag = position
       return .none
 
     case let .dragEnded(start, position):
-      print("dragEnded:", start, position)
-      let newNorm = (state.norm +
-                     config.dragChangeValue(last: state.lastDrag ?? start, position: position))
-        .clamped(to: 0.0...1.0)
-      state.norm = newNorm
+      state.norm = calcNorm(last: state.lastDrag ?? start, position: position)
       state.lastDrag = nil
       return .none
     }
@@ -43,26 +38,17 @@ struct TrackFeature: Reducer {
 struct TrackView: View {
   let store: StoreOf<TrackFeature>
   let config: KnobConfig
-  
+
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
       Rectangle()
         .fill(.background)
         .frame(width: config.controlDiameter, height: config.controlDiameter)
         .overlay {
-          Circle()
-            .rotation(.degrees(-270))
-            .trim(from: config.indicatorStartAngle.normalized,
-                  to: config.indicatorEndAngle.normalized)
-            .stroke(config.theme.controlBackgroundColor,
-                    style: StrokeStyle(lineWidth: 2, lineCap: .round))
-            .frame(width: config.controlDiameter, height: config.controlDiameter, alignment: .center)
-          Circle()
-            .rotation(.degrees(-270))
-            .trim(from: config.indicatorStartAngle.normalized, to: config.normToTrim(viewStore.norm))
-            .stroke(config.theme.controlForegroundColor,
-                    style: StrokeStyle(lineWidth: config.indicatorStrokeWidth, lineCap: .round))
-            .frame(width: config.controlDiameter, height: config.controlDiameter, alignment: .center)
+          rotatedCircle
+            .trackStroke(config: config)
+          rotatedCircle
+            .indicatorStroke(config: config, norm: viewStore.norm)
         }
         .gesture(DragGesture(minimumDistance: 0.0, coordinateSpace: .local)
           .onChanged { value in
@@ -73,8 +59,28 @@ struct TrackView: View {
           })
     }
   }
+
+  var rotatedCircle: some Shape {
+    Circle()
+      .rotation(.degrees(-270))
+  }
 }
 
+private extension Shape {
+
+  func trackStroke(config: KnobConfig) -> some View {
+    self.trim(from: config.indicatorStartAngle.normalized, to: config.indicatorEndAngle.normalized)
+      .stroke(config.theme.controlBackgroundColor, style: StrokeStyle(lineWidth: 2, lineCap: .round))
+      .frame(width: config.controlDiameter, height: config.controlDiameter, alignment: .center)
+  }
+
+  func indicatorStroke(config: KnobConfig, norm: Double) -> some View {
+    self.trim(from: config.indicatorStartAngle.normalized, to: config.normToTrim(norm))
+      .stroke(config.theme.controlForegroundColor, style: StrokeStyle(lineWidth: config.indicatorStrokeWidth,
+                                                                      lineCap: .round))
+      .frame(width: config.controlDiameter, height: config.controlDiameter, alignment: .center)
+  }
+}
 
 struct TrackViewPreview: PreviewProvider {
   static let param = AUParameterTree.createParameter(withIdentifier: "RELEASE", name: "Release", address: 1,

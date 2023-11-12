@@ -1,8 +1,6 @@
 import AVFoundation
-import Clocks
 import ComposableArchitecture
 import SwiftUI
-
 
 struct ControlFeature: Reducer {
   let config: KnobConfig
@@ -14,7 +12,7 @@ struct ControlFeature: Reducer {
     self.trackFeature = TrackFeature(config: config)
     self.titleFeature = TitleFeature(config: config)
   }
-  
+
   struct State: Equatable {
     var track: TrackFeature.State
     var title: TitleFeature.State
@@ -29,12 +27,12 @@ struct ControlFeature: Reducer {
       self.title = .init()
     }
   }
-  
+
   enum Action: Equatable, Sendable {
     case track(TrackFeature.Action)
     case title(TitleFeature.Action)
   }
-  
+
   var body: some Reducer<State, Action> {
     Scope(state: \.track, action: /Action.track) {
       trackFeature
@@ -48,7 +46,7 @@ struct ControlFeature: Reducer {
         switch trackAction {
         case .dragChanged:
           let value = config.normToValue(state.track.norm)
-          return titleFeature.reduce(into: &state.title, action: .valueChanged(config.normToValue(value)))
+          return titleFeature.reduce(into: &state.title, action: .valueChanged(value))
             .map { Action.title($0) }
         case .dragEnded:
             return .none
@@ -63,7 +61,7 @@ struct ControlFeature: Reducer {
 struct ControlView: View {
   let store: StoreOf<ControlFeature>
   let config: KnobConfig
-  
+
   var body: some View {
     VStack(spacing: 0.0) {
       TrackView(store: store.scope(state: \.track, action: { .track($0) }), config: config)
@@ -80,9 +78,8 @@ struct ControlViewPreview: PreviewProvider {
   @State static var store = Store(initialState: ControlFeature.State(config: config)) {
     ControlFeature(config: config)
   }
-    
+
   static var previews: some View {
     ControlView(store: store, config: config)
   }
 }
-

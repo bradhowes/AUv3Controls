@@ -3,7 +3,7 @@ import SwiftUI
 
 public struct KnobConfig: Equatable {
   let parameter: AUParameter
-  
+
   let minTrim: CGFloat = 0.11111115 // Use non-zero value to leave a tiny circle at "zero"
   var maxTrim: CGFloat { 1 - minTrim }
 

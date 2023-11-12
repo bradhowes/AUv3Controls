@@ -1,11 +1,10 @@
 import AVFoundation
-import Clocks
 import ComposableArchitecture
 import SwiftUI
 
 struct EditorFeature: Reducer {
   let config: KnobConfig
-  
+
   struct State: Equatable {
     var value: String
     @BindingState var focus: Field?
@@ -62,7 +61,7 @@ struct EditorView: View {
   let store: StoreOf<EditorFeature>
   let config: KnobConfig
   @FocusState var focus: EditorFeature.State.Field?
-  
+
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
       VStack(alignment: .center, spacing: 12) {
@@ -79,8 +78,8 @@ struct EditorView: View {
               .disableAutocorrection(true)
               .textFieldStyle(.roundedBorder)
 #elseif os(macOS)
-            TextField("", text: viewStore.binding(get: \.formattedValue, send: { .textChanged($0) }))
-              .focused($focusedField, equals: .value)
+            TextField(viewStore.value, text: viewStore.binding(get: \.value, send: { .valueChanged($0) }))
+              .focused(self.$focus, equals: .value)
               .onSubmit { viewStore.send(.acceptButtonTapped, animation: .linear) }
               .textFieldStyle(.roundedBorder)
 #endif
@@ -96,7 +95,6 @@ struct EditorView: View {
           }
           .buttonStyle(.bordered)
           .foregroundColor(config.theme.textColor)
-          
           Button(action: { viewStore.send(.cancelButtonTapped, animation: .linear) }) {
             Text("Cancel")
           }
@@ -119,7 +117,7 @@ struct EditorViewPreview: PreviewProvider {
   @State static var store = Store(initialState: EditorFeature.State()) {
     EditorFeature(config: config)
   }
-    
+
   static var previews: some View {
     EditorView(store: store, config: config)
   }

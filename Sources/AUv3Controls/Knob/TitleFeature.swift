@@ -19,19 +19,16 @@ struct TitleFeature: Reducer {
   }
 
   @Dependency(\.continuousClock) var clock
-  
+
   func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
 
     case let .valueChanged(value):
-      print(".valueChanged", value)
       state.formattedValue = config.formattedValue(value)
       let duration: Duration = .seconds(config.showValueDuration)
       let clock = self.clock
       return .run { send in
-        print(".run before sleep")
         try await clock.sleep(for: duration)
-        print(".run after sleep")
         await send(.stoppedShowingValue)
       }.cancellable(id: CancelID.showingValueTask, cancelInFlight: true)
 
@@ -78,7 +75,7 @@ struct TitleViewPreview: PreviewProvider {
   @State static var store = Store(initialState: TitleFeature.State()) {
     TitleFeature(config: config)
   }
-    
+
   static var previews: some View {
     TitleView(store: store, config: config)
       .task { store.send(.valueChanged(1.24)) }

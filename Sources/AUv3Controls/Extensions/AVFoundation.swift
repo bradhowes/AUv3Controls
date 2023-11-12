@@ -12,7 +12,7 @@ public extension AUParameter {
       self.stream = stream
     }
   }
-  
+
   /// Obtain a stream of value changes from a parameter, presumably changed by another entity such as a MIDI
   /// connection.
   func startObserving() -> ObservationState {

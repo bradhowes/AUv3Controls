@@ -5,6 +5,8 @@ disabled_rules:
   - multiple_closures_with_trailing_closure
   - cyclomatic_complexity
   - function_body_length
+  - nesting
+  - comment_spacing
 
 included: # paths to include during linting. `--path` is ignored if present.
   - Sources
