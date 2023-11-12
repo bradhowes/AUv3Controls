@@ -16,6 +16,7 @@ final class TitleFeatureTests: XCTestCase {
   var store: TestStore<TitleFeature.State, TitleFeature.Action>!
   
   override func setUpWithError() throws {
+    isRecording = false
     config = KnobConfig(parameter: param, logScale: false, theme: Theme())
     store = TestStore(initialState: .init()) {
       TitleFeature(config: config)
@@ -64,12 +65,9 @@ final class TitleFeatureTests: XCTestCase {
       TitleFeature(config: config)
     })
     
-#if os(iOS)
-    assertSnapshot(
-      of: view,
-      as: .image(layout: .device(config: .iPhoneSe), traits: .init(userInterfaceStyle: .dark)))
-#endif
-    
+    assertSnapshot(of: view, as: .image(layout: .fixed(width: 220, height: 220),
+                                        traits: .init(userInterfaceStyle: .dark)))
+
     view.store.send(.stoppedShowingValue)
   }
   
@@ -91,12 +89,9 @@ final class TitleFeatureTests: XCTestCase {
     
     view.store.send(.valueChanged(12.34))
     
-#if os(iOS)
-    assertSnapshot(
-      of: view,
-      as: .image(layout: .device(config: .iPhoneSe), traits: .init(userInterfaceStyle: .dark)))
-#endif
-    
+    assertSnapshot(of: view, as: .image(layout: .fixed(width: 220, height: 220),
+                                        traits: .init(userInterfaceStyle: .dark)))
+
     await view.store.send(.stoppedShowingValue).finish()
   }
 }

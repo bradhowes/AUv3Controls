@@ -21,6 +21,7 @@ final class TrackFeatureTests: XCTestCase {
   }
   
   override func setUpWithError() throws {
+    isRecording = false
     config = KnobConfig(parameter: param, logScale: false, theme: Theme())
     makeStore()
   }
@@ -91,11 +92,8 @@ final class TrackFeatureTests: XCTestCase {
       TrackFeature(config: config)
     })
     
-#if os(iOS)
-    assertSnapshot(
-      of: view,
-      as: .image(layout: .device(config: .iPhoneSe), traits: .init(userInterfaceStyle: .dark)))
-#endif
+    assertSnapshot(of: view, as: .image(layout: .fixed(width: 220, height: 220),
+                                        traits: .init(userInterfaceStyle: .dark)))
   }
   
   func testIndicatorAtMiddle() async throws {
@@ -112,11 +110,8 @@ final class TrackFeatureTests: XCTestCase {
       TrackFeature(config: config)
     })
     
-#if os(iOS)
-    assertSnapshot(
-      of: view,
-      as: .image(layout: .device(config: .iPhoneSe), traits: .init(userInterfaceStyle: .dark)))
-#endif
+    assertSnapshot(of: view, as: .image(layout: .fixed(width: 220, height: 220),
+                                        traits: .init(userInterfaceStyle: .dark)))
   }
   
   func testIndicatorAtMaximum() async throws {
@@ -133,11 +128,8 @@ final class TrackFeatureTests: XCTestCase {
       TrackFeature(config: config)
     })
     
-#if os(iOS)
-    assertSnapshot(
-      of: view,
-      as: .image(layout: .device(config: .iPhoneSe), traits: .init(userInterfaceStyle: .dark)))
-#endif
+    assertSnapshot(of: view, as: .image(layout: .fixed(width: 220, height: 220),
+                                        traits: .init(userInterfaceStyle: .dark)))
   }
   
   func testIndicatorStrokeWidth() async throws {
@@ -155,12 +147,7 @@ final class TrackFeatureTests: XCTestCase {
       TrackFeature(config: config)
     })
     
-#if os(iOS)
-    assertSnapshot(
-      of: view,
-      as: .image(layout: .device(config: .iPhoneSe), traits: .init(userInterfaceStyle: .dark)))
-#endif
+    assertSnapshot(of: view, as: .image(layout: .fixed(width: 220, height: 220),
+                                        traits: .init(userInterfaceStyle: .dark)))
   }
-
-
 }

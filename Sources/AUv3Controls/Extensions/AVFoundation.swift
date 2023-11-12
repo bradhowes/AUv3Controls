@@ -3,8 +3,13 @@ import AVFoundation
 
 public extension AUParameter {
 
+  /**
+   Holds the result of `startObserving` on an AUParameter.
+   */
   struct ObservationState {
+    /// The observer token. Use in future call to `removeParameterObserver` when done observing.
     let observerToken: AUParameterObserverToken
+    /// The stream of observed values.
     let stream: AsyncStream<AUValue>
 
     public init(observerToken: AUParameterObserverToken, stream: AsyncStream<AUValue>) {
@@ -15,6 +20,7 @@ public extension AUParameter {
 
   /// Obtain a stream of value changes from a parameter, presumably changed by another entity such as a MIDI
   /// connection.
+  /// - returns: ObservationState that holds a token for cancelling the observation and the stream of changes
   func startObserving() -> ObservationState {
     let (stream, continuation) = AsyncStream<AUValue>.makeStream(bufferingPolicy: .bufferingNewest(1))
 

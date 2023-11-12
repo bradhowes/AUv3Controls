@@ -28,7 +28,7 @@ let package = Package(
         .product(name: "ComposableArchitecture", package: "swift-composable-architecture")
       ],
       swiftSettings: [
-        /// Xcode 14:j
+        /// Xcode 14
         SwiftSetting.unsafeFlags(["-Xfrontend", "-strict-concurrency=complete"]),
         /// Xcode 15. Remove `=targeted` to use the default `complete`.
         .enableExperimentalFeature("StrictConcurrency=complete")
