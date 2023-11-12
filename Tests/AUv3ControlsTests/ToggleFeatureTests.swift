@@ -34,7 +34,6 @@ final class ToggleFeatureTests: XCTestCase {
   }
 
   func testToggleObservations() async {
-    print("begin")
     store.exhaustivity = .off
     await store.send(.viewAppeared)
     store.exhaustivity = .on
@@ -44,10 +43,14 @@ final class ToggleFeatureTests: XCTestCase {
       $0.isOn = true
     }
 
+    param.setValue(0.0, originator: nil)
+    await store.receive(.observedValueChanged(0.0)) {
+      $0.isOn = false
+    }
+
     await store.send(.observationStopped) {
       $0.observerToken = nil
     }
-    print("done")
   }
 
   func testToggling() async {
@@ -84,8 +87,7 @@ final class ToggleFeatureTests: XCTestCase {
       ToggleFeature()
     })
 
-    assertSnapshot(of: view, as: .image(layout: .fixed(width: 220, height: 220),
-                                        traits: .init(userInterfaceStyle: .dark)))
+    try assertSnapshot(matching: view)
 
     await view.store.send(.observationStopped).finish()
   }
@@ -103,8 +105,7 @@ final class ToggleFeatureTests: XCTestCase {
       ToggleFeature()
     })
 
-    assertSnapshot(of: view, as: .image(layout: .fixed(width: 220, height: 220),
-                                        traits: .init(userInterfaceStyle: .dark)))
+    try assertSnapshot(matching: view)
 
     await view.store.send(.observationStopped).finish()
   }
@@ -112,8 +113,7 @@ final class ToggleFeatureTests: XCTestCase {
 
   func testToggleViewPreview() async throws {
     let view = ToggleViewPreview.previews
-    assertSnapshot(of: view, as: .image(layout: .fixed(width: 220, height: 220),
-                                        traits: .init(userInterfaceStyle: .dark)))
+    try assertSnapshot(matching: view)
   }
 
 #endif

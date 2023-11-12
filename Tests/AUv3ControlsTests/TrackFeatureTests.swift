@@ -94,8 +94,7 @@ final class TrackFeatureTests: XCTestCase {
       TrackFeature(config: config)
     })
     
-    assertSnapshot(of: view, as: .image(layout: .fixed(width: 220, height: 220),
-                                        traits: .init(userInterfaceStyle: .dark)))
+    try assertSnapshot(matching: view)
   }
   
   func testIndicatorAtMiddle() async throws {
@@ -112,8 +111,7 @@ final class TrackFeatureTests: XCTestCase {
       TrackFeature(config: config)
     })
     
-    assertSnapshot(of: view, as: .image(layout: .fixed(width: 220, height: 220),
-                                        traits: .init(userInterfaceStyle: .dark)))
+    try assertSnapshot(matching: view)
   }
   
   func testIndicatorAtMaximum() async throws {
@@ -130,8 +128,7 @@ final class TrackFeatureTests: XCTestCase {
       TrackFeature(config: config)
     })
     
-    assertSnapshot(of: view, as: .image(layout: .fixed(width: 220, height: 220),
-                                        traits: .init(userInterfaceStyle: .dark)))
+    try assertSnapshot(matching: view)
   }
   
   func testIndicatorStrokeWidth() async throws {
@@ -149,14 +146,12 @@ final class TrackFeatureTests: XCTestCase {
       TrackFeature(config: config)
     })
     
-    assertSnapshot(of: view, as: .image(layout: .fixed(width: 220, height: 220),
-                                        traits: .init(userInterfaceStyle: .dark)))
+    try assertSnapshot(matching: view)
   }
 
   func testPreview() async throws {
     let view = TrackViewPreview.previews
-    assertSnapshot(of: view, as: .image(layout: .fixed(width: 220, height: 220),
-                                        traits: .init(userInterfaceStyle: .dark)))
+    try assertSnapshot(matching: view)
   }
 
 #endif

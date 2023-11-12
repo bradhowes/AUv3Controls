@@ -75,8 +75,7 @@ final class TitleFeatureTests: XCTestCase {
       TitleFeature(config: config)
     })
     
-    assertSnapshot(of: view, as: .image(layout: .fixed(width: 220, height: 220),
-                                        traits: .init(userInterfaceStyle: .dark)))
+    try assertSnapshot(matching: view)
 
     view.store.send(.stoppedShowingValue)
   }
@@ -99,17 +98,15 @@ final class TitleFeatureTests: XCTestCase {
     
     view.store.send(.valueChanged(12.34))
     
-    assertSnapshot(of: view, as: .image(layout: .fixed(width: 220, height: 220),
-                                        traits: .init(userInterfaceStyle: .dark)))
+    try assertSnapshot(matching: view)
 
     await view.store.send(.stoppedShowingValue).finish()
   }
 
   func testPreview() async throws {
-    withDependencies { $0 = .live } operation: {
+    try withDependencies { $0 = .live } operation: {
       let view = TitleViewPreview.previews
-      assertSnapshot(of: view, as: .image(layout: .fixed(width: 220, height: 220),
-                                          traits: .init(userInterfaceStyle: .dark)))
+      try assertSnapshot(matching: view)
     }
   }
 

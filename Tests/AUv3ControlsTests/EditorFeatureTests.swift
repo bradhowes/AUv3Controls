@@ -88,15 +88,13 @@ final class EditorFeatureTests: XCTestCase {
 
     view.store.send(.valueChanged("12.34"))
 
-    assertSnapshot(of: view, as: .image(layout: .fixed(width: 220, height: 220),
-                                        traits: .init(userInterfaceStyle: .dark)))
+    try assertSnapshot(matching: view)
   }
 
   func testPreview() async throws {
-    withDependencies { $0 = .live } operation: {
+    try withDependencies { $0 = .live } operation: {
       let view = EditorViewPreview.previews
-      assertSnapshot(of: view, as: .image(layout: .fixed(width: 220, height: 220),
-                                          traits: .init(userInterfaceStyle: .dark)))
+      try assertSnapshot(matching: view)
     }
   }
 
