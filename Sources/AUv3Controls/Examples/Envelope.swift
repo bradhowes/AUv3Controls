@@ -63,12 +63,12 @@ struct EnvelopeView: View {
       ScrollView(.horizontal) {
         GroupBox(label: label) {
           HStack(spacing: 12) {
-            KnobView(store: delayStore, config: delayConfig, scrollViewProxy: proxy)
-            KnobView(store: attackStore, config: attackConfig, scrollViewProxy: proxy)
-            KnobView(store: holdStore, config: holdConfig, scrollViewProxy: proxy)
-            KnobView(store: decayStore, config: decayConfig, scrollViewProxy: proxy)
-            KnobView(store: sustainStore, config: sustainConfig, scrollViewProxy: proxy)
-            KnobView(store: releaseStore, config: releaseConfig, scrollViewProxy: proxy)
+            KnobView(store: delayStore, config: delayConfig, proxy: proxy)
+            KnobView(store: attackStore, config: attackConfig, proxy: proxy)
+            KnobView(store: holdStore, config: holdConfig, proxy: proxy)
+            KnobView(store: decayStore, config: decayConfig, proxy: proxy)
+            KnobView(store: sustainStore, config: sustainConfig, proxy: proxy)
+            KnobView(store: releaseStore, config: releaseConfig, proxy: proxy)
           }
           .padding(.bottom)
         }

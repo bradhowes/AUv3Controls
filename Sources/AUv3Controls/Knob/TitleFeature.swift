@@ -45,6 +45,7 @@ struct TitleFeature: Reducer {
 struct TitleView: View {
   let store: StoreOf<TitleFeature>
   let config: KnobConfig
+  let proxy: ScrollViewProxy?
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
@@ -61,7 +62,10 @@ struct TitleView: View {
       .font(config.theme.font)
       .foregroundColor(config.theme.textColor)
       .onTapGesture(count: 1, perform: {
-        store.send(.tapped, animation: .linear)
+        store.send(.tapped)
+        withAnimation {
+          proxy?.scrollTo(config.parameter.address, anchor: UnitPoint(x: 0.6, y: 0.5))
+        }
       })
     }
   }
@@ -77,7 +81,7 @@ struct TitleViewPreview: PreviewProvider {
   }
 
   static var previews: some View {
-    TitleView(store: store, config: config)
+    TitleView(store: store, config: config, proxy: nil)
       .task { store.send(.valueChanged(1.24)) }
   }
 }

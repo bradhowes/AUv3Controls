@@ -70,12 +70,12 @@ struct KnobFeature: Reducer {
 struct KnobView: View {
   let store: StoreOf<KnobFeature>
   let config: KnobConfig
-  let scrollViewProxy: ScrollViewProxy?
+  let proxy: ScrollViewProxy?
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
       ZStack {
-        ControlView(store: store.scope(state: \.control, action: { .control($0) }), config: config)
+        ControlView(store: store.scope(state: \.control, action: { .control($0) }), config: config, proxy: proxy)
           .controlVisible(viewStore.editor.focus)
         EditorView(store: store.scope(state: \.editor, action: { .editor($0) }), config: config)
           .editorVisible(viewStore.editor.focus)
@@ -111,6 +111,6 @@ struct KnobViewPreview: PreviewProvider {
   }
 
   static var previews: some View {
-    KnobView(store: store, config: config, scrollViewProxy: nil)
+    KnobView(store: store, config: config, proxy: nil)
   }
 }

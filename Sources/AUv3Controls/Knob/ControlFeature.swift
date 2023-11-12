@@ -61,11 +61,12 @@ struct ControlFeature: Reducer {
 struct ControlView: View {
   let store: StoreOf<ControlFeature>
   let config: KnobConfig
+  let proxy: ScrollViewProxy?
 
   var body: some View {
     VStack(spacing: 0.0) {
       TrackView(store: store.scope(state: \.track, action: { .track($0) }), config: config)
-      TitleView(store: store.scope(state: \.title, action: { .title($0) }), config: config)
+      TitleView(store: store.scope(state: \.title, action: { .title($0) }), config: config, proxy: proxy)
     }
   }
 }
@@ -80,6 +81,6 @@ struct ControlViewPreview: PreviewProvider {
   }
 
   static var previews: some View {
-    ControlView(store: store, config: config)
+    ControlView(store: store, config: config, proxy: nil)
   }
 }
