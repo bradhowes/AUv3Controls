@@ -24,20 +24,23 @@ struct TitleFeature: Reducer {
     switch action {
 
     case let .valueChanged(value):
+      print(".valueChanged", value)
       state.formattedValue = config.formattedValue(value)
       let duration: Duration = .seconds(config.showValueDuration)
       let clock = self.clock
       return .run { send in
+        print(".run before sleep")
         try await clock.sleep(for: duration)
+        print(".run after sleep")
         await send(.stoppedShowingValue)
       }.cancellable(id: CancelID.showingValueTask, cancelInFlight: true)
 
     case .stoppedShowingValue:
       state.formattedValue = nil
-      return .none
+      return .cancel(id: CancelID.showingValueTask)
 
     case .tapped:
-      return .none
+      return .cancel(id: CancelID.showingValueTask)
     }
   }
 }
