@@ -1,5 +1,7 @@
 [![CI](https://github.com/bradhowes/AUv3Controls/workflows/CI/badge.svg)](https://github.com/bradhowes/AUv3Controls)
 [![COV](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/bradhowes/09b95180719ff3c213d0d57a87f5202e/raw/AUv3Controls-coverage.json)](https://github.com/bradhowes/AUv3Controls/blob/main/.github/workflows/CI.yml)
+[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fbradhowes%2FAUv3Controls%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/bradhowes/AUv3Controls)
+[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fbradhowes%2FAUv3Controls%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/bradhowes/AUv3Controls)
 
 # AUv3Controls
 
