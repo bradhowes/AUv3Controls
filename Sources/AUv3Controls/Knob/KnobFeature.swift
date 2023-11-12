@@ -55,6 +55,8 @@ struct KnobFeature: Reducer {
         case .acceptButtonTapped:
           if let newValue = Double(state.editor.value) {
             state.control.track.norm = config.valueToNorm(newValue)
+            return control.reduce(into: &state.control, action: .title(.valueChanged(newValue)))
+              .map { Action.control($0) }
           }
           return .none
         default:
