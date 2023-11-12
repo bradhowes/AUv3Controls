@@ -51,8 +51,6 @@ final class ControlFeatureTests: XCTestCase {
     }
   }
 
-#if os(iOS)
-
   func testDragged() async throws {
     struct MyView: SwiftUI.View {
       let config: KnobConfig
@@ -80,6 +78,4 @@ final class ControlFeatureTests: XCTestCase {
       try assertSnapshot(matching: view)
     }
   }
-
-#endif
 }

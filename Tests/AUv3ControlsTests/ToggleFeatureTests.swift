@@ -72,8 +72,6 @@ final class ToggleFeatureTests: XCTestCase {
     }
   }
 
-#if os(iOS)
-
   func testOffRendering() async throws {
     struct MyView: SwiftUI.View {
       @State var store: StoreOf<ToggleFeature>
@@ -115,6 +113,4 @@ final class ToggleFeatureTests: XCTestCase {
     let view = ToggleViewPreview.previews
     try assertSnapshot(matching: view)
   }
-
-#endif
 }

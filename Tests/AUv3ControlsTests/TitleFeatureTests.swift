@@ -59,8 +59,6 @@ final class TitleFeatureTests: XCTestCase {
     await store.send(.tapped)
   }
 
-#if os(iOS)
-
   func testNormalRendering() async throws {
     struct MyView: SwiftUI.View {
       let config: KnobConfig
@@ -109,6 +107,4 @@ final class TitleFeatureTests: XCTestCase {
       try assertSnapshot(matching: view)
     }
   }
-
-#endif
 }

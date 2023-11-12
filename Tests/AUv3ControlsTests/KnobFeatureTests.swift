@@ -121,8 +121,6 @@ final class KnobFeatureTests: XCTestCase {
     }
   }
 
-#if os(iOS)
-
   func testChangedValue() async throws {
     struct MyView: SwiftUI.View {
       let config: KnobConfig
@@ -150,6 +148,4 @@ final class KnobFeatureTests: XCTestCase {
       try assertSnapshot(matching: view)
     }
   }
-
-#endif
 }

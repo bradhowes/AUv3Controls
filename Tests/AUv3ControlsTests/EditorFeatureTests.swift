@@ -68,8 +68,6 @@ final class EditorFeatureTests: XCTestCase {
     }
   }
 
-#if os(iOS)
-
   func testEditingValue() async throws {
     struct MyView: SwiftUI.View {
       let config: KnobConfig
@@ -97,6 +95,4 @@ final class EditorFeatureTests: XCTestCase {
       try assertSnapshot(matching: view)
     }
   }
-
-#endif
 }
