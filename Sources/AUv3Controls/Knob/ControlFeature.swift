@@ -53,7 +53,7 @@ struct ControlFeature: Reducer {
         case .dragEnded:
             return .none
         }
-      case let .title(titleAction):
+      case .title:
         return .none
       }
     }
