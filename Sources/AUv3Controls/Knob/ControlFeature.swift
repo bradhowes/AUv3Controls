@@ -2,18 +2,18 @@ import AVFoundation
 import ComposableArchitecture
 import SwiftUI
 
-struct ControlFeature: Reducer {
+public struct ControlFeature: Reducer {
   let config: KnobConfig
   let trackFeature: TrackFeature
   let titleFeature: TitleFeature
 
-  init(config: KnobConfig) {
+  public init(config: KnobConfig) {
     self.config = config
     self.trackFeature = TrackFeature(config: config)
     self.titleFeature = TitleFeature(config: config)
   }
 
-  struct State: Equatable {
+  public struct State: Equatable {
     var track: TrackFeature.State
     var title: TitleFeature.State
 
@@ -23,12 +23,12 @@ struct ControlFeature: Reducer {
     }
   }
 
-  enum Action: Equatable, Sendable {
+  public enum Action: Equatable, Sendable {
     case track(TrackFeature.Action)
     case title(TitleFeature.Action)
   }
 
-  var body: some Reducer<State, Action> {
+  public var body: some Reducer<State, Action> {
     Scope(state: \.track, action: /Action.track) {
       trackFeature
     }

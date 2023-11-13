@@ -3,37 +3,26 @@ import AVFoundation
 
 public extension AUParameter {
 
-  /**
-   Holds the result of `startObserving` on an AUParameter.
-   */
-  struct ObservationState {
-
-    /// The observer token. Use in future call to `removeParameterObserver` when done observing.
-    let observerToken: AUParameterObserverToken
-    /// The stream of observed values.
-    let stream: AsyncStream<AUValue>
-
-    public init(observerToken: AUParameterObserverToken, stream: AsyncStream<AUValue>) {
-      self.observerToken = observerToken
-      self.stream = stream
-    }
-  }
-
   /// Obtain a stream of value changes from a parameter, presumably changed by another entity such as a MIDI
   /// connection.
   /// - returns: ObservationState that holds a token for cancelling the observation and the stream of changes
-  func startObserving() -> ObservationState {
-    let (stream, continuation) = AsyncStream<AUValue>.makeStream(bufferingPolicy: .bufferingNewest(1))
+  func startObserving() -> (AUParameterObserverToken, AsyncStream<AUValue>) {
+    let (stream, continuation) = AsyncStream<AUValue>.makeStream()
 
-    // Monitor the parameter for value changes to itself and send them to the stream
-    let token = self.token(byAddingParameterObserver: { address, value in
-      if address == self.address {
-        print("observer saw value: \(value)")
+    let observerToken = self.token(byAddingParameterObserver: { address, value in
+      var lastSeen: AUValue?
+      if address == self.address && value != lastSeen {
+        lastSeen = value
         continuation.yield(value)
       }
     })
 
-    return .init(observerToken: token, stream: stream)
+    let displayName = self.displayName
+    continuation.onTermination = { value in
+      print(displayName, "continuation terminating", value)
+    }
+
+    return (observerToken, stream)
   }
 }
 

@@ -2,18 +2,23 @@ import AVFoundation
 import SwiftUI
 
 public struct KnobConfig: Equatable {
-  let parameter: AUParameter
+  public let theme: Theme
+  public let parameter: AUParameter
+
+  public var id: ObjectIdentifier { ObjectIdentifier(parameter) }
 
   let minTrim: CGFloat = 0.11111115 // Use non-zero value to leave a tiny circle at "zero"
   var maxTrim: CGFloat { 1 - minTrim }
 
-  var title: String
-  var minimumValue: Double
-  var maximumValue: Double
-  var logScale: Bool
+  public let title: String
+  public let minimumValue: Double
+  public let maximumValue: Double
+  public var range: ClosedRange<Double> { minimumValue...maximumValue }
 
-  var controlDiameter: CGFloat { didSet { updateDragScaling() } }
-  var controlRadius: CGFloat { controlDiameter / 2.0 }
+  public var logScale: Bool
+
+  public var controlDiameter: CGFloat { didSet { updateDragScaling() } }
+  public var controlRadius: CGFloat { controlDiameter / 2.0 }
 
   /// How much travel is need to change the knob from `minimumValue` to `maximumValue`.
   /// By default this is 1x the `controlSize` value. Setting it to 2 will require 2x the `controlSize` to go from
@@ -22,13 +27,11 @@ public struct KnobConfig: Equatable {
 
   var maxHeight: CGFloat
 
-  var indicatorStrokeWidth: CGFloat
-  var indicatorStartAngle = Angle(degrees: 40)
-  var indicatorEndAngle = Angle(degrees: 320)
+  public var indicatorStrokeWidth: CGFloat
+  public let indicatorStartAngle = Angle(degrees: 40)
+  public let indicatorEndAngle = Angle(degrees: 320)
 
-  var showValueDuration = 1.25
-
-  let theme: Theme
+  public var showValueDuration = 1.25
 
   /// Percentage of `controlDiameter` where a touch/mouse event will perform maximum value change. This defines a
   /// vertical region in the middle of the view. Events outside of this region will have finer sensitivity and control

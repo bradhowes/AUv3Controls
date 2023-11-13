@@ -35,7 +35,7 @@ final class ToggleFeatureTests: XCTestCase {
 
   func testToggleObservations() async {
     store.exhaustivity = .off
-    await store.send(.viewAppeared)
+    await store.send(.observationStart)
     store.exhaustivity = .on
 
     param.setValue(1.0, originator: nil)
@@ -55,7 +55,7 @@ final class ToggleFeatureTests: XCTestCase {
 
   func testToggling() async {
     store.exhaustivity = .off
-    await store.send(.viewAppeared)
+    await store.send(.observationStart)
 
     await store.send(.toggleTapped) {
       $0.isOn = true

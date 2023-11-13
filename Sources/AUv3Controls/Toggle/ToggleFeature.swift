@@ -5,7 +5,11 @@ import SwiftUI
 
 public struct ToggleFeature: Reducer {
 
-  public struct State: Equatable {
+  public init() {}
+
+  public struct State: Equatable, Identifiable {
+    public var id: ID { ObjectIdentifier(parameter) }
+
     public let parameter: AUParameter
     public var isOn: Bool
     public var observerToken: AUParameterObserverToken?
@@ -18,42 +22,41 @@ public struct ToggleFeature: Reducer {
   }
 
   public enum Action: Equatable, Sendable {
-    case observedValueChanged(AUValue)
+    case observationStart
     case observationStopped
+    case observedValueChanged(AUValue)
     case toggleTapped
-    case viewAppeared
   }
-
-  private enum CancelID { case observingParameterTask }
-
-  @Dependency(\.continuousClock) var clock
 
   public func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
 
+    case .observationStart:
+      let stream: AsyncStream<AUValue>
+      (state.observerToken, stream) = state.parameter.startObserving()
+      return .run { send in
+        for await value in stream {
+          await send(.observedValueChanged(value))
+        }
+        await send(.observationStopped)
+      }.cancellable(id: state.id, cancelInFlight: true)
+
+    case .observationStopped:
+      if let token = state.observerToken {
+        state.parameter.removeParameterObserver(token)
+        state.observerToken = nil
+      }
+      return .cancel(id: state.id)
+
     case let .observedValueChanged(value):
       state.isOn = value.asBool
       return .none
-
-    case .observationStopped:
-      state.observerToken = nil
-      return .cancel(id: CancelID.observingParameterTask)
 
     case .toggleTapped:
       state.isOn.toggle()
       state.parameter.setValue(state.isOn.asValue, originator: state.observerToken)
       return .none
 
-    case .viewAppeared:
-      let observationState = state.parameter.startObserving()
-      let stream = observationState.stream
-      state.observerToken = observationState.observerToken
-      return .run { send in
-        for await value in stream {
-          await send(.observedValueChanged(value))
-        }
-        await send(.observationStopped)
-      }.cancellable(id: CancelID.observingParameterTask, cancelInFlight: true)
     }
   }
 }
@@ -62,11 +65,16 @@ public struct ToggleView: View {
   let store: StoreOf<ToggleFeature>
   let theme: Theme
 
+  public init(store: StoreOf<ToggleFeature>, theme: Theme) {
+    self.store = store
+    self.theme = theme
+  }
+
   public var body: some View {
     WithViewStore(self.store, observe: { $0 }, content: { viewStore in
       Toggle(isOn: viewStore.binding(get: \.isOn, send: .toggleTapped)) { Text(viewStore.parameter.displayName) }
         .toggleStyle(.checked(theme: theme))
-        .task { await viewStore.send(.viewAppeared).finish() }
+        .task { viewStore.send(.observationStart) }
     })
   }
 }

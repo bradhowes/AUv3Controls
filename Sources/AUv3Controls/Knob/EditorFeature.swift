@@ -2,14 +2,14 @@ import AVFoundation
 import ComposableArchitecture
 import SwiftUI
 
-struct EditorFeature: Reducer {
+public struct EditorFeature: Reducer {
   let config: KnobConfig
 
-  struct State: Equatable {
+  public struct State: Equatable {
     var value: String
     @BindingState var focus: Field?
 
-    init() {
+    public init() {
       self.value = ""
       self.focus = nil
     }
@@ -19,7 +19,7 @@ struct EditorFeature: Reducer {
     }
   }
 
-  enum Action: BindableAction, Equatable, Sendable {
+  public enum Action: BindableAction, Equatable, Sendable {
     case acceptButtonTapped
     case binding(BindingAction<State>)
     case cancelButtonTapped
@@ -28,7 +28,7 @@ struct EditorFeature: Reducer {
     case valueChanged(String)
   }
 
-  func reduce(into state: inout State, action: Action) -> Effect<Action> {
+  public func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .acceptButtonTapped:
       state.focus = nil

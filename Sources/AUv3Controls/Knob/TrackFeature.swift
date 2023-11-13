@@ -2,20 +2,20 @@ import AVFoundation
 import ComposableArchitecture
 import SwiftUI
 
-struct TrackFeature: Reducer {
+public struct TrackFeature: Reducer {
   let config: KnobConfig
 
-  struct State: Equatable {
+  public struct State: Equatable {
     var norm: Double
     var lastDrag: CGPoint?
   }
 
-  enum Action: Equatable, Sendable {
+  public enum Action: Equatable, Sendable {
     case dragChanged(start: CGPoint, position: CGPoint)
     case dragEnded(start: CGPoint, position: CGPoint)
   }
 
-  func reduce(into state: inout State, action: Action) -> Effect<Action> {
+  public func reduce(into state: inout State, action: Action) -> Effect<Action> {
 
     func calcNorm(last: CGPoint, position: CGPoint) -> Double {
       (state.norm + config.dragChangeValue(last: last, position: position)).clamped(to: 0.0...1.0)

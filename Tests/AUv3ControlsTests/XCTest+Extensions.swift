@@ -17,7 +17,8 @@ extension XCTest {
   func assertSnapshot<V: SwiftUI.View>(matching: V, file: StaticString = #file, testName: String = #function,
                                        line: UInt = #line) throws {
     isRecording = false
-    try XCTSkipIf(ProcessInfo.processInfo.environment.keys.contains("GITHUB_JOB"), "GitHub CI")
+    let isOnGithub = ProcessInfo.processInfo.environment.keys.contains("GITHUB_JOB")
+    try XCTSkipIf(isOnGithub, "GitHub CI")
 #if os(iOS)
     SnapshotTesting.assertSnapshot(of: matching,
                                    as: .image(drawHierarchyInKeyWindow: false,

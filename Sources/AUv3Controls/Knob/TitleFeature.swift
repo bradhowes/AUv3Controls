@@ -3,16 +3,16 @@ import Clocks
 import ComposableArchitecture
 import SwiftUI
 
-struct TitleFeature: Reducer {
+public struct TitleFeature: Reducer {
   let config: KnobConfig
 
-  struct State: Equatable {
+  public struct State: Equatable {
     var formattedValue: String?
   }
 
   private enum CancelID { case showingValueTask }
 
-  enum Action: Equatable, Sendable {
+  public enum Action: Equatable, Sendable {
     case valueChanged(Double)
     case stoppedShowingValue
     case tapped
@@ -20,7 +20,7 @@ struct TitleFeature: Reducer {
 
   @Dependency(\.continuousClock) var clock
 
-  func reduce(into state: inout State, action: Action) -> Effect<Action> {
+  public func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
 
     case let .valueChanged(value):
@@ -71,7 +71,7 @@ struct TitleView: View {
       .onTapGesture(count: 1, perform: {
         store.send(.tapped)
         withAnimation {
-          proxy?.scrollTo(config.parameter.address, anchor: UnitPoint(x: 0.6, y: 0.5))
+          proxy?.scrollTo(config.id, anchor: UnitPoint(x: 0.6, y: 0.5))
         }
       })
     }

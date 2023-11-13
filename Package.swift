@@ -1,4 +1,4 @@
-// swift-tools-version: 5.7
+// swift-tools-version: 5.8
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -28,10 +28,10 @@ let package = Package(
         .product(name: "ComposableArchitecture", package: "swift-composable-architecture")
       ],
       swiftSettings: [
-        /// Xcode 14
-        SwiftSetting.unsafeFlags(["-Xfrontend", "-strict-concurrency=complete"]),
-        /// Xcode 15. Remove `=targeted` to use the default `complete`.
-        // .enableExperimentalFeature("StrictConcurrency=complete")
+        // Xcode 14
+        // SwiftSetting.unsafeFlags(["-Xfrontend", "-strict-concurrency=complete"]),
+        // Xcode 15. Remove `=targeted` to use the default `complete`.
+        .enableExperimentalFeature("StrictConcurrency=complete")
       ]
     ),
     .testTarget(
