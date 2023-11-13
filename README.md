@@ -13,6 +13,13 @@ The controls are attached to AUParameter entities, so changes in the control wil
 value. This works the other way as well: external changes to the AUParameter -- say from a MIDI controller or
 preset load -- will be reflected in the control.
 
+![](https://github.com/bradhowes/AUv3Controls/blob/main/Duality.gif?raw=true)
+
+## Controls
+
+There is a circular knob that acts like a vertical slider. It normally shows the setting's name, but when being 
+manipulated it shows the current value.
+
 ![](https://github.com/bradhowes/AUv3Controls/blob/main/demo.gif?raw=true)
 
 * Vertical dragging changes the value of the knob
