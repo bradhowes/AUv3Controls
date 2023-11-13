@@ -17,7 +17,7 @@ extension XCTest {
   func assertSnapshot<V: SwiftUI.View>(matching: V, file: StaticString = #file, testName: String = #function,
                                        line: UInt = #line) throws {
     isRecording = false
-    print(ProcessInfo.processInfo.environment.keys)
+    print(ProcessInfo.processInfo.environment)
     let isOnGithub = ProcessInfo.processInfo.environment.keys.contains("GITHUB_WORKFLOW")
     try XCTSkipIf(isOnGithub, "GitHub CI")
     guard !isOnGithub else { return }
