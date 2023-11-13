@@ -7,13 +7,13 @@ extension Color {
   /**
    Create new Color instance with color components taken from hex color specification. Supports
 
-   - 3-characters (12-bit RGB) with 4 bits per RGB channel
-   - 6-characters (24-bit RGB) with 8 bits per RGB channel
-   - 8-characters (32-bit ARGB) with 8 bits per RGB channel + alpha
+   - 3-characters (12-bit RGB) with 4 bits per channel
+   - 6-characters (24-bit RGB) with 8 bits per channel
+   - 8-characters (32-bit ARGB) with 8 bits per each channel
 
    - parameter hex: the color specification to decode
    */
-  init(hex: String) {
+  init?(hex: String) {
     self.init(hex: Substring(hex))
   }
 
@@ -26,7 +26,7 @@ extension Color {
 
    - parameter hex: the color specification to decode
    */
-  init(hex: Substring) {
+  init?(hex: Substring) {
 
     func dropPrefix(_ hex: Substring) -> Substring {
       var hex = hex
@@ -46,26 +46,36 @@ extension Color {
 
     var int: UInt64 = 0
     guard scanner.scanHexInt64(&int) else {
-      self.init(.sRGB, red: 0, green: 0, blue: 0, opacity: 1)
-      return
+      return nil
     }
 
-    let alpha, red, green, blue: UInt64
+    let argb: ARGB
     switch hex.count {
-    case 3: // RGB (12-bit)
-      (alpha, red, green, blue) = (255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
-    case 6: // RGB (24-bit)
-      (alpha, red, green, blue) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
-    case 8: // ARGB (32-bit)
-      (alpha, red, green, blue) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
-    default:
-      (alpha, red, green, blue) = (255, 0, 0, 0)
+    case 3: argb = ARGB(255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
+    case 6: argb = ARGB(255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
+    case 8: argb = ARGB(int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
+    default: return nil
     }
 
-    self.init(.sRGB,
-              red: Double(red) / 255,
-              green: Double(green) / 255,
-              blue: Double(blue) / 255,
-              opacity: Double(alpha) / 255)
+    self.init(.sRGB, red: argb.red.normalized, green: argb.green.normalized, blue: argb.blue.normalized,
+              opacity: argb.alpha.normalized)
   }
+}
+
+private struct ARGB {
+  let alpha: UInt8
+  let red: UInt8
+  let green: UInt8
+  let blue: UInt8
+
+  init(_ alpha: UInt64, _ red: UInt64, _ green: UInt64, _ blue: UInt64) {
+    self.alpha = UInt8(alpha)
+    self.red = UInt8(red)
+    self.green = UInt8(green)
+    self.blue = UInt8(blue)
+  }
+}
+
+private extension UInt8 {
+  var normalized: Double { Double(self) / 255.0 }
 }

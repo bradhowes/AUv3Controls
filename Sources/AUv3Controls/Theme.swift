@@ -21,9 +21,11 @@ public struct Theme: Equatable {
   }
 
   public init(bundle: Bundle? = nil, valueFormatter: NumberFormatter? = nil) {
-    controlBackgroundColor = Self.color(.controlBackgroundColor, from: bundle, default: .init(hex: "333333"))
-    controlForegroundColor = Self.color(.controlForegroundColor, from: bundle, default: .init(hex: "FF9500"))
-    textColor = Self.color(.textColor, from: bundle, default: .init(hex: "C08000"))
+    controlBackgroundColor = Self.color(.controlBackgroundColor, from: bundle, 
+                                        default: .init(hex: "333333") ?? .gray)
+    controlForegroundColor = Self.color(.controlForegroundColor, from: bundle,
+                                        default: .init(hex: "FF9500") ?? .orange)
+    textColor = Self.color(.textColor, from: bundle, default: .init(hex: "C08000") ?? .orange)
     formatter = valueFormatter ?? Self.formatter
   }
 
