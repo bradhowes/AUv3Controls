@@ -18,9 +18,11 @@ extension XCTest {
                                        line: UInt = #line) throws {
     isRecording = false
     print(ProcessInfo.processInfo.environment)
-    let isOnGithub = ProcessInfo.processInfo.environment.keys.contains("GITHUB_WORKFLOW")
-    try XCTSkipIf(isOnGithub, "GitHub CI")
-    guard !isOnGithub else { return }
+
+    if let path = ProcessInfo.processInfo.environment["XCTestBundlePath"] {
+      let isOnGithub = path.contains("/Users/runner/work")
+      try XCTSkipIf(isOnGithub, "GitHub CI")
+    }
 
 #if os(iOS)
     SnapshotTesting.assertSnapshot(of: matching,
