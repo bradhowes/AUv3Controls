@@ -35,6 +35,10 @@ public struct TrackFeature: Reducer {
   }
 }
 
+/**
+ View that shows a circular track and an overlay indicator track that represents the current value.
+ Dragging vertically on the view will change the current value.
+ */
 struct TrackView: View {
   let store: StoreOf<TrackFeature>
   let config: KnobConfig

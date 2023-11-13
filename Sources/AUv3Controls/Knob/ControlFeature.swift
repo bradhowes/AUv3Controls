@@ -43,7 +43,7 @@ public struct ControlFeature: Reducer {
 
         case .dragChanged:
           let value = config.normToValue(state.track.norm)
-          return titleFeature.updateValue(state: &state.title, value: value).map(Action.title)
+          return titleFeature.updateAndShowValue(state: &state.title, value: value).map(Action.title)
 
         case .dragEnded:
             return .none
@@ -57,9 +57,9 @@ public struct ControlFeature: Reducer {
 
 extension ControlFeature {
 
-  func updateValue(state: inout State, value: Double) -> Effect<Action> {
+  func updateAndShowValue(state: inout State, value: Double) -> Effect<Action> {
     state.track.norm = config.valueToNorm(value)
-    return titleFeature.updateValue(state: &state.title, value: value)
+    return titleFeature.updateAndShowValue(state: &state.title, value: value)
       .map(Action.title)
   }
 }

@@ -3,23 +3,27 @@ import AVFoundation
 
 public extension AUParameter {
 
-  /// Obtain a stream of value changes from a parameter, presumably changed by another entity such as a MIDI
-  /// connection.
-  /// - returns: ObservationState that holds a token for cancelling the observation and the stream of changes
+  /**
+   Obtain a stream of value changes from a parameter, presumably changed by another entity such as a MIDI
+   connection.
+   
+   - returns: 2-tuple containing a token for cancelling the observation and an AsyncStream of observed values
+   */
   func startObserving() -> (AUParameterObserverToken, AsyncStream<AUValue>) {
     let (stream, continuation) = AsyncStream<AUValue>.makeStream()
 
+    let displayName = self.displayName
     let observerToken = self.token(byAddingParameterObserver: { address, value in
       var lastSeen: AUValue?
       if address == self.address && value != lastSeen {
         lastSeen = value
+        Logger.shared.log("\(displayName) observed \(value)")
         continuation.yield(value)
       }
     })
 
-    let displayName = self.displayName
     continuation.onTermination = { value in
-      print(displayName, "continuation terminating", value)
+      Logger.shared.log("\(displayName) continuation terminating \(value)")
     }
 
     return (observerToken, stream)

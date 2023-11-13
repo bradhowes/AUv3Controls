@@ -8,7 +8,8 @@ public struct EditorFeature: Reducer {
   public struct State: Equatable {
     var value: String
     @BindingState var focus: Field?
-
+    var hasFocus: Bool { focus != nil }
+    
     public init() {
       self.value = ""
       self.focus = nil
@@ -64,6 +65,10 @@ extension EditorFeature {
   }
 }
 
+/**
+ A pseudo-dialog box that hosts a TextField containing the current control's value for editing,
+ and Accept and Cancel buttons to dismiss the dialog.
+ */
 struct EditorView: View {
   let store: StoreOf<EditorFeature>
   let config: KnobConfig

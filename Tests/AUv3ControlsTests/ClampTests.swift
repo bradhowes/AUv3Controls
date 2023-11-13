@@ -12,7 +12,7 @@ final class ClampTests: XCTestCase {
     XCTAssertEqual(10.0, (-10...10).clamp(10.00001))
   }
 
-  func testFloatingPoint() {
+  func testBinaryFloatingPoint() {
     XCTAssertEqual(-10.0, Double.clamp(-20, to: -10...10))
     XCTAssertEqual(-8.0, Double.clamp(-8, to: -10...10))
     XCTAssertEqual(9.999, Double.clamp(9.999, to: -10...10))

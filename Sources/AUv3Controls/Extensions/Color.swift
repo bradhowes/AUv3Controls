@@ -2,7 +2,7 @@ import SwiftUI
 
 // Source: https://stackoverflow.com/a/56874327/629836
 
-extension Color {
+public extension Color {
 
   /**
    Create new Color instance with color components taken from hex color specification. Supports
@@ -62,6 +62,14 @@ extension Color {
   }
 }
 
+public extension String {
+  var color: Color? { Color(hex: self) }
+}
+
+private extension UInt8 {
+  var normalized: Double { Double(self) / 255.0 }
+}
+
 private struct ARGB {
   let alpha: UInt8
   let red: UInt8
@@ -74,8 +82,4 @@ private struct ARGB {
     self.green = UInt8(green)
     self.blue = UInt8(blue)
   }
-}
-
-private extension UInt8 {
-  var normalized: Double { Double(self) / 255.0 }
 }

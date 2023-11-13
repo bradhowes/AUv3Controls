@@ -47,6 +47,7 @@ public struct KnobFeature: Reducer {
 
       func updateParameter(_ value: Double) {
         if let token = state.observerToken {
+          Logger.shared.log("setting \(config.title) to \(value)")
           config.parameter.setValue(AUValue(value), originator: token)
         }
       }
@@ -68,7 +69,9 @@ public struct KnobFeature: Reducer {
 
           case .tapped:
             let value = config.normToValue(state.control.track.norm)
-            return editor.start(state: &state.editor, value: value).map(Action.editor)
+            Logger.shared.log("showing \(config.title) editor")
+            return editor.start(state: &state.editor, value: value)
+              .map(Action.editor)
 
           default:
             return .none
@@ -82,7 +85,8 @@ public struct KnobFeature: Reducer {
         case .acceptButtonTapped:
           if let value = Double(state.editor.value) {
             updateParameter(value)
-            return control.updateValue(state: &state.control, value: value).map(Action.control)
+            return control.updateAndShowValue(state: &state.control, value: value)
+              .map(Action.control)
           }
           return .none
 
@@ -91,6 +95,9 @@ public struct KnobFeature: Reducer {
         }
 
       case .observationStart:
+        let title = config.title
+        Logger.shared.log("\(title) - started observing values")
+
         let stream: AsyncStream<AUValue>
         (state.observerToken, stream) = config.parameter.startObserving()
 
@@ -98,10 +105,12 @@ public struct KnobFeature: Reducer {
           for await value in stream {
             await send(.observedValueChanged(value))
           }
+          Logger.shared.log("\(title) - observation async stream stopped")
           await send(.observationStopped)
         }.cancellable(id: state.id, cancelInFlight: true)
 
       case .observationStopped:
+        Logger.shared.log("\(config.title) - stopped observing values")
         if let token = state.observerToken {
           config.parameter.removeParameterObserver(token)
           state.observerToken = nil
@@ -109,7 +118,8 @@ public struct KnobFeature: Reducer {
         return .cancel(id: state.id)
 
       case let .observedValueChanged(value):
-        return control.updateValue(state: &state.control, value: Double(value)).map(Action.control)
+        return control.updateAndShowValue(state: &state.control, value: Double(value))
+          .map(Action.control)
       }
     }
   }
@@ -130,43 +140,16 @@ public struct KnobView: View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
       ZStack {
         ControlView(store: store.scope(state: \.control, action: { .control($0) }), config: config, proxy: proxy)
-          .controlVisible(viewStore.editor.focus)
+          .visible(when: !viewStore.editor.hasFocus)
         EditorView(store: store.scope(state: \.editor, action: { .editor($0) }), config: config)
-          .editorVisible(viewStore.editor.focus)
+          .visible(when: viewStore.editor.hasFocus)
       }
+      .animation(.linear, value: viewStore.editor.hasFocus)
       .frame(maxWidth: config.controlWidthIf(viewStore.editor.focus), maxHeight: config.maxHeight)
       .frame(width: config.controlWidthIf(viewStore.editor.focus), height: config.maxHeight)
       .id(viewStore.id)
-      .animation(.linear, value: viewStore.editor.focus != nil)
       .task { await viewStore.send(.observationStart).finish() }
     }
-  }
-}
-
-private extension View {
-
-  func controlVisible(_ field: EditorFeature.State.Field?) -> some View {
-    self.opacity(field != nil ? 0.0 : 1.0)
-      .scaleEffect(field != nil ? 0.0 : 1.0)
-  }
-
-  func editorVisible(_ field: EditorFeature.State.Field?) -> some View {
-    self.opacity(field == nil ? 0.0 : 1.0)
-      .scaleEffect(field == nil ? 0.0 : 1.0)
-  }
-}
-
-struct WithBinding<Value, Content: View>: View {
-  @State private var value: Value
-  private let content: (Binding<Value>) -> Content
-
-  init(for value: Value, @ViewBuilder content: @escaping (Binding<Value>) -> Content) {
-    self._value = State(wrappedValue: value)
-    self.content = content
-  }
-
-  var body: some View {
-    content($value)
   }
 }
 

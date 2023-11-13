@@ -1,4 +1,4 @@
-extension FloatingPoint {
+extension BinaryFloatingPoint {
 
   /**
    Obtain a value that is always within the a given closed range

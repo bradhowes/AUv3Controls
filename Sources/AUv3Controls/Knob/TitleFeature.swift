@@ -8,6 +8,7 @@ public struct TitleFeature: Reducer {
 
   public struct State: Equatable {
     var formattedValue: String?
+    var showingValue: Bool { formattedValue != nil }
   }
 
   private enum CancelID { case showingValueTask }
@@ -24,7 +25,7 @@ public struct TitleFeature: Reducer {
     switch action {
 
     case let .valueChanged(value):
-      return updateValue(state: &state, value: value)
+      return updateAndShowValue(state: &state, value: value)
 
     case .stoppedShowingValue:
       state.formattedValue = nil
@@ -38,7 +39,7 @@ public struct TitleFeature: Reducer {
 
 extension TitleFeature {
 
-  func updateValue(state: inout State, value: Double) -> Effect<TitleFeature.Action> {
+  func updateAndShowValue(state: inout State, value: Double) -> Effect<TitleFeature.Action> {
     state.formattedValue = config.formattedValue(value)
     let duration: Duration = .seconds(config.showValueDuration)
     let clock = self.clock
@@ -49,6 +50,11 @@ extension TitleFeature {
   }
 }
 
+/**
+ Two Text views, one that shows the title and the other that shows the current value. Normally, the
+ title is shown, but when the view state receives the `.valueChanged` action, the value view will appear for N
+ seconds before it disappears and the title reappears.
+ */
 struct TitleView: View {
   let store: StoreOf<TitleFeature>
   let config: KnobConfig
@@ -58,14 +64,13 @@ struct TitleView: View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
       ZStack {
         Text(config.parameter.displayName)
-          .opacity(viewStore.formattedValue != nil ? 0.0 : 1.0)
-        if viewStore.formattedValue != nil {
+          .fadeOut(when: viewStore.showingValue)
+        if viewStore.showingValue {
           Text(viewStore.formattedValue ?? "")
             .transition(.opacity)
-            .opacity(viewStore.formattedValue != nil ? 1.0 : 0.0)
+            .fadeIn(when: viewStore.showingValue)
         }
       }
-      .animation(.linear(duration: 0.25), value: viewStore.formattedValue)
       .font(config.theme.font)
       .foregroundColor(config.theme.textColor)
       .onTapGesture(count: 1, perform: {

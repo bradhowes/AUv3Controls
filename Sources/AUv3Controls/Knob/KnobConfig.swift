@@ -6,17 +6,16 @@ public struct KnobConfig: Equatable {
   public let parameter: AUParameter
 
   public var id: ObjectIdentifier { ObjectIdentifier(parameter) }
+  public var title: String { self.parameter.displayName }
+  public var range: ClosedRange<Double> { minimumValue...maximumValue }
 
   let minTrim: CGFloat = 0.11111115 // Use non-zero value to leave a tiny circle at "zero"
   var maxTrim: CGFloat { 1 - minTrim }
 
-  public let title: String
   public let minimumValue: Double
   public let maximumValue: Double
-  public var range: ClosedRange<Double> { minimumValue...maximumValue }
 
   public var logScale: Bool
-
   public var controlDiameter: CGFloat { didSet { updateDragScaling() } }
   public var controlRadius: CGFloat { controlDiameter / 2.0 }
 
@@ -44,7 +43,6 @@ public struct KnobConfig: Equatable {
               maxHeight: CGFloat = 100.0, touchSensitivity: CGFloat = 2.0, logScale: Bool = false,
               valueStrokeWidth: CGFloat = 6.0, theme: Theme) {
     self.parameter = parameter
-    self.title = parameter.displayName
     self.controlDiameter = controlDiameter
     self.minimumValue = Double(parameter.minValue)
     self.maximumValue = Double(parameter.maxValue)
