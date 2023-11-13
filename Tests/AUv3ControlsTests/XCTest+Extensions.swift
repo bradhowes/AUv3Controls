@@ -19,6 +19,8 @@ extension XCTest {
     isRecording = false
     let isOnGithub = ProcessInfo.processInfo.environment.keys.contains("GITHUB_JOB")
     try XCTSkipIf(isOnGithub, "GitHub CI")
+    guard !isOnGithub else { return }
+    
 #if os(iOS)
     SnapshotTesting.assertSnapshot(of: matching,
                                    as: .image(drawHierarchyInKeyWindow: false,
