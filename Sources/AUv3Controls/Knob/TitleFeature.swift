@@ -21,22 +21,19 @@ public struct TitleFeature: Reducer {
 
   public func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
-
-    case let .valueChanged(value):
-      return updateAndShowValue(state: &state, value: value)
-
-    case .stoppedShowingValue:
-      state.formattedValue = nil
-      return .cancel(id: config.id)
-
-    case .tapped:
-      state.formattedValue = nil
-      return .cancel(id: config.id)
+    case let .valueChanged(value): return updateAndShowValue(state: &state, value: value)
+    case .stoppedShowingValue: return showTitle(state: &state)
+    case .tapped: return showTitle(state: &state)
     }
   }
 }
 
 extension TitleFeature {
+
+  func showTitle(state: inout State) -> Effect<TitleFeature.Action> {
+    state.formattedValue = nil
+    return .none
+  }
 
   func updateAndShowValue(state: inout State, value: Double) -> Effect<TitleFeature.Action> {
     state.formattedValue = config.formattedValue(value)
@@ -45,7 +42,7 @@ extension TitleFeature {
     return .run { send in
       try await clock.sleep(for: duration)
       await send(.stoppedShowingValue, animation: .linear)
-    }.cancellable(id: config.id, cancelInFlight: true)
+    }
   }
 }
 

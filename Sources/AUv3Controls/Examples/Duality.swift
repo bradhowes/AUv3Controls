@@ -16,7 +16,7 @@ class MockAUv3 {
   private let paramTree: AUParameterTree
 
   // Bindings to a state value but with a twist. We only ever use the 'setter' part of the binding when we see that
-  // the AUParameter is belongs to has changed.
+  // the AUParameter it belongs to has changed.
   private var bindings: [AUParameterAddress: Binding<Double>] = [:]
 
   init() {
