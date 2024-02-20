@@ -14,7 +14,8 @@ extension XCTest {
   }
 
   @inlinable
-  func assertSnapshot<V: SwiftUI.View>(matching: V, file: StaticString = #file, testName: String = #function,
+  func assertSnapshot<V: SwiftUI.View>(matching: V, size: CGSize = CGSize(width: 220, height: 220),
+                                       file: StaticString = #file, testName: String = #function,
                                        line: UInt = #line) throws {
     isRecording = false
     print(ProcessInfo.processInfo.environment)
@@ -27,7 +28,7 @@ extension XCTest {
 #if os(iOS)
     SnapshotTesting.assertSnapshot(of: matching,
                                    as: .image(drawHierarchyInKeyWindow: false,
-                                              layout: .fixed(width: 220, height: 220)),
+                                              layout: .fixed(width: size.width, height: size.height)),
                                    named: makeUniqueSnapshotName(testName),
                                    file: file, testName: testName, line: line)
 #endif

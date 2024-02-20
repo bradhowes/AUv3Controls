@@ -108,7 +108,6 @@ final class ToggleFeatureTests: XCTestCase {
     await view.store.send(.observationStopped).finish()
   }
 
-
   func testToggleViewPreview() async throws {
     let view = ToggleViewPreview.previews
     try assertSnapshot(matching: view)
