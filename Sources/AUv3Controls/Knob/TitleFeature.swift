@@ -46,7 +46,7 @@ extension TitleFeature {
     let clock = self.clock
     return .run { send in
       try await clock.sleep(for: duration)
-      await send(.stoppedShowingValue)
+      await send(.stoppedShowingValue, animation: .linear)
     }.cancellable(id: CancelID.showingValueTask, cancelInFlight: true)
   }
 }
@@ -64,18 +64,19 @@ struct TitleView: View {
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
       ZStack {
-        Text(config.parameter.displayName)
-          .fadeOut(when: viewStore.showingValue)
         if viewStore.showingValue {
           Text(viewStore.formattedValue ?? "")
             .transition(.opacity)
             .fadeIn(when: viewStore.showingValue)
+        } else {
+          Text(config.parameter.displayName)
+            .fadeOut(when: viewStore.showingValue)
         }
       }
       .font(config.theme.font)
       .foregroundColor(config.theme.textColor)
       .onTapGesture(count: 1, perform: {
-        store.send(.tapped)
+        store.send(.tapped, animation: .linear)
         withAnimation {
           proxy?.scrollTo(config.id, anchor: UnitPoint(x: 0.6, y: 0.5))
         }
@@ -94,7 +95,10 @@ struct TitleViewPreview: PreviewProvider {
   }
 
   static var previews: some View {
-    TitleView(store: store, config: config, proxy: nil)
-      .task { store.send(.valueChanged(1.24)) }
+    VStack(spacing: 24) {
+      Button(action: { self.store.send(.valueChanged(1.24), animation: .linear) }) { Text("Send") }
+      TitleView(store: store, config: config, proxy: nil)
+        .task { store.send(.valueChanged(1.24), animation: .linear) }
+    }
   }
 }
