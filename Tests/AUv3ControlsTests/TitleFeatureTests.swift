@@ -14,13 +14,16 @@ final class TitleFeatureTests: XCTestCase {
                                               valueStrings: nil, dependentParameters: nil)
   var config: KnobConfig!
   var store: TestStore<TitleFeature.State, TitleFeature.Action>!
-  
+  let clock = TestClock()
+
   override func setUpWithError() throws {
     isRecording = false
     config = KnobConfig(parameter: param, logScale: false, theme: Theme())
     store = TestStore(initialState: .init()) {
       TitleFeature(config: config)
-    } withDependencies: { $0.continuousClock = ImmediateClock() }
+    } withDependencies: {
+      $0.continuousClock = clock
+    }
   }
   
   override func tearDownWithError() throws {
@@ -46,17 +49,19 @@ final class TitleFeatureTests: XCTestCase {
     await store.send(.valueChanged(12.34)) { state in
       state.formattedValue = "12.34"
     }
-//    await store.receive(.stoppedShowingValue) {
-//      $0.formattedValue = nil
-//    }
+    await clock.run()
+    await store.receive(.stoppedShowingValue) { state in
+      state.formattedValue = nil
+    }
   }
 
   func testTapped() async {
     await store.send(.valueChanged(12.34)) { state in
       state.formattedValue = "12.34"
     }
-
-    await store.send(.tapped)
+    await store.send(.tapped) { state in
+      state.formattedValue = nil
+    }
   }
 
   func testNormalRendering() async throws {
