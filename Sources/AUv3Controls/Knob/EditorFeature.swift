@@ -9,7 +9,7 @@ public struct EditorFeature: Reducer {
     var value: String
     @BindingState var focus: Field?
     var hasFocus: Bool { focus != nil }
-    
+
     public init() {
       self.value = ""
       self.focus = nil

@@ -21,7 +21,7 @@ public struct Theme: Equatable {
   }
 
   public init(bundle: Bundle? = nil, valueFormatter: NumberFormatter? = nil) {
-    controlBackgroundColor = Self.color(.controlBackgroundColor, from: bundle, 
+    controlBackgroundColor = Self.color(.controlBackgroundColor, from: bundle,
                                         default: .init(hex: "333333") ?? .gray)
     controlForegroundColor = Self.color(.controlForegroundColor, from: bundle,
                                         default: .init(hex: "FF9500") ?? .orange)

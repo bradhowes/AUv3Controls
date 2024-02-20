@@ -12,4 +12,3 @@ extension Angle {
     return value / 360.0
   }
 }
-
