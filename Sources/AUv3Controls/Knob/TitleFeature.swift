@@ -32,6 +32,7 @@ public struct TitleFeature: Reducer {
       return .cancel(id: CancelID.showingValueTask)
 
     case .tapped:
+      state.formattedValue = nil
       return .cancel(id: CancelID.showingValueTask)
     }
   }
