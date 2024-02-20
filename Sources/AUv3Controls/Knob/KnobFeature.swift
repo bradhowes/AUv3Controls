@@ -144,10 +144,8 @@ public struct KnobView: View {
         EditorView(store: store.scope(state: \.editor, action: { .editor($0) }), config: config)
           .visible(when: viewStore.editor.hasFocus)
       }
-      .animation(.linear, value: viewStore.editor.hasFocus)
       .frame(maxWidth: config.controlWidthIf(viewStore.editor.focus), maxHeight: config.maxHeight)
       .frame(width: config.controlWidthIf(viewStore.editor.focus), height: config.maxHeight)
-      .id(viewStore.id)
       .task { await viewStore.send(.observationStart).finish() }
     }
   }

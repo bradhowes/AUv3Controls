@@ -11,8 +11,6 @@ public struct TitleFeature: Reducer {
     var showingValue: Bool { formattedValue != nil }
   }
 
-  private enum CancelID { case showingValueTask }
-
   public enum Action: Equatable, Sendable {
     case valueChanged(Double)
     case stoppedShowingValue
@@ -29,11 +27,11 @@ public struct TitleFeature: Reducer {
 
     case .stoppedShowingValue:
       state.formattedValue = nil
-      return .cancel(id: CancelID.showingValueTask)
+      return .cancel(id: config.id)
 
     case .tapped:
       state.formattedValue = nil
-      return .cancel(id: CancelID.showingValueTask)
+      return .cancel(id: config.id)
     }
   }
 }
@@ -47,7 +45,7 @@ extension TitleFeature {
     return .run { send in
       try await clock.sleep(for: duration)
       await send(.stoppedShowingValue, animation: .linear)
-    }.cancellable(id: CancelID.showingValueTask, cancelInFlight: true)
+    }.cancellable(id: config.id, cancelInFlight: true)
   }
 }
 
@@ -76,8 +74,8 @@ struct TitleView: View {
       .font(config.theme.font)
       .foregroundColor(config.theme.textColor)
       .onTapGesture(count: 1, perform: {
-        store.send(.tapped, animation: .linear)
         withAnimation {
+          store.send(.tapped)
           proxy?.scrollTo(config.id, anchor: UnitPoint(x: 0.6, y: 0.5))
         }
       })
