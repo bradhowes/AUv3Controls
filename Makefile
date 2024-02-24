@@ -1,4 +1,4 @@
-PLATFORM_IOS = iOS Simulator,name=iPhone 14 Pro
+PLATFORM_IOS = iOS Simulator,name=iPad mini (6th generation)
 PLATFORM_MACOS = macOS
 PLATFORM_TVOS = tvOS Simulator,name=Apple TV 4K (3rd generation) (at 1080p)
 TARGET = AUv3Controls

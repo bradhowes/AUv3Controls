@@ -55,11 +55,8 @@ struct TrackView: View {
             .indicatorStroke(config: config, norm: viewStore.norm)
         }
         .gesture(DragGesture(minimumDistance: 0.0, coordinateSpace: .local)
-          .onChanged { value in
-            viewStore.send(.dragChanged(start: value.startLocation, position: value.location))
-          }
-          .onEnded { value in
-            viewStore.send(.dragEnded(start: value.startLocation, position: value.location))
+          .onChanged { viewStore.send(.dragChanged(start: $0.startLocation, position: $0.location)) }
+          .onEnded { viewStore.send(.dragEnded(start: $0.startLocation, position: $0.location))
           })
     }
   }
