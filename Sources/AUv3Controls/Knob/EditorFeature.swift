@@ -2,12 +2,14 @@ import AVFoundation
 import ComposableArchitecture
 import SwiftUI
 
-public struct EditorFeature: Reducer {
+@Reducer
+public struct EditorFeature {
   let config: KnobConfig
 
+  @ObservableState
   public struct State: Equatable {
     var value: String
-    @BindingState var focus: Field?
+    var focus: Field?
     var hasFocus: Bool { focus != nil }
 
     public init() {
@@ -15,12 +17,12 @@ public struct EditorFeature: Reducer {
       self.focus = nil
     }
 
-    enum Field: Hashable {
+    enum Field: String, Hashable {
       case value
     }
   }
 
-  public enum Action: BindableAction, Equatable, Sendable {
+  public enum Action: BindableAction, Equatable {
     case acceptButtonTapped
     case binding(BindingAction<State>)
     case cancelButtonTapped
@@ -29,29 +31,32 @@ public struct EditorFeature: Reducer {
     case valueChanged(String)
   }
 
-  public func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
-    case .acceptButtonTapped:
-      state.focus = nil
-      return .none
+  public var body: some Reducer<State, Action> {
+    BindingReducer()
+    Reduce { state, action in
+      switch action {
+      case .acceptButtonTapped:
+        state.focus = nil
+        return .none
 
-    case .binding:
-      return .none
+      case .binding:
+        return .none
 
-    case .cancelButtonTapped:
-      state.focus = nil
-      return .none
+      case .cancelButtonTapped:
+        state.focus = nil
+        return .none
 
-    case .clearButtonTapped:
-      state.value = ""
-      return .none
+      case .clearButtonTapped:
+        state.value = ""
+        return .none
 
-    case .start(let value):
-      return start(state: &state, value: value)
+      case .start(let value):
+        return start(state: &state, value: value)
 
-    case let .valueChanged(newValue):
-      state.value = newValue
-      return .none
+      case let .valueChanged(newValue):
+        state.value = newValue
+        return .none
+      }
     }
   }
 }
@@ -70,55 +75,53 @@ extension EditorFeature {
  and Accept and Cancel buttons to dismiss the dialog.
  */
 struct EditorView: View {
-  let store: StoreOf<EditorFeature>
-  let config: KnobConfig
+  @Bindable var store: StoreOf<EditorFeature>
   @FocusState var focus: EditorFeature.State.Field?
+  let config: KnobConfig
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      VStack(alignment: .center, spacing: 12) {
-        HStack(spacing: 12) {
-          Text(config.title)
-            .lineLimit(1, reservesSpace: false)
-          ZStack(alignment: .trailing) {
+    VStack(alignment: .center, spacing: 12) {
+      HStack(spacing: 12) {
+        Text(config.title)
+          .lineLimit(1, reservesSpace: false)
+        ZStack(alignment: .trailing) {
 #if os(iOS)
-            TextField(viewStore.value, text: viewStore.binding(get: \.value, send: { .valueChanged($0) }))
-              .keyboardType(.numbersAndPunctuation)
-              .focused(self.$focus, equals: .value)
-              .submitLabel(.go)
-              .onSubmit { viewStore.send(.acceptButtonTapped, animation: .linear) }
-              .disableAutocorrection(true)
-              .textFieldStyle(.roundedBorder)
+          TextField(store.value, text: $store.value)
+            .keyboardType(.numbersAndPunctuation)
+            .focused($focus, equals: .value)
+            .submitLabel(.go)
+            .onSubmit { store.send(.acceptButtonTapped, animation: .linear) }
+            .disableAutocorrection(true)
+            .textFieldStyle(.roundedBorder)
 #elseif os(macOS)
-            TextField(viewStore.value, text: viewStore.binding(get: \.value, send: { .valueChanged($0) }))
-              .focused(self.$focus, equals: .value)
-              .onSubmit { viewStore.send(.acceptButtonTapped, animation: .linear) }
-              .textFieldStyle(.roundedBorder)
+          TextField(store.value, text: store.binding(get: \.value, send: { .valueChanged($0) }))
+            .focused(self.$focus, equals: .value)
+            .onSubmit { viewStore.send(.acceptButtonTapped, animation: .linear) }
+            .textFieldStyle(.roundedBorder)
 #endif
-            Image(systemName: "xmark.circle.fill")
-              .foregroundColor(.secondary)
-              .onTapGesture(count: 1) { viewStore.send(.clearButtonTapped, animation: .linear) }
-              .padding(.trailing, 4)
-          }
-        }
-        HStack(spacing: 24) {
-          Button(action: { viewStore.send(.acceptButtonTapped, animation: .linear) }) {
-            Text("Accept")
-          }
-          .buttonStyle(.bordered)
-          .foregroundColor(config.theme.textColor)
-          Button(action: { viewStore.send(.cancelButtonTapped, animation: .linear) }) {
-            Text("Cancel")
-          }
-          .buttonStyle(.borderless)
-          .foregroundColor(config.theme.textColor)
+          Image(systemName: "xmark.circle.fill")
+            .foregroundColor(.secondary)
+            .onTapGesture(count: 1) { store.send(.clearButtonTapped, animation: .linear) }
+            .padding(.trailing, 4)
         }
       }
-      .padding()
-      .background(.quaternary)
-      .clipShape(RoundedRectangle(cornerRadius: 12))
-      .bind(viewStore.$focus, to: self.$focus)
+      HStack(spacing: 24) {
+        Button(action: { store.send(.acceptButtonTapped, animation: .linear) }) {
+          Text("Accept")
+        }
+        .buttonStyle(.bordered)
+        .foregroundColor(config.theme.textColor)
+        Button(action: { store.send(.cancelButtonTapped, animation: .linear) }) {
+          Text("Cancel")
+        }
+        .buttonStyle(.borderless)
+        .foregroundColor(config.theme.textColor)
+      }
     }
+    .padding()
+    .background(.quaternary)
+    .clipShape(RoundedRectangle(cornerRadius: 12))
+    .bind($store.focus, to: $focus)
   }
 }
 

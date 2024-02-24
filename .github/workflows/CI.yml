@@ -12,8 +12,8 @@ jobs:
     runs-on: macos-13
     steps:
     - uses: actions/checkout@v4
-    - name: Select Xcode 15.01
-      run: ls -l /Applications && sudo xcode-select -s /Applications/Xcode_15.0.1.app
+    - name: Select Xcode 15.2
+      run: ls -l /Applications && sudo xcode-select -s /Applications/Xcode_15.2.app
     - name: Build, test, and code coverage
       run: env && make
     - name: Get Test Coverage

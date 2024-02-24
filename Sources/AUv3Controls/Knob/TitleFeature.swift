@@ -3,15 +3,17 @@ import Clocks
 import ComposableArchitecture
 import SwiftUI
 
-public struct TitleFeature: Reducer {
+@Reducer
+public struct TitleFeature {
   let config: KnobConfig
 
+  @ObservableState
   public struct State: Equatable {
     var formattedValue: String?
     var showingValue: Bool { formattedValue != nil }
   }
 
-  public enum Action: Equatable, Sendable {
+  public enum Action: Equatable {
     case valueChanged(Double)
     case stoppedShowingValue
     case tapped
@@ -19,16 +21,15 @@ public struct TitleFeature: Reducer {
 
   @Dependency(\.continuousClock) var clock
 
-  public func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
-    case let .valueChanged(value): return updateAndShowValue(state: &state, value: value)
-    case .stoppedShowingValue: return showTitle(state: &state)
-    case .tapped: return showTitle(state: &state)
+  public var body: some Reducer<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case let .valueChanged(value): return updateAndShowValue(state: &state, value: value)
+      case .stoppedShowingValue: return showTitle(state: &state)
+      case .tapped: return showTitle(state: &state)
+      }
     }
   }
-}
-
-extension TitleFeature {
 
   func showTitle(state: inout State) -> Effect<TitleFeature.Action> {
     state.formattedValue = nil
@@ -57,26 +58,24 @@ struct TitleView: View {
   let proxy: ScrollViewProxy?
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      ZStack {
-        if viewStore.showingValue {
-          Text(viewStore.formattedValue ?? "")
-            .transition(.opacity)
-            .fadeIn(when: viewStore.showingValue)
-        } else {
-          Text(config.parameter.displayName)
-            .fadeOut(when: viewStore.showingValue)
-        }
+    ZStack {
+      if store.showingValue {
+        Text(store.formattedValue ?? "")
+          .transition(.opacity)
+          .fadeIn(when: store.showingValue)
+      } else {
+        Text(config.parameter.displayName)
+          .fadeOut(when: store.showingValue)
       }
-      .font(config.theme.font)
-      .foregroundColor(config.theme.textColor)
-      .onTapGesture(count: 1, perform: {
-        withAnimation {
-          store.send(.tapped)
-          proxy?.scrollTo(config.id, anchor: UnitPoint(x: 0.6, y: 0.5))
-        }
-      })
     }
+    .font(config.theme.font)
+    .foregroundColor(config.theme.textColor)
+    .onTapGesture(count: 1, perform: {
+      withAnimation {
+        store.send(.tapped)
+        proxy?.scrollTo(config.id, anchor: UnitPoint(x: 0.6, y: 0.5))
+      }
+    })
   }
 }
 

@@ -2,35 +2,39 @@ import AVFoundation
 import ComposableArchitecture
 import SwiftUI
 
-public struct TrackFeature: Reducer {
+@Reducer
+public struct TrackFeature {
   let config: KnobConfig
 
-  public struct State: Equatable {
+  @ObservableState
+  public struct State: Equatable, Sendable {
     var norm: Double
     var lastDrag: CGPoint?
   }
 
-  public enum Action: Equatable, Sendable {
+  public enum Action: Equatable {
     case dragChanged(start: CGPoint, position: CGPoint)
     case dragEnded(start: CGPoint, position: CGPoint)
   }
 
-  public func reduce(into state: inout State, action: Action) -> Effect<Action> {
+  public var body: some Reducer<State, Action> {
+    Reduce { state, action in
 
-    func calcNorm(last: CGPoint, position: CGPoint) -> Double {
-      (state.norm + config.dragChangeValue(last: last, position: position)).clamped(to: 0.0...1.0)
-    }
+      func calcNorm(last: CGPoint, position: CGPoint) -> Double {
+        (state.norm + config.dragChangeValue(last: last, position: position)).clamped(to: 0.0...1.0)
+      }
 
-    switch action {
-    case let .dragChanged(start, position):
-      state.norm = calcNorm(last: state.lastDrag ?? start, position: position)
-      state.lastDrag = position
-      return .none
+      switch action {
+      case let .dragChanged(start, position):
+        state.norm = calcNorm(last: state.lastDrag ?? start, position: position)
+        state.lastDrag = position
+        return .none
 
-    case let .dragEnded(start, position):
-      state.norm = calcNorm(last: state.lastDrag ?? start, position: position)
-      state.lastDrag = nil
-      return .none
+      case let .dragEnded(start, position):
+        state.norm = calcNorm(last: state.lastDrag ?? start, position: position)
+        state.lastDrag = nil
+        return .none
+      }
     }
   }
 }
@@ -44,21 +48,19 @@ struct TrackView: View {
   let config: KnobConfig
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      Rectangle()
-        .fill(.background)
-        .frame(width: config.controlDiameter, height: config.controlDiameter)
-        .overlay {
-          rotatedCircle
-            .trackStroke(config: config)
-          rotatedCircle
-            .indicatorStroke(config: config, norm: viewStore.norm)
-        }
-        .gesture(DragGesture(minimumDistance: 0.0, coordinateSpace: .local)
-          .onChanged { viewStore.send(.dragChanged(start: $0.startLocation, position: $0.location)) }
-          .onEnded { viewStore.send(.dragEnded(start: $0.startLocation, position: $0.location))
-          })
-    }
+    Rectangle()
+      .fill(.background)
+      .frame(width: config.controlDiameter, height: config.controlDiameter)
+      .overlay {
+        rotatedCircle
+          .trackStroke(config: config)
+        rotatedCircle
+          .indicatorStroke(config: config, norm: store.norm)
+      }
+      .gesture(DragGesture(minimumDistance: 0.0, coordinateSpace: .local)
+        .onChanged { store.send(.dragChanged(start: $0.startLocation, position: $0.location)) }
+        .onEnded { store.send(.dragEnded(start: $0.startLocation, position: $0.location))
+        })
   }
 
   var rotatedCircle: some Shape {

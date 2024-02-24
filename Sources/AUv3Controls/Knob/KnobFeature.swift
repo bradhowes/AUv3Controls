@@ -2,7 +2,8 @@ import AVFoundation
 import ComposableArchitecture
 import SwiftUI
 
-public struct KnobFeature: Reducer {
+@Reducer
+public struct KnobFeature {
   public let config: KnobConfig
 
   private let control: ControlFeature
@@ -14,6 +15,7 @@ public struct KnobFeature: Reducer {
     self.editor = .init(config: config)
   }
 
+  @ObservableState
   public struct State: Equatable, Identifiable {
     public let id: ID
 
@@ -37,12 +39,9 @@ public struct KnobFeature: Reducer {
   }
 
   public var body: some Reducer<State, Action> {
-    Scope(state: \.control, action: /Action.control) {
-      control
-    }
-    Scope(state: \.editor, action: /Action.editor) {
-      editor
-    }
+    Scope(state: \.control, action: /Action.control) { control }
+    Scope(state: \.editor, action: /Action.editor) { editor }
+
     Reduce { state, action in
 
       func updateParameter(_ value: Double) {
@@ -139,9 +138,9 @@ public struct KnobView: View {
   public var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
       ZStack {
-        ControlView(store: store.scope(state: \.control, action: { .control($0) }), config: config, proxy: proxy)
+        ControlView(store: store.scope(state: \.control, action: \.control), config: config, proxy: proxy)
           .visible(when: !viewStore.editor.hasFocus)
-        EditorView(store: store.scope(state: \.editor, action: { .editor($0) }), config: config)
+        EditorView(store: store.scope(state: \.editor, action: \.editor), config: config)
           .visible(when: viewStore.editor.hasFocus)
       }
       .frame(maxWidth: config.controlWidthIf(viewStore.editor.focus), maxHeight: config.maxHeight)

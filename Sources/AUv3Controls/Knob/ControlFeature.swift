@@ -2,7 +2,8 @@ import AVFoundation
 import ComposableArchitecture
 import SwiftUI
 
-public struct ControlFeature: Reducer {
+@Reducer
+public struct ControlFeature {
   let config: KnobConfig
   let trackFeature: TrackFeature
   let titleFeature: TitleFeature
@@ -23,7 +24,7 @@ public struct ControlFeature: Reducer {
     }
   }
 
-  public enum Action: Equatable, Sendable {
+  public enum Action: Equatable {
     case track(TrackFeature.Action)
     case title(TitleFeature.Action)
   }
@@ -71,8 +72,8 @@ struct ControlView: View {
 
   var body: some View {
     VStack(spacing: 0.0) {
-      TrackView(store: store.scope(state: \.track, action: { .track($0) }), config: config)
-      TitleView(store: store.scope(state: \.title, action: { .title($0) }), config: config, proxy: proxy)
+      TrackView(store: store.scope(state: \.track, action: \.track), config: config)
+      TitleView(store: store.scope(state: \.title, action: \.title), config: config, proxy: proxy)
     }
   }
 }
@@ -88,5 +89,6 @@ struct ControlViewPreview: PreviewProvider {
 
   static var previews: some View {
     ControlView(store: store, config: config, proxy: nil)
+      .padding()
   }
 }
