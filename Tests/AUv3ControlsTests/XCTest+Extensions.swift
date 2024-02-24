@@ -20,17 +20,25 @@ extension XCTest {
     isRecording = false
     // print(ProcessInfo.processInfo.environment)
 
-    if let path = ProcessInfo.processInfo.environment["XCTestBundlePath"] {
-      let isOnGithub = path.contains("/Users/runner/work")
-      // try XCTSkipIf(isOnGithub, "GitHub CI")
+    let isOnGithub = ProcessInfo.processInfo.environment["XCTestBundlePath"]?.contains("/Users/runner/work") ?? false
+    if let result = SnapshotTesting.verifySnapshot(of: matching,
+                                                   as: .image(drawHierarchyInKeyWindow: false,
+                                                              layout: .fixed(width: size.width, height: size.height)),
+                                                   named: makeUniqueSnapshotName(testName),
+                                                   file: file, testName: testName, line: line) {
+      if isOnGithub {
+        print("***", result)
+      } else {
+        XCTFail(result, file: file, line: line)
+      }
     }
 
 #if os(iOS)
-    SnapshotTesting.assertSnapshot(of: matching,
-                                   as: .image(drawHierarchyInKeyWindow: false,
-                                              layout: .fixed(width: size.width, height: size.height)),
-                                   named: makeUniqueSnapshotName(testName),
-                                   file: file, testName: testName, line: line)
+//    SnapshotTesting.assertSnapshot(of: matching,
+//                                   as: .image(drawHierarchyInKeyWindow: false,
+//                                              layout: .fixed(width: size.width, height: size.height)),
+//                                   named: makeUniqueSnapshotName(testName),
+//                                   file: file, testName: testName, line: line)
 #endif
   }
 }
