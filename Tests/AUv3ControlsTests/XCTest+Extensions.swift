@@ -18,11 +18,11 @@ extension XCTest {
                                        file: StaticString = #file, testName: String = #function,
                                        line: UInt = #line) throws {
     isRecording = false
-    print(ProcessInfo.processInfo.environment)
+    // print(ProcessInfo.processInfo.environment)
 
     if let path = ProcessInfo.processInfo.environment["XCTestBundlePath"] {
       let isOnGithub = path.contains("/Users/runner/work")
-      try XCTSkipIf(isOnGithub, "GitHub CI")
+      // try XCTSkipIf(isOnGithub, "GitHub CI")
     }
 
 #if os(iOS)
