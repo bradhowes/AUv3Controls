@@ -2,7 +2,7 @@ PLATFORM_IOS = iOS Simulator,name=iPad mini (6th generation)
 PLATFORM_MACOS = macOS
 PLATFORM_TVOS = tvOS Simulator,name=Apple TV 4K (3rd generation) (at 1080p)
 TARGET = AUv3Controls
-QUIET = -quiet
+BUILD_FLAGS = -quiet -skipMacroValidation
 WORKSPACE = $(PWD)/.workspace
 
 default: percentage
@@ -15,14 +15,14 @@ lint: clean
 
 resolve-deps: lint
 	xcodebuild \
-		$(QUIET) \
+		$(BUILD_FLAGS) \
 		-resolvePackageDependencies \
 		-clonedSourcePackagesDirPath "$(WORKSPACE)" \
 		-scheme $(TARGET)
 
 build-ios: resolve-deps
 	xcodebuild build-for-testing \
-		$(QUIET) \
+		$(BUILD_FLAGS) \
 		-clonedSourcePackagesDirPath "$(WORKSPACE)" \
 		-scheme $(TARGET) \
 		-derivedDataPath "$(PWD)/.DerivedData-ios" \
@@ -39,7 +39,7 @@ test-ios: build-ios
 
 build-tvos: resolve-deps
 	xcodebuild build-for-testing \
-		$(QUIET) \
+		$(BUILD_FLAGS) \
 		-clonedSourcePackagesDirPath "$(WORKSPACE)" \
 		-scheme $(TARGET) \
 		-derivedDataPath "$(PWD)/.DerivedData-tvos" \
@@ -55,7 +55,7 @@ test-tvos: build-tvos
 
 build-macos: resolve-deps
 	xcodebuild build-for-testing \
-		$(QUIET) \
+		$(BUILD_FLAGS) \
 		-clonedSourcePackagesDirPath "$(WORKSPACE)" \
 		-scheme $(TARGET) \
 		-derivedDataPath "$(PWD)/.DerivedData-macos" \
