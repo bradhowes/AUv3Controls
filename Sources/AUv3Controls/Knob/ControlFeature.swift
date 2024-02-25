@@ -60,7 +60,7 @@ extension ControlFeature {
 
   func updateAndShowValue(state: inout State, value: Double) -> Effect<Action> {
     state.track.norm = config.valueToNorm(value)
-    return titleFeature.updateAndShowValue(state: &state.title, value: value)
+    return titleFeature.updateAndShowValue(state: &state.title, value: config.normToValue(state.track.norm))
       .map(Action.title)
   }
 }

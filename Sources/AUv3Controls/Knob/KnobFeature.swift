@@ -82,7 +82,8 @@ public struct KnobFeature {
         switch editorAction {
 
         case .acceptButtonTapped:
-          if let value = Double(state.editor.value) {
+          if let editorValue = Double(state.editor.value) {
+            let value = config.normToValue(config.valueToNorm(editorValue))
             updateParameter(value)
             return control.updateAndShowValue(state: &state.control, value: value)
               .map(Action.control)

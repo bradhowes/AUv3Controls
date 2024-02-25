@@ -14,8 +14,8 @@ let package = Package(
       targets: ["AUv3Controls"])
   ],
   dependencies: [
-    .package(url: "https://github.com/pointfreeco/swift-composable-architecture", .upToNextMajor(from: "1.8.0")),
-    .package(url: "https://github.com/doordash-oss/swiftui-preview-snapshots", from: "1.0.0")
+    .package(url: "https://github.com/pointfreeco/swift-composable-architecture", from: "1.8.0"),
+    .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", from: "1.15.3")
   ],
   targets: [
     .target(
@@ -31,8 +31,8 @@ let package = Package(
       name: "AUv3ControlsTests",
       dependencies: [
         "AUv3Controls",
-        .product(name: "PreviewSnapshotsTesting", package: "swiftui-preview-snapshots"),
-        .product(name: "ComposableArchitecture", package: "swift-composable-architecture")
-      ])
+        .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
+        .product(name: "SnapshotTesting", package: "swift-snapshot-testing")
+   ])
   ]
 )

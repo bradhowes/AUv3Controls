@@ -92,7 +92,7 @@ final class TrackFeatureTests: XCTestCase {
       TrackFeature(config: config)
     })
     
-    // try assertSnapshot(matching: view)
+    try assertSnapshot(matching: view)
   }
   
   func testIndicatorAtMiddle() async throws {
@@ -109,7 +109,7 @@ final class TrackFeatureTests: XCTestCase {
       TrackFeature(config: config)
     })
     
-    // try assertSnapshot(matching: view)
+    try assertSnapshot(matching: view)
   }
   
   func testIndicatorAtMaximum() async throws {
@@ -126,7 +126,7 @@ final class TrackFeatureTests: XCTestCase {
       TrackFeature(config: config)
     })
     
-    // try assertSnapshot(matching: view)
+    try assertSnapshot(matching: view)
   }
   
   func testIndicatorStrokeWidth() async throws {
@@ -144,11 +144,10 @@ final class TrackFeatureTests: XCTestCase {
       TrackFeature(config: config)
     })
     
-    // try assertSnapshot(matching: view)
+    try assertSnapshot(matching: view)
   }
 
   func testPreview() async throws {
-//    let view = TrackViewPreview.previews
-//    try assertSnapshot(matching: view)
+    try assertSnapshot(matching: TrackViewPreview.previews)
   }
 }

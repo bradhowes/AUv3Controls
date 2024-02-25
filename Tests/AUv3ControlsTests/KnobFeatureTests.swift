@@ -139,13 +139,13 @@ final class KnobFeatureTests: XCTestCase {
 
     view.store.send(.control(.track(.dragChanged(start: .init(x: 40, y: 0), position: .init(x: 40, y: -80)))))
 
-    // try assertSnapshot(matching: view)
+    try assertSnapshot(matching: view)
   }
 
   func testPreview() async throws {
-//    try withDependencies { $0 = .live } operation: {
-//      let view = KnobViewPreview.previews
-//      try assertSnapshot(matching: view)
-//    }
+    try withDependencies { $0 = .live } operation: {
+      let view = KnobViewPreview.previews
+      try assertSnapshot(matching: view)
+    }
   }
 }

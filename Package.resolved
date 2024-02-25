@@ -118,15 +118,6 @@
       }
     },
     {
-      "identity" : "swiftui-preview-snapshots",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/doordash-oss/swiftui-preview-snapshots",
-      "state" : {
-        "revision" : "36cd3662a48ef75cc13eae182d468178279a0445",
-        "version" : "1.1.1"
-      }
-    },
-    {
       "identity" : "xctest-dynamic-overlay",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/xctest-dynamic-overlay",
