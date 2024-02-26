@@ -94,9 +94,9 @@ struct EditorView: View {
             .disableAutocorrection(true)
             .textFieldStyle(.roundedBorder)
 #elseif os(macOS)
-          TextField(store.value, text: store.binding(get: \.value, send: { .valueChanged($0) }))
+          TextField(store.value, text: $store.value)
             .focused(self.$focus, equals: .value)
-            .onSubmit { viewStore.send(.acceptButtonTapped, animation: .linear) }
+            .onSubmit { store.send(.acceptButtonTapped, animation: .linear) }
             .textFieldStyle(.roundedBorder)
 #endif
           Image(systemName: "xmark.circle.fill")
