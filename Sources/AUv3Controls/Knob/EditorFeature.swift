@@ -123,9 +123,6 @@ public struct EditorView: View {
         .foregroundColor(config.theme.textColor)
       }
     }
-#if os(macOS)
-    .frame(width: 200)
-#endif
     .padding()
     .background(.quaternary)
     .clipShape(RoundedRectangle(cornerRadius: 12))
