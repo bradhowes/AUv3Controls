@@ -90,20 +90,19 @@ public struct EditorView: View {
         Text(config.title)
           .lineLimit(1, reservesSpace: false)
         ZStack(alignment: .trailing) {
-#if os(iOS)
           TextField(store.value, text: $store.value)
-            .keyboardType(.numbersAndPunctuation)
             .focused($focus, equals: .value)
-            .submitLabel(.go)
-            .onSubmit { store.send(.acceptButtonTapped, animation: .linear) }
-            .disableAutocorrection(true)
-            .textFieldStyle(.roundedBorder)
-#elseif os(macOS)
-          TextField(store.value, text: $store.value)
-            .focused(self.$focus, equals: .value)
-            .onSubmit { store.send(.acceptButtonTapped, animation: .linear) }
-            .textFieldStyle(.roundedBorder)
-#endif
+            .iOS {
+              $0.keyboardType(.numbersAndPunctuation)
+                .submitLabel(.go)
+                .onSubmit { store.send(.acceptButtonTapped, animation: .linear) }
+                .disableAutocorrection(true)
+                .textFieldStyle(.roundedBorder)
+            }
+            .macOS {
+              $0.onSubmit { store.send(.acceptButtonTapped, animation: .linear) }
+                .textFieldStyle(.roundedBorder)
+            }
           Image(systemName: "xmark.circle.fill")
             .foregroundColor(.secondary)
             .onTapGesture(count: 1) { store.send(.clearButtonTapped, animation: .linear) }
