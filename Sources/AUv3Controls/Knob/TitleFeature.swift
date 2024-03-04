@@ -52,12 +52,18 @@ public struct TitleFeature {
  title is shown, but when the view state receives the `.valueChanged` action, the value view will appear for N
  seconds before it disappears and the title reappears.
  */
-struct TitleView: View {
+public struct TitleView: View {
   let store: StoreOf<TitleFeature>
   let config: KnobConfig
   let proxy: ScrollViewProxy?
 
-  var body: some View {
+  public init(store: StoreOf<TitleFeature>, config: KnobConfig, proxy: ScrollViewProxy?) {
+    self.store = store
+    self.config = config
+    self.proxy = proxy
+  }
+
+  public var body: some View {
     ZStack {
       if store.showingValue {
         Text(store.formattedValue ?? "")

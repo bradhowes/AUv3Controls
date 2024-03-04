@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		BD2F12BA2B0175C300E5D0CE /* AUv3Controls_DemoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD2F12B92B0175C300E5D0CE /* AUv3Controls_DemoApp.swift */; };
-		BD2F12BC2B0175C300E5D0CE /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD2F12BB2B0175C300E5D0CE /* ContentView.swift */; };
 		BD2F12BE2B0175C400E5D0CE /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BD2F12BD2B0175C400E5D0CE /* Assets.xcassets */; };
 		BD2F12C22B0175C400E5D0CE /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BD2F12C12B0175C400E5D0CE /* Preview Assets.xcassets */; };
 		BD2F12CC2B0175C400E5D0CE /* AUv3Controls_DemoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD2F12CB2B0175C400E5D0CE /* AUv3Controls_DemoTests.swift */; };
@@ -16,6 +15,7 @@
 		BD2F12D82B0175C400E5D0CE /* AUv3Controls_DemoUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD2F12D72B0175C400E5D0CE /* AUv3Controls_DemoUITestsLaunchTests.swift */; };
 		BD2F12E62B0175ED00E5D0CE /* AUv3Controls in Frameworks */ = {isa = PBXBuildFile; productRef = BD2F12E52B0175ED00E5D0CE /* AUv3Controls */; };
 		BD2F12E92B0176F800E5D0CE /* AUv3Controls in Frameworks */ = {isa = PBXBuildFile; productRef = BD2F12E82B0176F800E5D0CE /* AUv3Controls */; };
+		BDEC132A2B95790600789D13 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD2F12BB2B0175C300E5D0CE /* ContentView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -201,7 +201,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1500;
-				LastUpgradeCheck = 1500;
+				LastUpgradeCheck = 1520;
 				TargetAttributes = {
 					BD2F12B52B0175C300E5D0CE = {
 						CreatedOnToolsVersion = 15.0.1;
@@ -270,7 +270,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BD2F12BC2B0175C300E5D0CE /* ContentView.swift in Sources */,
+				BDEC132A2B95790600789D13 /* ContentView.swift in Sources */,
 				BD2F12BA2B0175C300E5D0CE /* AUv3Controls_DemoApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -342,6 +342,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -360,7 +361,9 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -403,6 +406,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -415,7 +419,9 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
@@ -430,6 +436,7 @@
 				CODE_SIGN_ENTITLEMENTS = "AUv3Controls Demo/AUv3Controls_Demo.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"AUv3Controls Demo/Preview Content\"";
 				DEVELOPMENT_TEAM = UP6SS5ES7E;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -468,6 +475,7 @@
 				CODE_SIGN_ENTITLEMENTS = "AUv3Controls Demo/AUv3Controls_Demo.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"AUv3Controls Demo/Preview Content\"";
 				DEVELOPMENT_TEAM = UP6SS5ES7E;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -505,6 +513,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = UP6SS5ES7E;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -528,6 +537,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = UP6SS5ES7E;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -550,6 +560,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = UP6SS5ES7E;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -572,6 +583,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = UP6SS5ES7E;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;

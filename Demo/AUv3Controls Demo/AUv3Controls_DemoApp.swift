@@ -11,7 +11,7 @@ import SwiftUI
 struct AUv3Controls_DemoApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView2()
         }
     }
 }

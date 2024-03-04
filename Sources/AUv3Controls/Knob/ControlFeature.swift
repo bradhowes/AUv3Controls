@@ -18,7 +18,7 @@ public struct ControlFeature {
     var track: TrackFeature.State
     var title: TitleFeature.State
 
-    init(config: KnobConfig) {
+    public init(config: KnobConfig) {
       self.track = .init(norm: config.valueToNorm(Double(config.parameter.value)))
       self.title = .init()
     }
@@ -65,12 +65,18 @@ extension ControlFeature {
   }
 }
 
-struct ControlView: View {
+public struct ControlView: View {
   let store: StoreOf<ControlFeature>
   let config: KnobConfig
   let proxy: ScrollViewProxy?
 
-  var body: some View {
+  public init(store: StoreOf<ControlFeature>, config: KnobConfig, proxy: ScrollViewProxy?) {
+    self.store = store
+    self.config = config
+    self.proxy = proxy
+  }
+
+  public var body: some View {
     VStack(spacing: 0.0) {
       TrackView(store: store.scope(state: \.track, action: \.track), config: config)
       TitleView(store: store.scope(state: \.title, action: \.title), config: config, proxy: proxy)

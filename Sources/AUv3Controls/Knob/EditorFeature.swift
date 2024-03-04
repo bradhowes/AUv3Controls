@@ -17,7 +17,7 @@ public struct EditorFeature {
       self.focus = nil
     }
 
-    enum Field: String, Hashable {
+    public enum Field: String, Hashable {
       case value
     }
   }
@@ -74,12 +74,17 @@ extension EditorFeature {
  A pseudo-dialog box that hosts a TextField containing the current control's value for editing,
  and Accept and Cancel buttons to dismiss the dialog.
  */
-struct EditorView: View {
+public struct EditorView: View {
   @Bindable var store: StoreOf<EditorFeature>
   @FocusState var focus: EditorFeature.State.Field?
   let config: KnobConfig
 
-  var body: some View {
+  public init(store: StoreOf<EditorFeature>, config: KnobConfig) {
+    self.store = store
+    self.config = config
+  }
+
+  public var body: some View {
     VStack(alignment: .center, spacing: 12) {
       HStack(spacing: 12) {
         Text(config.title)
@@ -118,6 +123,9 @@ struct EditorView: View {
         .foregroundColor(config.theme.textColor)
       }
     }
+#if os(macOS)
+    .frame(width: 200)
+#endif
     .padding()
     .background(.quaternary)
     .clipShape(RoundedRectangle(cornerRadius: 12))

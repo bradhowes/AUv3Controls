@@ -137,17 +137,15 @@ public struct KnobView: View {
   }
 
   public var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      ZStack {
-        ControlView(store: store.scope(state: \.control, action: \.control), config: config, proxy: proxy)
-          .visible(when: !viewStore.editor.hasFocus)
-        EditorView(store: store.scope(state: \.editor, action: \.editor), config: config)
-          .visible(when: viewStore.editor.hasFocus)
-      }
-      .frame(maxWidth: config.controlWidthIf(viewStore.editor.focus), maxHeight: config.maxHeight)
-      .frame(width: config.controlWidthIf(viewStore.editor.focus), height: config.maxHeight)
-      .task { await viewStore.send(.observationStart).finish() }
+    ZStack {
+      ControlView(store: store.scope(state: \.control, action: \.control), config: config, proxy: proxy)
+        .visible(when: !store.editor.hasFocus)
+      EditorView(store: store.scope(state: \.editor, action: \.editor), config: config)
+        .visible(when: store.editor.hasFocus)
     }
+    .frame(maxWidth: config.controlWidthIf(store.editor.focus), maxHeight: config.maxHeight)
+    .frame(width: config.controlWidthIf(store.editor.focus), height: config.maxHeight)
+    .task { await store.send(.observationStart).finish() }
   }
 }
 

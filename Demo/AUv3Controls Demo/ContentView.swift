@@ -75,7 +75,7 @@ struct ContentView: View {
 
   var body: some View {
     VStack {
-      GroupBox(label: Label("AUv3Controls", systemImage: "")) {
+      GroupBox(label: Label("AUv3Controls", systemImage: "waveform")) {
         HStack {
           KnobView(store: store3, config: config3)
           KnobView(store: store4, config: config4)
@@ -87,7 +87,7 @@ struct ContentView: View {
       }
       .padding()
       // .border(theme.controlBackgroundColor)
-      GroupBox(label: Label("MIDI Controls", systemImage: "")) {
+      GroupBox(label: Label("MIDI Controls", systemImage: "pianokeys")) {
         Slider(value: self.mockAUv3.binding(to: param3.address, with: $slider3), in: config3.range)
         Text("Volume: \(slider3)")
         Slider(value: self.mockAUv3.binding(to: param4.address, with: $slider4), in: config4.range)
@@ -104,6 +104,24 @@ struct ContentView: View {
   }
 }
 
+struct ContentView2: View {
+
+  @State var store: StoreOf<ControlFeature>
+
+  init() {
+    store = Store(initialState: ControlFeature.State(config: config3)) { ControlFeature(config: config3) }
+  }
+
+  var body: some View {
+    GroupBox(label: Label("AUv3Controls", systemImage: "waveform")) {
+      Text("Testing")
+        .padding()
+      ControlView(store: store, config: config3, proxy: nil)
+    }
+    .padding()
+  }
+}
+
 #Preview {
-  ContentView()
+  ContentView2()
 }

@@ -43,11 +43,16 @@ public struct TrackFeature {
  View that shows a circular track and an overlay indicator track that represents the current value.
  Dragging vertically on the view will change the current value.
  */
-struct TrackView: View {
+public struct TrackView: View {
   let store: StoreOf<TrackFeature>
   let config: KnobConfig
 
-  var body: some View {
+  public init(store: StoreOf<TrackFeature>, config: KnobConfig) {
+    self.store = store
+    self.config = config
+  }
+
+  public var body: some View {
     Rectangle()
       .fill(.background)
       .frame(width: config.controlDiameter, height: config.controlDiameter)
