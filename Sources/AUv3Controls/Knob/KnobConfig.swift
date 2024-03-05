@@ -18,6 +18,7 @@ public struct KnobConfig: Equatable {
   public var logScale: Bool
   public var controlDiameter: CGFloat { didSet { updateDragScaling() } }
   public var controlRadius: CGFloat { controlDiameter / 2.0 }
+  public var controlEditorWidth: CGFloat = 200
 
   /// How much travel is need to change the knob from `minimumValue` to `maximumValue`.
   /// By default this is 1x the `controlSize` value. Setting it to 2 will require 2x the `controlSize` to go from
@@ -61,7 +62,7 @@ public struct KnobConfig: Equatable {
     dragScaling = 1.0 / (controlDiameter * touchSensitivity)
   }
 
-  func controlWidthIf(_ value: Bool) -> CGFloat { value ? 200 : controlDiameter }
+  func controlWidthIf(_ value: Bool) -> CGFloat { value ? controlEditorWidth : controlDiameter }
 
   func controlWidthIf<T>(_ value: T?) -> CGFloat { controlWidthIf(value != nil) }
 
