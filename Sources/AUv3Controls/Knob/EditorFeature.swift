@@ -95,6 +95,11 @@ public struct EditorView: View {
             .keyboardType(.numbersAndPunctuation)
             .focused($focus, equals: .value)
             .submitLabel(.go)
+            .onChange(of: focus) {
+              if focus != .value {
+                store.send(.acceptButtonTapped, animation: .linear)
+              }
+            }
             .onSubmit { store.send(.acceptButtonTapped, animation: .linear) }
             .disableAutocorrection(true)
             .textFieldStyle(.roundedBorder)
