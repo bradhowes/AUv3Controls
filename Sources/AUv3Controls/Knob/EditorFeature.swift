@@ -2,6 +2,10 @@ import AVFoundation
 import ComposableArchitecture
 import SwiftUI
 
+/***
+ A value editor for a `KnobFeature` control. Provides a text field for editing the current value of the control, and
+ two buttons, one to accept the changes, and another to cancel them.
+ */
 @Reducer
 public struct EditorFeature {
   let config: KnobConfig
@@ -37,36 +41,28 @@ public struct EditorFeature {
       switch action {
       case .acceptButtonTapped:
         state.focus = nil
-        return .none
 
       case .binding:
-        return .none
+        break
 
       case .cancelButtonTapped:
         state.focus = nil
-        return .none
 
       case .clearButtonTapped:
         state.value = ""
-        return .none
 
       case .start(let value):
         state.value = config.formattedValue(value)
         state.focus = .value
-        return .none
 
       case let .valueChanged(newValue):
         state.value = newValue
-        return .none
       }
+      return .none
     }
   }
 }
 
-/**
- A pseudo-dialog box that hosts a TextField containing the current control's value for editing,
- and Accept and Cancel buttons to dismiss the dialog.
- */
 struct EditorView: View {
   @Bindable var store: StoreOf<EditorFeature>
   @FocusState var focus: EditorFeature.State.Field?
@@ -88,19 +84,12 @@ struct EditorView: View {
             .keyboardType(.numbersAndPunctuation)
             .focused($focus, equals: .value)
             .submitLabel(.go)
-            .onChange(of: focus) {
-              if focus != .value {
-                store.send(.acceptButtonTapped, animation: .linear)
-              }
-            }
             .onSubmit { store.send(.acceptButtonTapped, animation: .linear) }
             .disableAutocorrection(true)
             .textFieldStyle(.roundedBorder)
 #elseif os(macOS)
           TextField(store.value, text: $store.value)
-            .onSubmit { 
-              store.send(.acceptButtonTapped, animation: .linear)
-            }
+            .onSubmit { store.send(.acceptButtonTapped, animation: .linear) }
             .textFieldStyle(.roundedBorder)
 #endif
           Image(systemName: "xmark.circle.fill")

@@ -3,6 +3,10 @@ import Clocks
 import ComposableArchitecture
 import SwiftUI
 
+/**
+ A text label that usually shows a fixed name/title value, but will show another value for short duration before
+ reverting back to the name/title value.
+ */
 @Reducer
 public struct TitleFeature {
   let config: KnobConfig
@@ -24,9 +28,9 @@ public struct TitleFeature {
   public var body: some Reducer<State, Action> {
     Reduce { state, action in
       switch action {
-      case let .valueChanged(value): return showValue(state: &state, value: value)
-      case .stoppedShowingValue: return showTitle(state: &state)
-      case .tapped: return showTitle(state: &state)
+      case let .valueChanged(value): return showValueEffect(state: &state, value: value)
+      case .stoppedShowingValue: return showTitleEffect(state: &state)
+      case .tapped: return showTitleEffect(state: &state)
       }
     }
   }
@@ -34,12 +38,12 @@ public struct TitleFeature {
 
 private extension TitleFeature {
 
-  func showTitle(state: inout State) -> Effect<TitleFeature.Action> {
+  func showTitleEffect(state: inout State) -> Effect<Action> {
     state.formattedValue = nil
     return .none
   }
 
-  func showValue(state: inout State, value: Double) -> Effect<TitleFeature.Action> {
+  func showValueEffect(state: inout State, value: Double) -> Effect<Action> {
     state.formattedValue = config.formattedValue(value)
     let duration: Duration = .seconds(config.showValueDuration)
     let clock = self.clock

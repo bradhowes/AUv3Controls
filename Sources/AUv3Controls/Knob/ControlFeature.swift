@@ -2,9 +2,23 @@ import AVFoundation
 import ComposableArchitecture
 import SwiftUI
 
+/**
+ Combination of a TrackFeature and a TitleFeature. Changes to the track value will cause the title to show the
+ current value for a short duration before reverting back to the configured title value.
+
+ Does not support value editing.
+ */
 @Reducer
 public struct ControlFeature {
   let config: KnobConfig
+  let trackFeature: TrackFeature
+  let titleFeature: TitleFeature
+
+  public init(config: KnobConfig) {
+    self.config = config
+    self.trackFeature = TrackFeature(config: config)
+    self.titleFeature = TitleFeature(config: config)
+  }
 
   public struct State: Equatable {
     var title: TitleFeature.State
@@ -23,20 +37,20 @@ public struct ControlFeature {
   }
 
   public var body: some Reducer<State, Action> {
-    Scope(state: \.track, action: /Action.track) { TrackFeature(config: config) }
-    Scope(state: \.title, action: /Action.title) { TitleFeature(config: config) }
+    Scope(state: \.track, action: /Action.track) { trackFeature }
+    Scope(state: \.title, action: /Action.title) { titleFeature }
 
     Reduce { state, action in
       switch action {
 
       case let .track(trackAction):
         let value = config.normToValue(state.track.norm)
-        return .send(.title(.valueChanged(value)))
+        return updateTitleEffect(state: &state.title, value: value)
 
       case let .valueChanged(value):
         return .merge(
-          .send(.title(.valueChanged(value))),
-          .send(.track(.valueChanged(value)))
+          updateTitleEffect(state: &state.title, value: value),
+          updateTrackEffect(state: &state.track, value: value)
         )
 
       default:
@@ -46,10 +60,23 @@ public struct ControlFeature {
   }
 }
 
+private extension ControlFeature {
+
+  func updateTitleEffect(state: inout TitleFeature.State, value: Double) -> Effect<Action> {
+    titleFeature.reduce(into: &state, action: .valueChanged(value))
+      .map(Action.title)
+  }
+
+  func updateTrackEffect(state: inout TrackFeature.State, value: Double) -> Effect<Action> {
+    trackFeature.reduce(into: &state, action: .valueChanged(value))
+      .map(Action.track)
+  }
+}
+
 struct ControlView: View {
-  let store: StoreOf<ControlFeature>
-  let config: KnobConfig
-  let proxy: ScrollViewProxy?
+  private let store: StoreOf<ControlFeature>
+  private let config: KnobConfig
+  private let proxy: ScrollViewProxy?
 
   init(store: StoreOf<ControlFeature>, config: KnobConfig, proxy: ScrollViewProxy?) {
     self.store = store

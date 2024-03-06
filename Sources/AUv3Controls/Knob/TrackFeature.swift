@@ -2,6 +2,14 @@ import AVFoundation
 import ComposableArchitecture
 import SwiftUI
 
+/**
+ Shows two circular tracks, one that indicates the total possible values of the control, and the other that shows the
+ current control value. The view aspects of the control are configured using properties found in the `KnobConfig`
+ instance given when constructed.
+
+ Vertically dragging in the control changes the value. Moving the touch/pointer away from the center will increase the
+ sensitivity of the vertical movements (smaller changes for the same distance moved).
+ */
 @Reducer
 public struct TrackFeature {
   let config: KnobConfig
@@ -29,17 +37,15 @@ public struct TrackFeature {
       case let .dragChanged(start, position):
         state.norm = calcNorm(last: state.lastDrag ?? start, position: position)
         state.lastDrag = position
-        return .none
 
       case let .dragEnded(start, position):
         state.norm = calcNorm(last: state.lastDrag ?? start, position: position)
         state.lastDrag = nil
-        return .none
 
       case let .valueChanged(value):
         state.norm = config.valueToNorm(value)
-        return .none
       }
+      return .none
     }
   }
 }

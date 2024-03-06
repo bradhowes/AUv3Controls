@@ -2,12 +2,27 @@ import AVFoundation
 import ComposableArchitecture
 import SwiftUI
 
+/***
+ A modern rotary knob that shows and controls the floating-point value of an associated AUParameter. The knob control
+ consists of three components:
+
+ - circular indicator representing the current value and that reponds to touch/nouse drags for value changes
+ - title label that shows the name of the control and that temporarily shows the current value when it changes
+ - value editor that appears when tapping/mouse clicking on the title
+
+ On iOS platforms, the editor will replace the knob control while it is active. On macOS, the editor appears as a modal
+ dialog. The functionality is the same otherwise.
+ */
 @Reducer
 public struct KnobFeature {
   let config: KnobConfig
+  let controlFeature: ControlFeature
+  let editorFeature: EditorFeature
 
   public init(config: KnobConfig) {
     self.config = config
+    self.controlFeature = ControlFeature(config: config)
+    self.editorFeature = EditorFeature(config: config)
   }
 
   @ObservableState
@@ -34,16 +49,10 @@ public struct KnobFeature {
   }
 
   public var body: some Reducer<State, Action> {
-    Scope(state: \.control, action: /Action.control) { ControlFeature(config: config) }
-    Scope(state: \.editor, action: /Action.editor) { EditorFeature(config: config) }
+    Scope(state: \.control, action: /Action.control) { controlFeature }
+    Scope(state: \.editor, action: /Action.editor) { editorFeature }
 
     Reduce { state, action in
-
-      func updateParameter(_ value: Double) {
-        if let token = state.observerToken {
-          config.parameter.setValue(AUValue(value), originator: token)
-        }
-      }
 
       switch action {
 
@@ -52,23 +61,25 @@ public struct KnobFeature {
         case let .track(trackAction):
           if case let .dragChanged = trackAction {
             let value = config.normToValue(state.control.track.norm)
-            updateParameter(value)
+            return setParameterEffect(state: state, value: value)
           }
-          return .none
 
         case let .title(titleAction) where titleAction == .tapped:
           let value = config.normToValue(state.control.track.norm)
-          return .send(.editor(.start(value)))
+          return startEditingEffect(state: &state.editor, value: value)
 
         default:
-          return .none
+          break
         }
+        return .none
 
       case let .editor(editorAction) where editorAction == .acceptButtonTapped:
         guard let editorValue = Double(state.editor.value) else { return .none }
         let value = config.normToValue(config.valueToNorm(editorValue))
-        updateParameter(value)
-        return .send(.control(.valueChanged(value)))
+        return .merge(
+          setParameterEffect(state: state, value: value),
+          updateControlEffect(state: &state.control, value: value)
+        )
 
       case .observationStart:
         let title = config.title
@@ -94,7 +105,7 @@ public struct KnobFeature {
         return .cancel(id: state.id)
 
       case let .observedValueChanged(value):
-        return .send(.control(.valueChanged(Double(value))))
+        return updateControlEffect(state: &state.control, value: Double(value))
 
       default:
         return .none
@@ -103,17 +114,47 @@ public struct KnobFeature {
   }
 }
 
+private extension KnobFeature {
+  
+  func updateControlEffect(state: inout ControlFeature.State, value: Double) -> Effect<Action> {
+    controlFeature.reduce(into: &state, action: .valueChanged(value))
+      .map(Action.control)
+  }
+
+  func startEditingEffect(state: inout EditorFeature.State, value: Double) -> Effect<Action> {
+    editorFeature.reduce(into: &state, action: .start(value))
+      .map(Action.editor)
+  }
+
+  func setParameterEffect(state: State, value: Double) -> Effect<Action> {
+    guard let token = state.observerToken else { return .none }
+    return .run(priority: .userInitiated) { _ in
+      config.parameter.setValue(AUValue(value), originator: token)
+    }
+  }
+}
+
 public struct KnobView: View {
   let store: StoreOf<KnobFeature>
   let config: KnobConfig
   let proxy: ScrollViewProxy?
+#if os(macOS)
+  let showBinding: Binding<Bool>
+#endif
 
   public init(store: StoreOf<KnobFeature>, config: KnobConfig, proxy: ScrollViewProxy? = nil) {
     self.store = store
     self.config = config
     self.proxy = proxy
+#if os(macOS)
+    self.showBinding = Binding<Bool>(
+      get: { store.editor.hasFocus },
+      set: { $0 }
+    )
+#endif
   }
 
+#if os(iOS)
   public var body: some View {
     ZStack {
       ControlView(store: store.scope(state: \.control, action: \.control), config: config, proxy: proxy)
@@ -125,6 +166,18 @@ public struct KnobView: View {
     .frame(width: config.controlWidthIf(store.editor.focus), height: config.maxHeight)
     .task { await store.send(.observationStart).finish() }
   }
+#elseif os(macOS)
+  public var body: some View {
+    ControlView(store: store.scope(state: \.control, action: \.control), config: config, proxy: proxy)
+      .frame(maxWidth: config.controlDiameter, maxHeight: config.maxHeight)
+      .frame(width: config.controlDiameter, height: config.maxHeight)
+      .task { await store.send(.observationStart).finish() }
+      .sheet(isPresented: showBinding) {
+      } content: {
+        EditorView(store: store.scope(state: \.editor, action: \.editor), config: config)
+      }
+  }
+#endif
 }
 
 struct KnobViewPreview: PreviewProvider {
