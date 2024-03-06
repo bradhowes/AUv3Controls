@@ -11,9 +11,13 @@ SwiftUI knob and toggle controls for use with AUv3 components. Uses the excellen
 
 The controls are attached to AUParameter entities, so changes in the control will affect their associated AUParameter
 value. This works the other way as well: external changes to the AUParameter -- say from a MIDI controller or
-preset load -- will be reflected in the control.
+preset load -- will be reflected in the control. Below is a demonstration on iOS:
 
 ![](https://github.com/bradhowes/AUv3Controls/blob/main/Duality.gif?raw=true)
+
+And below shows rendering on macOS:
+
+![](https://github.com/bradhowes/AUv3Controls/blob/main/Duality_macos.gif?raw=true)
 
 ## Controls
 
