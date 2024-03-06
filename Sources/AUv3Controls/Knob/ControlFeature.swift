@@ -43,7 +43,7 @@ public struct ControlFeature {
     Reduce { state, action in
       switch action {
 
-      case let .track(trackAction):
+      case .track:
         let value = config.normToValue(state.track.norm)
         return updateTitleEffect(state: &state.title, value: value)
 

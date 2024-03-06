@@ -18,7 +18,7 @@ final class ControlFeatureTests: XCTestCase {
   override func setUpWithError() throws {
     isRecording = false
     config = KnobConfig(parameter: param, logScale: false, theme: Theme())
-    store = TestStore(initialState: .init(config: config)) {
+    store = TestStore(initialState: .init(config: config, value: 0)) {
       ControlFeature(config: config)
     } withDependencies: { $0.continuousClock = ImmediateClock() }
   }
@@ -61,7 +61,7 @@ final class ControlFeatureTests: XCTestCase {
       }
     }
 
-    let view = MyView(config: config, store: Store(initialState: .init(config: config)) {
+    let view = MyView(config: config, store: Store(initialState: .init(config: config, value: 0.0)) {
       ControlFeature(config: config)
     } withDependencies: {
       $0.continuousClock = ContinuousClock()

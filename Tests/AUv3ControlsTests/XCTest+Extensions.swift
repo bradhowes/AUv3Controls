@@ -17,7 +17,7 @@ extension XCTest {
   func assertSnapshot<V: SwiftUI.View>(matching: V, size: CGSize = CGSize(width: 220, height: 220),
                                            file: StaticString = #file, testName: String = #function,
                                            line: UInt = #line) throws {
-    // isRecording = false
+    isRecording = false
     print(ProcessInfo.processInfo.environment)
 
     let isOnGithub = ProcessInfo.processInfo.environment["XCTestBundlePath"]?.contains("/Users/runner/work") ?? false

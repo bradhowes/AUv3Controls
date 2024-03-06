@@ -59,7 +59,7 @@ public struct KnobFeature {
       case let .control(controlAction):
         switch controlAction {
         case let .track(trackAction):
-          if case let .dragChanged = trackAction {
+          if case .dragChanged = trackAction {
             let value = config.normToValue(state.control.track.norm)
             return setParameterEffect(state: state, value: value)
           }
@@ -82,9 +82,6 @@ public struct KnobFeature {
         )
 
       case .observationStart:
-        let title = config.title
-        Logger.shared.log("\(title) - started observing values")
-
         let stream: AsyncStream<AUValue>
         (state.observerToken, stream) = config.parameter.startObserving()
 
@@ -92,12 +89,10 @@ public struct KnobFeature {
           for await value in stream {
             await send(.observedValueChanged(value))
           }
-          Logger.shared.log("\(title) - observation async stream stopped")
           await send(.observationStopped)
         }.cancellable(id: state.id, cancelInFlight: true)
 
       case .observationStopped:
-        Logger.shared.log("\(config.title) - stopped observing values")
         if let token = state.observerToken {
           config.parameter.removeParameterObserver(token)
           state.observerToken = nil
