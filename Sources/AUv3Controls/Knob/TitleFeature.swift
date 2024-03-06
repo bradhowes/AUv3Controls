@@ -14,9 +14,9 @@ public struct TitleFeature {
   }
 
   public enum Action: Equatable {
-    case valueChanged(Double)
     case stoppedShowingValue
     case tapped
+    case valueChanged(Double)
   }
 
   @Dependency(\.continuousClock) var clock
@@ -24,19 +24,22 @@ public struct TitleFeature {
   public var body: some Reducer<State, Action> {
     Reduce { state, action in
       switch action {
-      case let .valueChanged(value): return updateAndShowValue(state: &state, value: value)
+      case let .valueChanged(value): return showValue(state: &state, value: value)
       case .stoppedShowingValue: return showTitle(state: &state)
       case .tapped: return showTitle(state: &state)
       }
     }
   }
+}
+
+private extension TitleFeature {
 
   func showTitle(state: inout State) -> Effect<TitleFeature.Action> {
     state.formattedValue = nil
     return .none
   }
 
-  func updateAndShowValue(state: inout State, value: Double) -> Effect<TitleFeature.Action> {
+  func showValue(state: inout State, value: Double) -> Effect<TitleFeature.Action> {
     state.formattedValue = config.formattedValue(value)
     let duration: Duration = .seconds(config.showValueDuration)
     let clock = self.clock

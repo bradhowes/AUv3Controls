@@ -4,15 +4,10 @@ import SwiftUI
 
 @Reducer
 public struct KnobFeature {
-  public let config: KnobConfig
-
-  private let control: ControlFeature
-  private let editor: EditorFeature
+  let config: KnobConfig
 
   public init(config: KnobConfig) {
     self.config = config
-    self.control = .init(config: config)
-    self.editor = .init(config: config)
   }
 
   @ObservableState
@@ -25,7 +20,7 @@ public struct KnobFeature {
 
     public init(config: KnobConfig) {
       self.id = config.id
-      self.control = .init(config: config)
+      self.control = .init(config: config, value: Double(config.parameter.value))
       self.editor = .init()
     }
   }
@@ -39,14 +34,13 @@ public struct KnobFeature {
   }
 
   public var body: some Reducer<State, Action> {
-    Scope(state: \.control, action: /Action.control) { control }
-    Scope(state: \.editor, action: /Action.editor) { editor }
+    Scope(state: \.control, action: /Action.control) { ControlFeature(config: config) }
+    Scope(state: \.editor, action: /Action.editor) { EditorFeature(config: config) }
 
     Reduce { state, action in
 
       func updateParameter(_ value: Double) {
         if let token = state.observerToken {
-          Logger.shared.log("setting \(config.title) to \(value)")
           config.parameter.setValue(AUValue(value), originator: token)
         }
       }
@@ -54,45 +48,27 @@ public struct KnobFeature {
       switch action {
 
       case let .control(controlAction):
-
         switch controlAction {
-
-        case .track:
-          let value = config.normToValue(state.control.track.norm)
-          updateParameter(value)
-          return .none
-
-        case let .title(titleAction):
-
-          switch titleAction {
-
-          case .tapped:
+        case let .track(trackAction):
+          if case let .dragChanged = trackAction {
             let value = config.normToValue(state.control.track.norm)
-            Logger.shared.log("showing \(config.title) editor")
-            return editor.start(state: &state.editor, value: value)
-              .map(Action.editor)
-
-          default:
-            return .none
-          }
-        }
-
-      case let .editor(editorAction):
-
-        switch editorAction {
-
-        case .acceptButtonTapped:
-          if let editorValue = Double(state.editor.value) {
-            let value = config.normToValue(config.valueToNorm(editorValue))
             updateParameter(value)
-            return control.updateAndShowValue(state: &state.control, value: value)
-              .map(Action.control)
           }
           return .none
+
+        case let .title(titleAction) where titleAction == .tapped:
+          let value = config.normToValue(state.control.track.norm)
+          return .send(.editor(.start(value)))
 
         default:
           return .none
         }
+
+      case let .editor(editorAction) where editorAction == .acceptButtonTapped:
+        guard let editorValue = Double(state.editor.value) else { return .none }
+        let value = config.normToValue(config.valueToNorm(editorValue))
+        updateParameter(value)
+        return .send(.control(.valueChanged(value)))
 
       case .observationStart:
         let title = config.title
@@ -118,8 +94,10 @@ public struct KnobFeature {
         return .cancel(id: state.id)
 
       case let .observedValueChanged(value):
-        return control.updateAndShowValue(state: &state.control, value: Double(value))
-          .map(Action.control)
+        return .send(.control(.valueChanged(Double(value))))
+
+      default:
+        return .none
       }
     }
   }

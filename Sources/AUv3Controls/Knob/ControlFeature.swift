@@ -5,78 +5,59 @@ import SwiftUI
 @Reducer
 public struct ControlFeature {
   let config: KnobConfig
-  let trackFeature: TrackFeature
-  let titleFeature: TitleFeature
-
-  public init(config: KnobConfig) {
-    self.config = config
-    self.trackFeature = TrackFeature(config: config)
-    self.titleFeature = TitleFeature(config: config)
-  }
 
   public struct State: Equatable {
-    var track: TrackFeature.State
     var title: TitleFeature.State
+    var track: TrackFeature.State
 
-    public init(config: KnobConfig) {
-      self.track = .init(norm: config.valueToNorm(Double(config.parameter.value)))
+    public init(config: KnobConfig, value: Double) {
       self.title = .init()
+      self.track = .init(norm: config.valueToNorm(value))
     }
   }
 
   public enum Action: Equatable {
-    case track(TrackFeature.Action)
     case title(TitleFeature.Action)
+    case track(TrackFeature.Action)
+    case valueChanged(Double)
   }
 
   public var body: some Reducer<State, Action> {
-    Scope(state: \.track, action: /Action.track) {
-      trackFeature
-    }
-    Scope(state: \.title, action: /Action.title) {
-      titleFeature
-    }
+    Scope(state: \.track, action: /Action.track) { TrackFeature(config: config) }
+    Scope(state: \.title, action: /Action.title) { TitleFeature(config: config) }
+
     Reduce { state, action in
       switch action {
 
       case let .track(trackAction):
-        switch trackAction {
+        let value = config.normToValue(state.track.norm)
+        return .send(.title(.valueChanged(value)))
 
-        case .dragChanged:
-          let value = config.normToValue(state.track.norm)
-          return titleFeature.updateAndShowValue(state: &state.title, value: value).map(Action.title)
+      case let .valueChanged(value):
+        return .merge(
+          .send(.title(.valueChanged(value))),
+          .send(.track(.valueChanged(value)))
+        )
 
-        case .dragEnded:
-            return .none
-        }
-      case .title:
+      default:
         return .none
       }
     }
   }
 }
 
-extension ControlFeature {
-
-  func updateAndShowValue(state: inout State, value: Double) -> Effect<Action> {
-    state.track.norm = config.valueToNorm(value)
-    return titleFeature.updateAndShowValue(state: &state.title, value: config.normToValue(state.track.norm))
-      .map(Action.title)
-  }
-}
-
-public struct ControlView: View {
+struct ControlView: View {
   let store: StoreOf<ControlFeature>
   let config: KnobConfig
   let proxy: ScrollViewProxy?
 
-  public init(store: StoreOf<ControlFeature>, config: KnobConfig, proxy: ScrollViewProxy?) {
+  init(store: StoreOf<ControlFeature>, config: KnobConfig, proxy: ScrollViewProxy?) {
     self.store = store
     self.config = config
     self.proxy = proxy
   }
 
-  public var body: some View {
+  var body: some View {
     VStack(spacing: 0.0) {
       TrackView(store: store.scope(state: \.track, action: \.track), config: config)
       TitleView(store: store.scope(state: \.title, action: \.title), config: config, proxy: proxy)
@@ -89,7 +70,8 @@ struct ControlViewPreview: PreviewProvider {
                                                      min: 0.0, max: 100.0, unit: .generic, unitName: nil,
                                                      valueStrings: nil, dependentParameters: nil)
   static let config = KnobConfig(parameter: param, logScale: false, theme: Theme())
-  @State static var store = Store(initialState: ControlFeature.State(config: config)) {
+  @State static var store = Store(initialState: ControlFeature.State(config: config,
+                                                                     value: Double(param.value))) {
     ControlFeature(config: config)
   }
 

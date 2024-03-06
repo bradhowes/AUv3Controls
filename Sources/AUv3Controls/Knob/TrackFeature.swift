@@ -15,6 +15,7 @@ public struct TrackFeature {
   public enum Action: Equatable {
     case dragChanged(start: CGPoint, position: CGPoint)
     case dragEnded(start: CGPoint, position: CGPoint)
+    case valueChanged(Double)
   }
 
   public var body: some Reducer<State, Action> {
@@ -33,6 +34,10 @@ public struct TrackFeature {
       case let .dragEnded(start, position):
         state.norm = calcNorm(last: state.lastDrag ?? start, position: position)
         state.lastDrag = nil
+        return .none
+
+      case let .valueChanged(value):
+        state.norm = config.valueToNorm(value)
         return .none
       }
     }

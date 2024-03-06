@@ -17,7 +17,7 @@ public struct EditorFeature {
       self.focus = nil
     }
 
-    public enum Field: String, Hashable {
+    enum Field: String, Hashable {
       case value
     }
   }
@@ -51,7 +51,9 @@ public struct EditorFeature {
         return .none
 
       case .start(let value):
-        return start(state: &state, value: value)
+        state.value = config.formattedValue(value)
+        state.focus = .value
+        return .none
 
       case let .valueChanged(newValue):
         state.value = newValue
@@ -61,30 +63,21 @@ public struct EditorFeature {
   }
 }
 
-extension EditorFeature {
-
-  func start(state: inout State, value: Double) -> Effect<Action> {
-    state.value = config.formattedValue(value)
-    state.focus = .value
-    return .none
-  }
-}
-
 /**
  A pseudo-dialog box that hosts a TextField containing the current control's value for editing,
  and Accept and Cancel buttons to dismiss the dialog.
  */
-public struct EditorView: View {
+struct EditorView: View {
   @Bindable var store: StoreOf<EditorFeature>
   @FocusState var focus: EditorFeature.State.Field?
   let config: KnobConfig
 
-  public init(store: StoreOf<EditorFeature>, config: KnobConfig) {
+  init(store: StoreOf<EditorFeature>, config: KnobConfig) {
     self.store = store
     self.config = config
   }
 
-  public var body: some View {
+  var body: some View {
     VStack(alignment: .center, spacing: 12) {
       HStack(spacing: 12) {
         Text(config.title)

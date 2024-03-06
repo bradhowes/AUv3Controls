@@ -104,24 +104,7 @@ struct ContentView: View {
   }
 }
 
-struct ContentView2: View {
-
-  @State var store: StoreOf<ControlFeature>
-
-  init() {
-    store = Store(initialState: ControlFeature.State(config: config3)) { ControlFeature(config: config3) }
-  }
-
-  var body: some View {
-    GroupBox(label: Label("AUv3Controls", systemImage: "waveform")) {
-      Text("Testing")
-        .padding()
-      ControlView(store: store, config: config3, proxy: nil)
-    }
-    .padding()
-  }
-}
 
 #Preview {
-  ContentView2()
+  ContentView()
 }
