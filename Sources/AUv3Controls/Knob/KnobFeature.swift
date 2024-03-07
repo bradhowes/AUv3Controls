@@ -56,15 +56,15 @@ public struct KnobFeature {
 
       switch action {
 
-      case let .control(controlAction):
+      case .control(let controlAction):
         switch controlAction {
-        case let .track(trackAction):
+        case .track(let trackAction):
           if case .dragChanged = trackAction {
             let value = config.normToValue(state.control.track.norm)
             return setParameterEffect(state: state, value: value)
           }
 
-        case let .title(titleAction) where titleAction == .tapped:
+        case .title(let titleAction) where titleAction == .tapped:
           let value = config.normToValue(state.control.track.norm)
           return startEditingEffect(state: &state.editor, value: value)
 
@@ -73,7 +73,7 @@ public struct KnobFeature {
         }
         return .none
 
-      case let .editor(editorAction) where editorAction == .acceptButtonTapped:
+      case .editor(let editorAction) where editorAction == .acceptButtonTapped:
         guard let editorValue = Double(state.editor.value) else { return .none }
         let value = config.normToValue(config.valueToNorm(editorValue))
         return .merge(
@@ -84,7 +84,6 @@ public struct KnobFeature {
       case .observationStart:
         let stream: AsyncStream<AUValue>
         (state.observerToken, stream) = config.parameter.startObserving()
-
         return .run { send in
           for await value in stream {
             await send(.observedValueChanged(value))
@@ -99,7 +98,7 @@ public struct KnobFeature {
         }
         return .cancel(id: state.id)
 
-      case let .observedValueChanged(value):
+      case .observedValueChanged(let value):
         return updateControlEffect(state: &state.control, value: Double(value))
 
       default:

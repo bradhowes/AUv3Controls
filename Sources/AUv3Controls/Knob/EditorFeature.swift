@@ -39,24 +39,14 @@ public struct EditorFeature {
     BindingReducer()
     Reduce { state, action in
       switch action {
-      case .acceptButtonTapped:
-        state.focus = nil
-
-      case .binding:
-        break
-
-      case .cancelButtonTapped:
-        state.focus = nil
-
-      case .clearButtonTapped:
-        state.value = ""
-
+      case .acceptButtonTapped: state.focus = nil
+      case .binding: break
+      case .cancelButtonTapped: state.focus = nil
+      case .clearButtonTapped: state.value = ""
       case .start(let value):
         state.value = config.formattedValue(value)
         state.focus = .value
-
-      case let .valueChanged(newValue):
-        state.value = newValue
+      case let .valueChanged(newValue): state.value = newValue
       }
       return .none
     }

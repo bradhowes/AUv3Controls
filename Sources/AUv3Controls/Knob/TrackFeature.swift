@@ -29,27 +29,31 @@ public struct TrackFeature {
   public var body: some Reducer<State, Action> {
     Reduce { state, action in
 
-      func calcNorm(last: CGPoint, position: CGPoint) -> Double {
-        (state.norm + config.dragChangeValue(last: last, position: position)).clamped(to: 0.0...1.0)
-      }
-
       switch action {
-      case let .dragChanged(start, position):
-        state.norm = calcNorm(last: state.lastDrag ?? start, position: position)
-        state.lastDrag = position
+      case let .dragChanged(start, position): 
+        return updateFromDragEffect(state: &state, start: state.lastDrag ?? start, position: position,
+                                    atEnd: false)
 
       case let .dragEnded(start, position):
-        state.norm = calcNorm(last: state.lastDrag ?? start, position: position)
-        state.lastDrag = nil
+        return updateFromDragEffect(state: &state, start: state.lastDrag ?? start, position: position,
+                                    atEnd: true)
 
       case let .valueChanged(value):
         state.norm = config.valueToNorm(value)
+        return .none
       }
-      return .none
     }
   }
 }
 
+private extension TrackFeature {
+
+  func updateFromDragEffect(state: inout State, start: CGPoint, position: CGPoint, atEnd: Bool) -> Effect<Action> {
+    state.norm = (state.norm + config.dragChangeValue(last: start, position: position)).clamped(to: 0.0...1.0)
+    state.lastDrag = atEnd ? nil : position
+    return .none
+  }
+}
 /**
  View that shows a circular track and an overlay indicator track that represents the current value.
  Dragging vertically on the view will change the current value.
