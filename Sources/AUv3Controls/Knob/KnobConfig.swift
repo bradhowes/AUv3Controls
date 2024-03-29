@@ -5,7 +5,11 @@ public struct KnobConfig: Equatable {
   public let theme: Theme
   public let parameter: AUParameter
 
-  public var id: ObjectIdentifier { ObjectIdentifier(parameter) }
+  /// Unique ID to identify the SwiftUI view -- this is the same as the AUParamete `address` attribute
+  public let id: UInt64
+  /// Unique ID to identify the task that reverts the knob's title after a value change
+  public let showValueCancelId: UInt64
+
   public var title: String { self.parameter.displayName }
   public var range: ClosedRange<Double> { minimumValue...maximumValue }
 
@@ -54,6 +58,9 @@ public struct KnobConfig: Equatable {
     self.maxChangeRegionWidthHalf = max(8, controlDiameter * maxChangeRegionWidthPercentage) / 2
     self.indicatorStrokeWidth = valueStrokeWidth
     self.theme = theme
+
+    self.id = parameter.address
+    self.showValueCancelId = parameter.address + 10_000
   }
 
   private var dragScaling: CGFloat

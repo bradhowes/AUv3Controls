@@ -48,8 +48,10 @@ private extension TitleFeature {
     let duration: Duration = .seconds(config.showValueDuration)
     let clock = self.clock
     return .run { send in
-      try await clock.sleep(for: duration)
-      await send(.stoppedShowingValue, animation: .linear)
+      try await withTaskCancellation(id: config.showValueCancelId, cancelInFlight: true) {
+        try await self.clock.sleep(for: duration)
+        await send(.stoppedShowingValue, animation: .linear)
+      }
     }
   }
 }

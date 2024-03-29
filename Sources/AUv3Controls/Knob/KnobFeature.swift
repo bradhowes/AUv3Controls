@@ -27,7 +27,7 @@ public struct KnobFeature {
 
   @ObservableState
   public struct State: Equatable, Identifiable {
-    public let id: ID
+    public let id: UInt64
 
     var control: ControlFeature.State
     var editor: EditorFeature.State
