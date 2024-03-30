@@ -1,6 +1,8 @@
 import AVFoundation
 import SwiftUI
 
+private let maxParameterAddress: UInt64 = 100_000
+
 public struct KnobConfig: Equatable {
   public let theme: Theme
   public let parameter: AUParameter
@@ -47,6 +49,8 @@ public struct KnobConfig: Equatable {
   public init(parameter: AUParameter, controlDiameter: CGFloat = 80.0,
               maxHeight: CGFloat = 100.0, touchSensitivity: CGFloat = 2.0, logScale: Bool = false,
               valueStrokeWidth: CGFloat = 6.0, theme: Theme) {
+    precondition(parameter.address < maxParameterAddress, "AUParameter address must be < \(maxParameterAddress)")
+
     self.parameter = parameter
     self.controlDiameter = controlDiameter
     self.minimumValue = Double(parameter.minValue)
@@ -58,9 +62,8 @@ public struct KnobConfig: Equatable {
     self.maxChangeRegionWidthHalf = max(8, controlDiameter * maxChangeRegionWidthPercentage) / 2
     self.indicatorStrokeWidth = valueStrokeWidth
     self.theme = theme
-
     self.id = parameter.address
-    self.showValueCancelId = parameter.address + 10_000
+    self.showValueCancelId = parameter.address + maxParameterAddress
   }
 
   private var dragScaling: CGFloat
