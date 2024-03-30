@@ -7,9 +7,9 @@ import XCTest
 
 @testable import AUv3Controls
 
-@MainActor
 final class DemoPreviewTests: XCTestCase {
 
+  @MainActor
   func testDualityPreview() async throws {
     try withDependencies { $0 = .live } operation: {
       let view = DualityViewPreview.previews
@@ -17,6 +17,7 @@ final class DemoPreviewTests: XCTestCase {
     }
   }
 
+  @MainActor
   func testEvenlopePreview() async throws {
     try withDependencies { $0 = .live } operation: {
       let view = EnvelopeViewPreview.previews

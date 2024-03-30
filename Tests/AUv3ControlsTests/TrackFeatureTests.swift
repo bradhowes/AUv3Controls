@@ -6,7 +6,6 @@ import XCTest
 
 @testable import AUv3Controls
 
-@MainActor
 final class TrackFeatureTests: XCTestCase {
   let param = AUParameterTree.createParameter(withIdentifier: "RELEASE", name: "Release", address: 1,
                                               min: 0.0, max: 100.0, unit: .generic, unitName: nil,
@@ -22,7 +21,7 @@ final class TrackFeatureTests: XCTestCase {
   
   override func setUpWithError() throws {
     isRecording = false
-    config = KnobConfig(parameter: param, logScale: false, theme: Theme())
+    config = KnobConfig(parameter: param, theme: Theme())
     makeStore()
   }
   
@@ -129,7 +128,11 @@ final class TrackFeatureTests: XCTestCase {
     try assertSnapshot(matching: view)
   }
   
+  @MainActor
   func testIndicatorStrokeWidth() async throws {
+    let theme = Theme(controlValueStrokeStyle: .init(lineWidth: 4.0, lineCap: .round))
+    let config = KnobConfig(parameter: param, theme: theme)
+
     struct MyView: SwiftUI.View {
       let config: KnobConfig
       @State var store: StoreOf<TrackFeature>
@@ -139,15 +142,14 @@ final class TrackFeatureTests: XCTestCase {
       }
     }
 
-    config.indicatorStrokeWidth = 12.0
     let view = MyView(config: config, store: Store(initialState: .init(norm: 0.5)) {
       TrackFeature(config: config)
     })
-    
+
     try assertSnapshot(matching: view)
   }
 
   func testPreview() async throws {
-    try assertSnapshot(matching: TrackViewPreview.previews)
+    try await assertSnapshot(matching: TrackViewPreview.previews)
   }
 }

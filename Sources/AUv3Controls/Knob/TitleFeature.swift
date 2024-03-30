@@ -17,7 +17,7 @@ public struct TitleFeature {
     var showingValue: Bool { formattedValue != nil }
   }
 
-  public enum Action: Equatable {
+  public enum Action: Equatable, Sendable {
     case stoppedShowingValue
     case tapped
     case valueChanged(Double)
@@ -47,9 +47,10 @@ private extension TitleFeature {
     state.formattedValue = config.formattedValue(value)
     let duration: Duration = .seconds(config.showValueDuration)
     let clock = self.clock
+    let cancelId = self.config.showValueCancelId
     return .run { send in
-      try await withTaskCancellation(id: config.showValueCancelId, cancelInFlight: true) {
-        try await self.clock.sleep(for: duration)
+      try await withTaskCancellation(id: cancelId, cancelInFlight: true) {
+        try await clock.sleep(for: duration)
         await send(.stoppedShowingValue, animation: .linear)
       }
     }
@@ -99,7 +100,7 @@ struct TitleViewPreview: PreviewProvider {
   static let param = AUParameterTree.createParameter(withIdentifier: "RELEASE", name: "Release", address: 1,
                                                      min: 0.0, max: 100.0, unit: .generic, unitName: nil,
                                                      valueStrings: nil, dependentParameters: nil)
-  static let config = KnobConfig(parameter: param, logScale: false, theme: Theme())
+  static let config = KnobConfig(parameter: param, theme: Theme())
   @State static var store = Store(initialState: TitleFeature.State()) {
     TitleFeature(config: config)
   }

@@ -30,7 +30,7 @@ public struct ControlFeature {
     }
   }
 
-  public enum Action: Equatable {
+  public enum Action: Equatable, Sendable {
     case title(TitleFeature.Action)
     case track(TrackFeature.Action)
     case valueChanged(Double)
@@ -85,7 +85,7 @@ struct ControlView: View {
   }
 
   var body: some View {
-    VStack(spacing: 0.0) {
+    VStack(spacing: config.theme.controlTitleGap) {
       TrackView(store: store.scope(state: \.track, action: \.track), config: config)
       TitleView(store: store.scope(state: \.title, action: \.title), config: config, proxy: proxy)
     }
@@ -96,7 +96,7 @@ struct ControlViewPreview: PreviewProvider {
   static let param = AUParameterTree.createParameter(withIdentifier: "RELEASE", name: "Release", address: 1,
                                                      min: 0.0, max: 100.0, unit: .generic, unitName: nil,
                                                      valueStrings: nil, dependentParameters: nil)
-  static let config = KnobConfig(parameter: param, logScale: false, theme: Theme())
+  static let config = KnobConfig(parameter: param, theme: Theme())
   @State static var store = Store(initialState: ControlFeature.State(config: config,
                                                                      value: Double(param.value))) {
     ControlFeature(config: config)

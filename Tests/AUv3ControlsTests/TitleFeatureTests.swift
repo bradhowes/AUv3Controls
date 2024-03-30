@@ -7,7 +7,6 @@ import XCTest
 
 @testable import AUv3Controls
 
-@MainActor
 final class TitleFeatureTests: XCTestCase {
   let param = AUParameterTree.createParameter(withIdentifier: "RELEASE", name: "Release", address: 1,
                                               min: 0.0, max: 100.0, unit: .generic, unitName: nil,
@@ -18,7 +17,7 @@ final class TitleFeatureTests: XCTestCase {
 
   override func setUpWithError() throws {
     isRecording = false
-    config = KnobConfig(parameter: param, logScale: false, theme: Theme())
+    config = KnobConfig(parameter: param, theme: Theme())
     store = TestStore(initialState: .init()) {
       TitleFeature(config: config)
     } withDependencies: {
@@ -106,6 +105,7 @@ final class TitleFeatureTests: XCTestCase {
     await view.store.send(.stoppedShowingValue).finish()
   }
 
+  @MainActor
   func testPreview() async throws {
     try withDependencies { $0 = .live } operation: {
       let view = TitleViewPreview.previews

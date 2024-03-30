@@ -2,7 +2,8 @@
 
 import OSLog
 
-final class Logger {
+public final class Logger {
+  @MainActor
   public static let shared = Logger()
   public var isEnabled = false
   @Published public var logs: [String] = []

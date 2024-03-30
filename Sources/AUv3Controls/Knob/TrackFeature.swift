@@ -20,7 +20,7 @@ public struct TrackFeature {
     var lastDrag: CGPoint?
   }
 
-  public enum Action: Equatable {
+  public enum Action: Equatable, Sendable {
     case dragChanged(start: CGPoint, position: CGPoint)
     case dragEnded(start: CGPoint, position: CGPoint)
     case valueChanged(Double)
@@ -93,14 +93,13 @@ private extension Shape {
 
   func trackStroke(config: KnobConfig) -> some View {
     self.trim(from: config.indicatorStartAngle.normalized, to: config.indicatorEndAngle.normalized)
-      .stroke(config.theme.controlBackgroundColor, style: StrokeStyle(lineWidth: 2, lineCap: .round))
+      .stroke(config.theme.controlBackgroundColor, style: config.theme.controlTrackStrokeStyle)
       .frame(width: config.controlDiameter, height: config.controlDiameter, alignment: .center)
   }
 
   func indicatorStroke(config: KnobConfig, norm: Double) -> some View {
     self.trim(from: config.indicatorStartAngle.normalized, to: config.normToTrim(norm))
-      .stroke(config.theme.controlForegroundColor, style: StrokeStyle(lineWidth: config.indicatorStrokeWidth,
-                                                                      lineCap: .round))
+      .stroke(config.theme.controlForegroundColor, style: config.theme.controlValueStrokeStyle)
       .frame(width: config.controlDiameter, height: config.controlDiameter, alignment: .center)
   }
 }
@@ -109,7 +108,7 @@ struct TrackViewPreview: PreviewProvider {
   static let param = AUParameterTree.createParameter(withIdentifier: "RELEASE", name: "Release", address: 1,
                                                      min: 0.0, max: 100.0, unit: .generic, unitName: nil,
                                                      valueStrings: nil, dependentParameters: nil)
-  static let config = KnobConfig(parameter: param, logScale: false, theme: Theme())
+  static let config = KnobConfig(parameter: param, theme: Theme())
   @State static var store = Store(initialState: TrackFeature.State(norm: 0.5)) {
     TrackFeature(config: config)
   }

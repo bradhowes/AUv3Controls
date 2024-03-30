@@ -122,8 +122,9 @@ private extension KnobFeature {
 
   func setParameterEffect(state: State, value: Double) -> Effect<Action> {
     guard let token = state.observerToken else { return .none }
+    let parameter = config.parameter
     return .run(priority: .userInitiated) { _ in
-      config.parameter.setValue(AUValue(value), originator: token)
+      parameter.setValue(AUValue(value), originator: token)
     }
   }
 }
@@ -156,15 +157,15 @@ public struct KnobView: View {
       EditorView(store: store.scope(state: \.editor, action: \.editor), config: config)
         .visible(when: store.editor.hasFocus)
     }
-    .frame(maxWidth: config.controlWidthIf(store.editor.focus), maxHeight: config.maxHeight)
-    .frame(width: config.controlWidthIf(store.editor.focus), height: config.maxHeight)
+    .frame(maxWidth: config.controlWidthIf(store.editor.focus), maxHeight: config.controlHeight)
+    .frame(width: config.controlWidthIf(store.editor.focus), height: config.controlHeight)
     .task { await store.send(.observationStart).finish() }
   }
 #elseif os(macOS)
   public var body: some View {
     ControlView(store: store.scope(state: \.control, action: \.control), config: config, proxy: proxy)
-      .frame(maxWidth: config.controlDiameter, maxHeight: config.maxHeight)
-      .frame(width: config.controlDiameter, height: config.maxHeight)
+      .frame(maxWidth: config.controlDiameter, maxHeight: config.controlHeight)
+      .frame(width: config.controlDiameter, height: config.controlHeight)
       .task { await store.send(.observationStart).finish() }
       .sheet(isPresented: showBinding) {
       } content: {
@@ -178,7 +179,7 @@ struct KnobViewPreview: PreviewProvider {
   static let param = AUParameterTree.createParameter(withIdentifier: "RELEASE", name: "Release", address: 1,
                                                      min: 0.0, max: 100.0, unit: .generic, unitName: nil,
                                                      valueStrings: nil, dependentParameters: nil)
-  static let config = KnobConfig(parameter: param, logScale: false, theme: Theme())
+  static let config = KnobConfig(parameter: param, theme: Theme())
   @State static var store = Store(initialState: KnobFeature.State(config: config)) {
     KnobFeature(config: config)
   }

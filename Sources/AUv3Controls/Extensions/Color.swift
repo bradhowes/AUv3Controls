@@ -63,6 +63,12 @@ public extension Color {
 }
 
 public extension String {
+
+  /**
+   Attempt to parse string contents as a color specification
+
+   - returns: Color instance if contents is a valid color specification
+   */
   var color: Color? { Color(hex: self) }
 }
 

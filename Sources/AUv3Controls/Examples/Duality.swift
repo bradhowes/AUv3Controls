@@ -2,25 +2,39 @@ import AVFoundation
 import ComposableArchitecture
 import SwiftUI
 
-let param1 = AUParameterTree.createBoolean(withIdentifier: "Retrigger", name: "Retrigger", address: 1)
-let param2 = AUParameterTree.createBoolean(withIdentifier: "Monophonic", name: "Monophonic", address: 2)
-let param3 = AUParameterTree.createFloat(withIdentifier: "Volume", name: "Volume", address: 3, range: 0...100)
-let param4 = AUParameterTree.createFloat(withIdentifier: "Pan", name: "Pan", address: 4, range: -50...50)
-
-let theme = Theme()
-
-let config3 = KnobConfig(parameter: param3, theme: theme)
-let config4 = KnobConfig(parameter: param4, theme: theme)
-
 class MockAUv3 {
-  private let paramTree: AUParameterTree
+  let theme: Theme
+
+  let paramTree: AUParameterTree
+  let param1: AUParameter // boolean parameter
+  let param2: AUParameter // boolean parameter
+  let param3: AUParameter // float parameter
+  let param4: AUParameter // float parameter
+
+  let config3: KnobConfig
+  let config4: KnobConfig
 
   // Bindings to a state value but with a twist. We only ever use the 'setter' part of the binding when we see that
   // the AUParameter it belongs to has changed.
   private var bindings: [AUParameterAddress: Binding<Double>] = [:]
 
   init() {
+    self.theme = Theme()
+
+    let param1 = AUParameterTree.createBoolean(withIdentifier: "Retrigger", name: "Retrigger", address: 1)
+    self.param1 = param1
+    let param2 = AUParameterTree.createBoolean(withIdentifier: "Monophonic", name: "Monophonic", address: 2)
+    self.param2 = param2
+    let param3 = AUParameterTree.createFloat(withIdentifier: "Volume", name: "Volume", address: 3, range: 0...100)
+    self.param3 = param3
+    let param4 = AUParameterTree.createFloat(withIdentifier: "Pan", name: "Pan", address: 4, range: -50...50)
+    self.param4 = param4
+
+    self.config3 = KnobConfig(parameter: param3, theme: theme)
+    self.config4 = KnobConfig(parameter: param4, theme: theme)
+
     self.paramTree = AUParameterTree.createTree(withChildren: [param1, param2, param3, param4])
+
     self.paramTree.implementorValueObserver = { parameter, value in
       if let binding = self.bindings[parameter.address] {
         binding.wrappedValue = Double(value)
@@ -51,8 +65,7 @@ class MockAUv3 {
 }
 
 struct DualityView: View {
-
-  var mockAUv3: MockAUv3!
+  let mockAUv3: MockAUv3
 
   @State var store1: StoreOf<ToggleFeature>
   @State var store2: StoreOf<ToggleFeature>
@@ -64,12 +77,25 @@ struct DualityView: View {
   @State var slider3: Double = 0.0
   @State var slider4: Double = 0.0
 
+  var param1: AUParameter { mockAUv3.param1 }
+  var param2: AUParameter { mockAUv3.param2 }
+  var param3: AUParameter { mockAUv3.param3 }
+  var param4: AUParameter { mockAUv3.param4 }
+
+  var config3: KnobConfig { mockAUv3.config3 }
+  var config4: KnobConfig { mockAUv3.config4 }
+
   init() {
-    store1 = Store(initialState: ToggleFeature.State(parameter: param1)) { ToggleFeature() }
-    store2 = Store(initialState: ToggleFeature.State(parameter: param2)) { ToggleFeature() }
-    store3 = Store(initialState: KnobFeature.State(config: config3)) { KnobFeature(config: config3) }
-    store4 = Store(initialState: KnobFeature.State(config: config4)) { KnobFeature(config: config4) }
-    self.mockAUv3 = MockAUv3()
+    let mockAUv3 = MockAUv3()
+
+    self.mockAUv3 = mockAUv3
+    self.store1 = .init(initialState: ToggleFeature.State(parameter: mockAUv3.param1)) { ToggleFeature() }
+    self.store2 = .init(initialState: ToggleFeature.State(parameter: mockAUv3.param2)) { ToggleFeature() }
+
+    self.store3 = .init(initialState: KnobFeature.State(config: mockAUv3.config3)) {
+      KnobFeature(config: mockAUv3.config3) }
+    self.store4 = .init(initialState: KnobFeature.State(config: mockAUv3.config4)) {
+      KnobFeature(config: mockAUv3.config4) }
   }
 
   var body: some View {
@@ -78,24 +104,24 @@ struct DualityView: View {
         GroupBox(label: Label("AUv3Controls", systemImage: "waveform")) {
           VStack(spacing: 24) {
             HStack {
-              KnobView(store: store3, config: config3)
-              KnobView(store: store4, config: config4)
+              KnobView(store: store3, config: mockAUv3.config3)
+              KnobView(store: store4, config: mockAUv3.config4)
             }
             VStack(alignment: .leading, spacing: 12) {
-              ToggleView(store: store1, theme: theme)
-              ToggleView(store: store2, theme: theme)
+              ToggleView(store: store1, theme: mockAUv3.theme)
+              ToggleView(store: store2, theme: mockAUv3.theme)
             }
           }
         }
         GroupBox(label: Label("Mock MIDI", systemImage: "pianokeys")) {
-          Slider(value: self.mockAUv3.binding(to: param3.address, with: $slider3), in: config3.range)
+          Slider(value: mockAUv3.binding(to: param3.address, with: $slider3), in: config3.range)
           Text("Volume: \(slider3)")
-          Slider(value: self.mockAUv3.binding(to: param4.address, with: $slider4), in: config4.range)
+          Slider(value: mockAUv3.binding(to: param4.address, with: $slider4), in: config4.range)
           Text("Pan: \(slider4)")
-          Toggle(isOn: self.mockAUv3.binding(to: param1.address, with: $toggle1)) {
+          Toggle(isOn: mockAUv3.binding(to: param1.address, with: $toggle1)) {
             Text("Retrigger")
           }
-          Toggle(isOn: self.mockAUv3.binding(to: param2.address, with: $toggle2)) {
+          Toggle(isOn: mockAUv3.binding(to: param2.address, with: $toggle2)) {
             Text("Monophonic")
           }
         }
@@ -107,6 +133,7 @@ struct DualityView: View {
 }
 
 struct DualityViewPreview: PreviewProvider {
+  @MainActor
   static var previews: some View {
     VStack {
       DualityView()

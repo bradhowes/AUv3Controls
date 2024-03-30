@@ -7,7 +7,6 @@ import XCTest
 
 @testable import AUv3Controls
 
-@MainActor
 final class DualityTests: XCTestCase {
   let clock = TestClock()
   let boolParam = AUParameterTree.createBoolean(withIdentifier: "Retrigger", name: "Retrigger", address: 1)
@@ -21,7 +20,7 @@ final class DualityTests: XCTestCase {
 
   override func setUpWithError() throws {
     isRecording = false
-    config = KnobConfig(parameter: floatParam, logScale: false, theme: Theme())
+    config = KnobConfig(parameter: floatParam, theme: Theme())
     boolStore = TestStore(initialState: ToggleFeature.State(parameter: boolParam)) {
       ToggleFeature()
     } withDependencies: {

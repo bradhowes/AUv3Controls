@@ -26,7 +26,7 @@ public struct EditorFeature {
     }
   }
 
-  public enum Action: BindableAction, Equatable {
+  public enum Action: BindableAction, Equatable, Sendable {
     case acceptButtonTapped
     case binding(BindingAction<State>)
     case cancelButtonTapped
@@ -90,12 +90,12 @@ struct EditorView: View {
       }
       HStack(spacing: 24) {
         Button(action: { store.send(.acceptButtonTapped, animation: .linear) }) {
-          Text("Accept")
+          Text("Accept", comment: "Name of button that accepts an edited value")
         }
         .buttonStyle(.bordered)
         .foregroundColor(config.theme.textColor)
         Button(action: { store.send(.cancelButtonTapped, animation: .linear) }) {
-          Text("Cancel")
+          Text("Cancel", comment: "Name of button that cancels editing")
         }
         .buttonStyle(.borderless)
         .foregroundColor(config.theme.textColor)
@@ -112,7 +112,7 @@ struct EditorViewPreview: PreviewProvider {
   static let param = AUParameterTree.createParameter(withIdentifier: "RELEASE", name: "Release", address: 1,
                                                      min: 0.0, max: 100.0, unit: .generic, unitName: nil,
                                                      valueStrings: nil, dependentParameters: nil)
-  static let config = KnobConfig(parameter: param, logScale: false, theme: Theme())
+  static let config = KnobConfig(parameter: param, theme: Theme())
   @State static var store = Store(initialState: EditorFeature.State()) {
     EditorFeature(config: config)
   }

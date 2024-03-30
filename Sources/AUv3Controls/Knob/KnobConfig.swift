@@ -1,29 +1,53 @@
 import AVFoundation
 import SwiftUI
 
+/// Limit to the max AUParameter address value that is supported below. Enforced at `KnobConfig` initialization.
 private let maxParameterAddress: UInt64 = 100_000
 
-public struct KnobConfig: Equatable {
-  public let theme: Theme
+/**
+ Shabby attempt at isolating customizations for a KnobFeature. Right now there is a 1-1 relationship between this and
+ a
+ */
+public struct KnobConfig {
+
+  /// The AUParameter being displayed
   public let parameter: AUParameter
 
-  /// Unique ID to identify the SwiftUI view -- this is the same as the AUParamete `address` attribute
+  /// The common themeable settings to use
+  public let theme: Theme
+
+  /// The unique ID to identify the SwiftUI view -- this is the same as the AUParamete `address` attribute
   public let id: UInt64
-  /// Unique ID to identify the task that reverts the knob's title after a value change
+
+  /// The unique ID to identify the task that reverts the knob's title after a value change. This is based on
+  /// the `id` value above, but it must not collide with any other visible `showCancelId` values.
   public let showValueCancelId: UInt64
 
+  /// The title to show in the control when the value is not changing.
   public var title: String { self.parameter.displayName }
+
+  /// The range of the values over which the control can move
   public var range: ClosedRange<Double> { minimumValue...maximumValue }
 
-  let minTrim: CGFloat = 0.11111115 // Use non-zero value to leave a tiny circle at "zero"
-  var maxTrim: CGFloat { 1 - minTrim }
-
+  /// The minimum value of the AUParameter
   public let minimumValue: Double
+
+  /// The maximum value of the AUParameter
   public let maximumValue: Double
 
-  public var logScale: Bool
+  /// Holds `true` if the parameter uses the logarithmic scale
+  public let logScale: Bool
+
+  /// The height of the control (knob + title)
+  public let controlHeight: CGFloat
+
+  /// The diameter (width and height) of the knob
   public var controlDiameter: CGFloat { didSet { updateDragScaling() } }
+
+  /// The radius of the knob
   public var controlRadius: CGFloat { controlDiameter / 2.0 }
+
+  /// The width of the standard knob value editor
   public var controlEditorWidth: CGFloat = 200
 
   /// How much travel is need to change the knob from `minimumValue` to `maximumValue`.
@@ -31,9 +55,7 @@ public struct KnobConfig: Equatable {
   /// `minimumValue` to `maximumValue`.
   var touchSensitivity: CGFloat { didSet { updateDragScaling() } }
 
-  var maxHeight: CGFloat
-
-  public var indicatorStrokeWidth: CGFloat
+  /// The
   public let indicatorStartAngle = Angle(degrees: 40)
   public let indicatorEndAngle = Angle(degrees: 320)
 
@@ -46,27 +68,29 @@ public struct KnobConfig: Equatable {
 
   let maxChangeRegionWidthHalf: CGFloat
 
-  public init(parameter: AUParameter, controlDiameter: CGFloat = 80.0,
-              maxHeight: CGFloat = 100.0, touchSensitivity: CGFloat = 2.0, logScale: Bool = false,
-              valueStrokeWidth: CGFloat = 6.0, theme: Theme) {
+  public init(parameter: AUParameter, controlDiameter: CGFloat = 80.0, controlHeight: CGFloat = 100.0,
+              touchSensitivity: CGFloat = 2.0, theme: Theme) {
     precondition(parameter.address < maxParameterAddress, "AUParameter address must be < \(maxParameterAddress)")
 
     self.parameter = parameter
     self.controlDiameter = controlDiameter
+    self.id = parameter.address
     self.minimumValue = Double(parameter.minValue)
     self.maximumValue = Double(parameter.maxValue)
-    self.maxHeight = 100.0
+    self.logScale = parameter.flags.contains(.flag_DisplayLogarithmic)
+
+    self.controlHeight = controlHeight
     self.touchSensitivity = touchSensitivity
     self.dragScaling = 1.0 / (controlDiameter * touchSensitivity)
-    self.logScale = logScale
     self.maxChangeRegionWidthHalf = max(8, controlDiameter * maxChangeRegionWidthPercentage) / 2
-    self.indicatorStrokeWidth = valueStrokeWidth
     self.theme = theme
-    self.id = parameter.address
     self.showValueCancelId = parameter.address + maxParameterAddress
   }
 
   private var dragScaling: CGFloat
+}
+
+extension KnobConfig {
 
   private mutating func updateDragScaling() {
     dragScaling = 1.0 / (controlDiameter * touchSensitivity)
@@ -75,7 +99,17 @@ public struct KnobConfig: Equatable {
   func controlWidthIf(_ value: Bool) -> CGFloat { value ? controlEditorWidth : controlDiameter }
 
   func controlWidthIf<T>(_ value: T?) -> CGFloat { controlWidthIf(value != nil) }
+}
 
+extension KnobConfig {
+  private var minTrim: CGFloat { 0.11111115 } // Use non-zero value to leave a tiny circle at "zero"
+  private var maxTrim: CGFloat { 1 - minTrim }
+
+  /**
+   Convert a normalized value (0.0-1.0) into a 'trim' value that is used as the endpoint of the knob indicator.
+
+   @par norm the value to convert
+   */
   func normToTrim(_ norm: Double) -> Double {
     (logScale ? (pow(10, norm) - 1.0) / 9.0 : norm) * (maxTrim - minTrim) + minTrim
   }
@@ -84,14 +118,18 @@ public struct KnobConfig: Equatable {
     (logScale ? (pow(10, norm) - 1.0) / 9.0 : norm) * (maximumValue - minimumValue) + minimumValue
   }
 
-  func formattedValue(_ value: Double) -> String { theme.format(value: value) }
-
-  func formattedValue(_ value: Float) -> String { formattedValue(Double(value)) }
-
   func valueToNorm(_ value: Double) -> Double {
     let norm = (value.clamped(to: minimumValue...maximumValue) - minimumValue) / (maximumValue - minimumValue)
     return logScale ? log(1.0 + norm * 9.0) / 10.0 : norm
   }
+
+}
+
+extension KnobConfig {
+
+  func formattedValue(_ value: Double) -> String { theme.format(value: value) }
+
+  func formattedValue(_ value: Float) -> String { formattedValue(Double(value)) }
 
   func dragChangeValue(last: CGPoint, position: CGPoint) -> CGFloat {
     let dY = last.y - position.y

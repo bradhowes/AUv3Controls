@@ -7,7 +7,6 @@ import XCTest
 
 @testable import AUv3Controls
 
-@MainActor
 final class KnobFeatureTests: XCTestCase {
   let param = AUParameterTree.createParameter(withIdentifier: "RELEASE", name: "Release", address: 1,
                                               min: 0.0, max: 100.0, unit: .generic, unitName: nil,
@@ -17,7 +16,7 @@ final class KnobFeatureTests: XCTestCase {
 
   override func setUpWithError() throws {
     isRecording = false
-    config = KnobConfig(parameter: param, logScale: false, theme: Theme())
+    config = KnobConfig(parameter: param, theme: Theme())
     store = TestStore(initialState: .init(config: config)) {
       KnobFeature(config: config)
     } withDependencies: { $0.continuousClock = ImmediateClock() }
@@ -121,6 +120,7 @@ final class KnobFeatureTests: XCTestCase {
     }
   }
 
+  @MainActor
   func testChangedValue() async throws {
     struct MyView: SwiftUI.View {
       let config: KnobConfig
@@ -142,6 +142,7 @@ final class KnobFeatureTests: XCTestCase {
     try assertSnapshot(matching: view)
   }
 
+  @MainActor
   func testPreview() async throws {
     try withDependencies { $0 = .live } operation: {
       let view = KnobViewPreview.previews

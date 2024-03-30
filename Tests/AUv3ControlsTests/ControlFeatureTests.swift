@@ -7,7 +7,6 @@ import XCTest
 
 @testable import AUv3Controls
 
-@MainActor
 final class ControlFeatureTests: XCTestCase {
   let param = AUParameterTree.createParameter(withIdentifier: "RELEASE", name: "Release", address: 1,
                                               min: 0.0, max: 100.0, unit: .generic, unitName: nil,
@@ -17,7 +16,7 @@ final class ControlFeatureTests: XCTestCase {
 
   override func setUpWithError() throws {
     isRecording = false
-    config = KnobConfig(parameter: param, logScale: false, theme: Theme())
+    config = KnobConfig(parameter: param, theme: Theme())
     store = TestStore(initialState: .init(config: config, value: 0)) {
       ControlFeature(config: config)
     } withDependencies: { $0.continuousClock = ImmediateClock() }
@@ -51,6 +50,7 @@ final class ControlFeatureTests: XCTestCase {
     }
   }
 
+  @MainActor
   func testDragged() async throws {
     struct MyView: SwiftUI.View {
       let config: KnobConfig
@@ -69,13 +69,14 @@ final class ControlFeatureTests: XCTestCase {
 
     view.store.send(.track(.dragChanged(start: .init(x: 40, y: 0.0), position: .init(x: 40, y: -40))))
 
-    // try assertSnapshot(matching: view)
+    try assertSnapshot(matching: view)
   }
   
-//  func testPreview() async throws {
-//    try withDependencies { $0 = .live } operation: {
-//      let view = ControlViewPreview.previews
-//      try assertSnapshot(matching: view)
-//    }
-//  }
+  @MainActor
+  func testPreview() async throws {
+    try withDependencies { $0 = .live } operation: {
+      let view = ControlViewPreview.previews
+      try assertSnapshot(matching: view)
+    }
+  }
 }

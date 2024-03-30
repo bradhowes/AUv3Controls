@@ -7,7 +7,6 @@ import XCTest
 
 @testable import AUv3Controls
 
-@MainActor
 final class ToggleFeatureTests: XCTestCase {
   let param = AUParameterTree.createBoolean(withIdentifier: "RETRIGGER", name: "Retrigger", address: 10)
   var tree: AUParameterTree!
@@ -108,6 +107,7 @@ final class ToggleFeatureTests: XCTestCase {
     await view.store.send(.observationStopped).finish()
   }
 
+  @MainActor
   func testToggleViewPreview() async throws {
     let view = ToggleViewPreview.previews
     try assertSnapshot(matching: view)
