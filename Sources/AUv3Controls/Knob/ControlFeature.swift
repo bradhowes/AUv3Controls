@@ -10,9 +10,9 @@ import SwiftUI
  */
 @Reducer
 public struct ControlFeature {
-  let config: KnobConfig
-  let trackFeature: TrackFeature
-  let titleFeature: TitleFeature
+  private let config: KnobConfig
+  private let trackFeature: TrackFeature
+  private let titleFeature: TitleFeature
 
   public init(config: KnobConfig) {
     self.config = config

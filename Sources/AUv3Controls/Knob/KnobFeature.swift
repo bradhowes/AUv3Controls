@@ -15,9 +15,9 @@ import SwiftUI
  */
 @Reducer
 public struct KnobFeature {
-  let config: KnobConfig
-  let controlFeature: ControlFeature
-  let editorFeature: EditorFeature
+  private let config: KnobConfig
+  private let controlFeature: ControlFeature
+  private let editorFeature: EditorFeature
 
   public init(config: KnobConfig) {
     self.config = config
@@ -130,11 +130,11 @@ private extension KnobFeature {
 }
 
 public struct KnobView: View {
-  let store: StoreOf<KnobFeature>
-  let config: KnobConfig
-  let proxy: ScrollViewProxy?
+  private let store: StoreOf<KnobFeature>
+  private let config: KnobConfig
+  private let proxy: ScrollViewProxy?
 #if os(macOS)
-  let showBinding: Binding<Bool>
+  private let showBinding: Binding<Bool>
 #endif
 
   public init(store: StoreOf<KnobFeature>, config: KnobConfig, proxy: ScrollViewProxy? = nil) {

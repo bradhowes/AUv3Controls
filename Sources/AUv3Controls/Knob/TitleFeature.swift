@@ -9,8 +9,12 @@ import SwiftUI
  */
 @Reducer
 public struct TitleFeature {
-  let config: KnobConfig
+  private let config: KnobConfig
 
+  public init(config: KnobConfig) {
+    self.config = config
+  }
+  
   @ObservableState
   public struct State: Equatable {
     var formattedValue: String?
@@ -63,9 +67,9 @@ private extension TitleFeature {
  seconds before it disappears and the title reappears.
  */
 public struct TitleView: View {
-  let store: StoreOf<TitleFeature>
-  let config: KnobConfig
-  let proxy: ScrollViewProxy?
+  private let store: StoreOf<TitleFeature>
+  private let config: KnobConfig
+  private let proxy: ScrollViewProxy?
 
   public init(store: StoreOf<TitleFeature>, config: KnobConfig, proxy: ScrollViewProxy?) {
     self.store = store

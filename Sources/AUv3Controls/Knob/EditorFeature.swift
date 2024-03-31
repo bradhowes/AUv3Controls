@@ -8,7 +8,11 @@ import SwiftUI
  */
 @Reducer
 public struct EditorFeature {
-  let config: KnobConfig
+  private let config: KnobConfig
+
+  public init(config: KnobConfig) {
+    self.config = config
+  }
 
   @ObservableState
   public struct State: Equatable {
@@ -54,9 +58,9 @@ public struct EditorFeature {
 }
 
 struct EditorView: View {
-  @Bindable var store: StoreOf<EditorFeature>
-  @FocusState var focus: EditorFeature.State.Field?
-  let config: KnobConfig
+  @Bindable private var store: StoreOf<EditorFeature>
+  @FocusState private var focus: EditorFeature.State.Field?
+  private let config: KnobConfig
 
   init(store: StoreOf<EditorFeature>, config: KnobConfig) {
     self.store = store

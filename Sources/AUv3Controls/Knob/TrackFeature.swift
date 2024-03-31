@@ -12,7 +12,11 @@ import SwiftUI
  */
 @Reducer
 public struct TrackFeature {
-  let config: KnobConfig
+  private let config: KnobConfig
+
+  init(config: KnobConfig) {
+    self.config = config
+  }
 
   @ObservableState
   public struct State: Equatable, Sendable {
@@ -59,8 +63,8 @@ private extension TrackFeature {
  Dragging vertically on the view will change the current value.
  */
 public struct TrackView: View {
-  let store: StoreOf<TrackFeature>
-  let config: KnobConfig
+  private let store: StoreOf<TrackFeature>
+  private let config: KnobConfig
 
   public init(store: StoreOf<TrackFeature>, config: KnobConfig) {
     self.store = store
