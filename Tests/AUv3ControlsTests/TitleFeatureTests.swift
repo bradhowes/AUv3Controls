@@ -52,6 +52,8 @@ final class TitleFeatureTests: XCTestCase {
     await store.receive(.stoppedShowingValue) { state in
       state.formattedValue = nil
     }
+    await clock.advance(by: .seconds(1))
+    await clock.run()
   }
 
   func testTapped() async {

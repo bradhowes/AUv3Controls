@@ -1,25 +1,19 @@
 name: CI
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
   pull_request:
-    branches:
-    - main
+    branches: [ main ]
 
 jobs:
   build:
-    runs-on: macos-13
+    runs-on: macos-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Select Xcode 15.2
-      run: ls -l /Applications && sudo xcode-select -s /Applications/Xcode_15.2.app
+    - name: Select Xcode 15.4
+      run: ls -l /Applications && sudo xcode-select -s /Applications/Xcode_15.4.app
     - name: Build, test, and code coverage
       run: env && make
-    - name: Get Test Coverage
-      run: |
-        set -- $(< percentage.txt)
-        echo "PERCENTAGE=${1}" >> $GITHUB_ENV
     - name: Create Coverage Badge
       uses: schneegans/dynamic-badges-action@v1.1.0
       with:

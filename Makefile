@@ -7,68 +7,12 @@ WORKSPACE = $(PWD)/.workspace
 
 default: percentage
 
-clean:
-	rm -rf "$(PWD)/.DerivedData-macos" "$(PWD)/.DerivedData-ios" "$(PWD)/.DerivedData-tvos" "$(WORKSPACE)"
-
-lint: clean
-	@if command -v swiftlint; then swiftlint; fi
-
-resolve-deps: lint
-	xcodebuild \
-		$(BUILD_FLAGS) \
-		-resolvePackageDependencies \
-		-clonedSourcePackagesDirPath "$(WORKSPACE)" \
-		-scheme $(TARGET)
-
-build-ios: resolve-deps
-	xcodebuild build-for-testing \
-		$(BUILD_FLAGS) \
-		-clonedSourcePackagesDirPath "$(WORKSPACE)" \
-		-scheme $(TARGET) \
-		-derivedDataPath "$(PWD)/.DerivedData-ios" \
-		-destination platform="$(PLATFORM_IOS)" \
-		-enableCodeCoverage YES
-
-test-ios: build-ios
-	xcodebuild test-without-building \
-		-clonedSourcePackagesDirPath "$(WORKSPACE)" \
-		-scheme $(TARGET) \
-		-derivedDataPath "$(PWD)/.DerivedData-ios" \
-		-destination platform="$(PLATFORM_IOS)" \
-		-enableCodeCoverage YES
-
-build-tvos: resolve-deps
-	xcodebuild build-for-testing \
-		$(BUILD_FLAGS) \
-		-clonedSourcePackagesDirPath "$(WORKSPACE)" \
-		-scheme $(TARGET) \
-		-derivedDataPath "$(PWD)/.DerivedData-tvos" \
-		-destination platform="$(PLATFORM_TVOS)" \
-		-enableCodeCoverage YES
-
-test-tvos: build-tvos
-	xcodebuild test-without-building \
-		-clonedSourcePackagesDirPath "$(WORKSPACE)" \
-		-scheme $(TARGET) \
-		-derivedDataPath "$(PWD)/.DerivedData-tvos" \
-		-destination platform="$(PLATFORM_TVOS)"
-
-build-macos: resolve-deps
-	xcodebuild build-for-testing \
-		$(BUILD_FLAGS) \
-		-clonedSourcePackagesDirPath "$(WORKSPACE)" \
-		-scheme $(TARGET) \
-		-derivedDataPath "$(PWD)/.DerivedData-macos" \
-		-destination platform="$(PLATFORM_MACOS)" \
-		-enableCodeCoverage YES
-
-test-macos: build-macos
-	xcodebuild test-without-building \
-		-clonedSourcePackagesDirPath "$(WORKSPACE)" \
-		-scheme $(TARGET) \
-		-derivedDataPath "$(PWD)/.DerivedData-macos" \
-		-destination platform="$(PLATFORM_MACOS)" \
-		-enableCodeCoverage YES
+percentage: coverage-ios
+	awk '/ $(TARGET) / { if ($$3 > 0) print $$4; }' coverage.txt > percentage.txt
+	cat percentage.txt
+	@if [[ -n "$$GITHUB_ENV" ]]; then \
+        echo "PERCENTAGE=$$(< percentage.txt)" >> $$GITHUB_ENV; \
+    fi
 
 coverage-ios: test-ios
 	xcrun xccov view --report --only-targets $(PWD)/.DerivedData-ios/Logs/Test/*.xcresult > coverage.txt
@@ -82,10 +26,69 @@ coverage-tvos: test-tvos
 	xcrun xccov view --report --only-targets $(PWD)/.DerivedData-tvos/Logs/Test/*.xcresult > coverage.txt
 	cat coverage.txt
 
-percentage: coverage-ios
-	awk '/ $(TARGET) / { if ($$3 > 0) print $$4; }' coverage.txt > percentage.txt
-	cat percentage.txt
-
 test: test-ios test-macos test-tvos
+
+test-ios: build-ios
+	xcodebuild test-without-building \
+		-clonedSourcePackagesDirPath "$(WORKSPACE)" \
+		-scheme $(TARGET) \
+		-derivedDataPath "$(PWD)/.DerivedData-ios" \
+		-destination platform="$(PLATFORM_IOS)" \
+		-enableCodeCoverage YES
+
+test-macos: build-macos
+	xcodebuild test-without-building \
+		-clonedSourcePackagesDirPath "$(WORKSPACE)" \
+		-scheme $(TARGET) \
+		-derivedDataPath "$(PWD)/.DerivedData-macos" \
+		-destination platform="$(PLATFORM_MACOS)" \
+		-enableCodeCoverage YES
+
+test-tvos: build-tvos
+	xcodebuild test-without-building \
+		-clonedSourcePackagesDirPath "$(WORKSPACE)" \
+		-scheme $(TARGET) \
+		-derivedDataPath "$(PWD)/.DerivedData-tvos" \
+		-destination platform="$(PLATFORM_TVOS)"
+
+build-ios: resolve-deps
+	xcodebuild build-for-testing \
+		$(BUILD_FLAGS) \
+		-clonedSourcePackagesDirPath "$(WORKSPACE)" \
+		-scheme $(TARGET) \
+		-derivedDataPath "$(PWD)/.DerivedData-ios" \
+		-destination platform="$(PLATFORM_IOS)" \
+		-enableCodeCoverage YES
+
+build-macos: resolve-deps
+	xcodebuild build-for-testing \
+		$(BUILD_FLAGS) \
+		-clonedSourcePackagesDirPath "$(WORKSPACE)" \
+		-scheme $(TARGET) \
+		-derivedDataPath "$(PWD)/.DerivedData-macos" \
+		-destination platform="$(PLATFORM_MACOS)" \
+		-enableCodeCoverage YES
+
+build-tvos: resolve-deps
+	xcodebuild build-for-testing \
+		$(BUILD_FLAGS) \
+		-clonedSourcePackagesDirPath "$(WORKSPACE)" \
+		-scheme $(TARGET) \
+		-derivedDataPath "$(PWD)/.DerivedData-tvos" \
+		-destination platform="$(PLATFORM_TVOS)" \
+		-enableCodeCoverage YES
+
+resolve-deps: lint
+	xcodebuild \
+		$(BUILD_FLAGS) \
+		-resolvePackageDependencies \
+		-clonedSourcePackagesDirPath "$(WORKSPACE)" \
+		-scheme $(TARGET)
+
+lint: clean
+	@if command -v swiftlint; then swiftlint; fi
+
+clean:
+	rm -rf "$(PWD)/.DerivedData-macos" "$(PWD)/.DerivedData-ios" "$(PWD)/.DerivedData-tvos" "$(WORKSPACE)"
 
 .PHONY: test test-ios test-macos test-tvos coverage percentage
