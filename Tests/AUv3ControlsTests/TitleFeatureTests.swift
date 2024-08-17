@@ -81,7 +81,7 @@ final class TitleFeatureTests: XCTestCase {
     
     try assertSnapshot(matching: view)
 
-    await view.store.send(.stoppedShowingValue)
+    await view.store.send(.stoppedShowingValue).finish()
   }
   
   func testShowingValue() async throws {
@@ -100,8 +100,8 @@ final class TitleFeatureTests: XCTestCase {
       $0.continuousClock = ContinuousClock()
     })
     
-    await view.store.send(.valueChanged(12.34))
-    
+    await view.store.send(.valueChanged(12.34)).finish()
+
     try assertSnapshot(matching: view)
 
     await view.store.send(.stoppedShowingValue).finish()
