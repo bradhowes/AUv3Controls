@@ -30,7 +30,7 @@ coverage-tvos: test-tvos
 test: test-ios test-macos test-tvos
 
 test-ios: build-ios
-	SNAPSHOT_ARTIFACTS="${SNAPSHOT_ARTIFACTS}" xcodebuild test-without-building \
+	TEST_RUNNER_SNAPSHOT_ARTIFACTS="${SNAPSHOT_ARTIFACTS}" xcodebuild test-without-building \
 		-clonedSourcePackagesDirPath "$(WORKSPACE)" \
 		-scheme $(TARGET) \
 		-derivedDataPath "$(PWD)/.DerivedData-ios" \
@@ -38,7 +38,7 @@ test-ios: build-ios
 		-enableCodeCoverage YES
 
 test-macos: build-macos
-	SNAPSHOT_ARTIFACTS="${SNAPSHOT_ARTIFACTS}" xcodebuild test-without-building \
+	TEST_RUNNER_SNAPSHOT_ARTIFACTS="${SNAPSHOT_ARTIFACTS}" xcodebuild test-without-building \
 		-clonedSourcePackagesDirPath "$(WORKSPACE)" \
 		-scheme $(TARGET) \
 		-derivedDataPath "$(PWD)/.DerivedData-macos" \
@@ -46,7 +46,7 @@ test-macos: build-macos
 		-enableCodeCoverage YES
 
 test-tvos: build-tvos
-	SNAPSHOT_ARTIFACTS="${SNAPSHOT_ARTIFACTS}" xcodebuild test-without-building \
+	TEST_RUNNER_SNAPSHOT_ARTIFACTS="${SNAPSHOT_ARTIFACTS}" xcodebuild test-without-building \
 		-clonedSourcePackagesDirPath "$(WORKSPACE)" \
 		-scheme $(TARGET) \
 		-derivedDataPath "$(PWD)/.DerivedData-tvos" \
