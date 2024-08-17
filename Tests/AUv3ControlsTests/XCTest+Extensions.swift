@@ -30,6 +30,8 @@ extension XCTest {
       of: matching,
       as: .image(
         drawHierarchyInKeyWindow: false,
+        precision: 0.9,
+        perceptualPrecision:0.9,
         layout: .fixed(width: size.width, height: size.height)
       ),
       named: uniqueTestName,
