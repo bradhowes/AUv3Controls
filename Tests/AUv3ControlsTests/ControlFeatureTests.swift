@@ -67,7 +67,7 @@ final class ControlFeatureTests: XCTestCase {
       $0.continuousClock = ContinuousClock()
     })
 
-    view.store.send(.track(.dragChanged(start: .init(x: 40, y: 0.0), position: .init(x: 40, y: -40))))
+    await view.store.send(.track(.dragChanged(start: .init(x: 40, y: 0.0), position: .init(x: 40, y: -40)))).finish()
 
     try assertSnapshot(matching: view)
   }

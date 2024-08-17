@@ -137,7 +137,8 @@ final class KnobFeatureTests: XCTestCase {
       $0.continuousClock = ContinuousClock()
     })
 
-    view.store.send(.control(.track(.dragChanged(start: .init(x: 40, y: 0), position: .init(x: 40, y: -80)))))
+    await view.store.send(
+      .control(.track(.dragChanged(start: .init(x: 40, y: 0), position: .init(x: 40, y: -80))))).finish()
 
     try assertSnapshot(matching: view)
   }
