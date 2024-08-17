@@ -39,3 +39,10 @@ Here is a combination of several knobs into two distinct groups. The groups are 
 operate under narrow device width constrains:
 
 ![](envelopes.gif?raw=true)
+
+# Demo App
+
+There is a simple demonstration application that runs on both macOS and iOS which shows the linkage via AUv3 parameters
+between AUv3 controls and AppKit/UIKit controls. To build and run, open the Xcode project file in the [Demo](Demo) 
+folder. Make sure that the AUv3Controls package [Package.swift](Package.swift) file is not current open or else the demo
+will fail to build. 
