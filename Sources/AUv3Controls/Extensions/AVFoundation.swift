@@ -76,5 +76,11 @@ public extension AUParameterTree {
   }
 }
 
+#if hasFeature(RetroactiveAttribute)
 extension AUParameterObserverToken: @retroactive @unchecked Sendable {}
 extension AUParameter: @retroactive @unchecked Sendable {}
+#else
+extension AUParameterObserverToken: @unchecked Sendable {}
+extension AUParameter: @unchecked Sendable {}
+#endif
+
