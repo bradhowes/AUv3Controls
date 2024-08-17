@@ -76,5 +76,5 @@ public extension AUParameterTree {
   }
 }
 
-extension AUParameterObserverToken: @unchecked Sendable {}
-extension AUParameter: @unchecked Sendable {}
+extension AUParameterObserverToken: @retroactive @unchecked Sendable {}
+extension AUParameter: @retroactive @unchecked Sendable {}

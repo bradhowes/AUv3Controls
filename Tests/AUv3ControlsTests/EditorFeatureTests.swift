@@ -83,7 +83,7 @@ final class EditorFeatureTests: XCTestCase {
       $0.continuousClock = ContinuousClock()
     })
 
-    view.store.send(.valueChanged("12.34"))
+    await view.store.send(.valueChanged("12.34"))
 
     try assertSnapshot(matching: view)
   }

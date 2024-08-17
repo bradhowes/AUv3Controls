@@ -2,6 +2,7 @@ import AVFoundation
 import ComposableArchitecture
 import SwiftUI
 
+@MainActor
 class MockAUv3 {
   let theme: Theme
 
