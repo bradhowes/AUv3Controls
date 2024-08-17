@@ -21,7 +21,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: snapshots
-        path: ${SNAPSHOT_ARTIFACTS}x
+        path: ${SNAPSHOT_ARTIFACTS}
     - name: Create Coverage Badge
       uses: schneegans/dynamic-badges-action@v1.7.0
       with:

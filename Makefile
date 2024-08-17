@@ -4,7 +4,6 @@ PLATFORM_TVOS = tvOS Simulator,name=Apple TV 4K (3rd generation) (at 1080p)
 TARGET = AUv3Controls
 BUILD_FLAGS = -quiet -skipMacroValidation
 WORKSPACE = $(PWD)/.workspace
-SNAPSHOT_ARTIFACTS = "${TMPDIR}/AUv3Controls/snapshots"
 
 default: percentage
 
@@ -30,7 +29,7 @@ coverage-tvos: test-tvos
 test: test-ios test-macos test-tvos
 
 test-ios: build-ios
-	TEST_RUNNER_SNAPSHOT_ARTIFACTS="${SNAPSHOT_ARTIFACTS}" xcodebuild test-without-building \
+	xcodebuild test-without-building \
 		-clonedSourcePackagesDirPath "$(WORKSPACE)" \
 		-scheme $(TARGET) \
 		-derivedDataPath "$(PWD)/.DerivedData-ios" \
@@ -38,7 +37,7 @@ test-ios: build-ios
 		-enableCodeCoverage YES
 
 test-macos: build-macos
-	TEST_RUNNER_SNAPSHOT_ARTIFACTS="${SNAPSHOT_ARTIFACTS}" xcodebuild test-without-building \
+	xcodebuild test-without-building \
 		-clonedSourcePackagesDirPath "$(WORKSPACE)" \
 		-scheme $(TARGET) \
 		-derivedDataPath "$(PWD)/.DerivedData-macos" \
@@ -46,7 +45,7 @@ test-macos: build-macos
 		-enableCodeCoverage YES
 
 test-tvos: build-tvos
-	TEST_RUNNER_SNAPSHOT_ARTIFACTS="${SNAPSHOT_ARTIFACTS}" xcodebuild test-without-building \
+	xcodebuild test-without-building \
 		-clonedSourcePackagesDirPath "$(WORKSPACE)" \
 		-scheme $(TARGET) \
 		-derivedDataPath "$(PWD)/.DerivedData-tvos" \
