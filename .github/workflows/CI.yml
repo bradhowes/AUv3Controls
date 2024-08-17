@@ -15,7 +15,7 @@ jobs:
     - name: Build, test, and code coverage
       run: env && make
     - name: Create Coverage Badge
-      uses: schneegans/dynamic-badges-action@v1.1.0
+      uses: schneegans/dynamic-badges-action@v1.7.0
       with:
         auth: ${{ secrets.GIST_UPDATE }}
         gistID: 09b95180719ff3c213d0d57a87f5202e
