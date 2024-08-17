@@ -5,8 +5,8 @@ on:
   pull_request:
     branches: [ main ]
 env:
-  SNAPSHOT_ARTIFACTS: "${TMPDIR}/AUv3Controls/snapshots"
-  TEST_RUNNER_SNAPSHOT_ARTIFACTS: "${SNAPSHOT_ARTIFACTS}"
+  SNAPSHOT_ARTIFACTS: ${{ github.workspace }}/snapshots
+  TEST_RUNNER_SNAPSHOT_ARTIFACTS: ${{ github.workspace }}/snapshots
 
 jobs:
   build:
@@ -21,7 +21,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: snapshots
-        path: ${SNAPSHOT_ARTIFACTS}
+        path: ${{ env.SNAPSHOT_ARTIFACTS }}
     - name: Create Coverage Badge
       uses: schneegans/dynamic-badges-action@v1.7.0
       with:
