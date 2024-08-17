@@ -4,6 +4,7 @@ PLATFORM_TVOS = tvOS Simulator,name=Apple TV 4K (3rd generation) (at 1080p)
 TARGET = AUv3Controls
 BUILD_FLAGS = -quiet -skipMacroValidation
 WORKSPACE = $(PWD)/.workspace
+SNAPSHOT_ARTIFACTS = "${TMPDIR}/AUv3Controls/snapshots"
 
 default: percentage
 
