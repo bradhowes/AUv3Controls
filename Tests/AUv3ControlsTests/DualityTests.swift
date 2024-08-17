@@ -36,6 +36,7 @@ final class DualityTests: XCTestCase {
 
   func testRemoteBoolValueChanged() async {
     boolStore.exhaustivity = .off
+    boolParam.setValue(0.0, originator: nil)
     await boolStore.send(.observationStart)
     boolStore.exhaustivity = .on
     boolParam.setValue(1.0, originator: nil)
