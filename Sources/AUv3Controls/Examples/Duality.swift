@@ -2,7 +2,6 @@ import AVFoundation
 import ComposableArchitecture
 import SwiftUI
 
-@MainActor
 class MockAUv3 {
   let theme: Theme
 
@@ -48,20 +47,36 @@ class MockAUv3 {
     set { paramTree.parameter(withAddress: index)?.setValue(newValue, originator: nil) }
   }
 
-  func binding(to param: AUParameterAddress, with state: Binding<Double>) -> Binding<Double> {
-    self.bindings[param] = state
+  func binding(to address: AUParameterAddress, with state: Binding<Double>) -> Binding<Double> {
+    guard let param = self.paramTree.parameter(withAddress: address) else {
+      fatalError("invalid parameter address")
+    }
+
+    self.bindings[address] = state
+
     // Binding getter returns the state value but the setter updates the AUParameter
-    return .init(get: { state.wrappedValue }, set: { self[param] = AUValue($0) })
+    return .init(
+      get: { state.wrappedValue },
+      set: { param.setValue(AUValue($0), originator: nil) }
+    )
   }
 
-  func binding(to param: AUParameterAddress, with state: Binding<Bool>) -> Binding<Bool> {
+  func binding(to address: AUParameterAddress, with state: Binding<Bool>) -> Binding<Bool> {
+    guard let param = self.paramTree.parameter(withAddress: address) else {
+      fatalError("invalid parameter address")
+    }
+
     // Install binding that maps between Double and Bool values
-    self.bindings[param] = Binding<Double>(
+    self.bindings[address] = Binding<Double>(
       get: { state.wrappedValue ? 1.0 : 0.0 },
       set: { state.wrappedValue = $0 >= 0.5 }
     )
+
     // Binding getter returns the state value but the setter updates the AUParameter
-    return .init(get: { state.wrappedValue }, set: { self[param] = AUValue($0 ? 1.0 : 0.0) })
+    return .init(
+      get: { state.wrappedValue },
+      set: { param.setValue(AUValue($0 ? 1.0 : 0.0), originator: nil) }
+    )
   }
 }
 
