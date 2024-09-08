@@ -16,12 +16,12 @@ public struct KnobConfig {
   /// The common themeable settings to use
   public let theme: Theme
 
-  /// The unique ID to identify the SwiftUI view -- this is the same as the AUParamete `address` attribute
-  public let id: UInt64
-
   /// The unique ID to identify the task that reverts the knob's title after a value change. This is based on
   /// the `id` value above, but it must not collide with any other visible `showCancelId` values.
   public let showValueCancelId: UInt64
+
+  /// The unique ID to identify the SwiftUI view -- this is the same as the AUParamete `address` attribute
+  public var id: UInt64 { parameter.address }
 
   /// The title to show in the control when the value is not changing.
   public var title: String { self.parameter.displayName }
@@ -73,7 +73,6 @@ public struct KnobConfig {
 
     self.parameter = parameter
     self.controlDiameter = controlDiameter
-    self.id = parameter.address
     self.minimumValue = Double(parameter.minValue)
     self.maximumValue = Double(parameter.maxValue)
     self.logScale = parameter.flags.contains(.flag_DisplayLogarithmic)
