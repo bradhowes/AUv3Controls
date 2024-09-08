@@ -51,11 +51,10 @@ public struct KnobConfig {
   public var controlEditorWidth: CGFloat = 200
 
   /// How much travel is need to change the knob from `minimumValue` to `maximumValue`.
-  /// By default this is 1x the `controlSize` value. Setting it to 2 will require 2x the `controlSize` to go from
-  /// `minimumValue` to `maximumValue`.
+  /// By default this is 2x the `controlSize` value. Setting it to 4 will require 4x the `controlSize` distance
+  /// to go from `minimumValue` to `maximumValue`, thus making it more sensitive in general.
   var touchSensitivity: CGFloat { didSet { updateDragScaling() } }
 
-  /// The
   public let indicatorStartAngle = Angle(degrees: 40)
   public let indicatorEndAngle = Angle(degrees: 320)
 
@@ -135,9 +134,10 @@ extension KnobConfig {
     let dY = last.y - position.y
     // Calculate dX for dY scaling effect -- max value must be < 1/2 of controlSize
     let dX = min(abs(position.x - controlRadius), controlRadius - 1)
-    // Calculate scaling effect -- no scaling if in small vertical path in the middle of the knob, otherwise the
-    // value gets smaller than 1.0 as the touch moves farther away from the center.
-    let scrubberScaling = (dX < maxChangeRegionWidthHalf ? 1.0 : (1.0 - dX / controlRadius))
+    // Calculate "scrubber" scaling effect, where the change in dx gets smaller the further away from the center one
+    // moves the touch/pointer. No scaling if in +/- maxChangeRegionWidthHalf vertical path in the middle of the knob,
+    // otherwise the value gets smaller than 1.0 as the touch moves farther away outside of the maxChangeRegionWidthHalf
+    let scrubberScaling = (dX < maxChangeRegionWidthHalf ? 1.0 : (1.0 - (dX - maxChangeRegionWidthHalf) / controlRadius))
     // Finally, calculate change to `norm` value
     let normChange = dY * dragScaling * scrubberScaling
     return normChange
