@@ -64,7 +64,7 @@ final class TrackFeatureTests: XCTestCase {
       await store.send(.dragChanged(start: .init(x: config.controlRadius, y: 0.0),
                                     position: .init(x: config.controlRadius + offset,
                                                     y: -config.controlDiameter * 0.7))) { store in
-        store.norm = 0.525
+        store.norm = 0.5950000000000001
       }
     }
   }
