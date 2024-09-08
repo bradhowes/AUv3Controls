@@ -43,6 +43,7 @@ operate under narrow device width constrains:
 # Demo App
 
 There is a simple demonstration application that runs on both macOS and iOS which shows the linkage via AUv3 parameters
-between AUv3 controls and AppKit/UIKit controls. To build and run, open the Xcode project file in the [Demo](Demo) 
+between AUv3 controls and AppKit/UIKit controls -- changes to one control cause a change in a specific AUParameter, 
+which is then seen by the other control. To build and run, open the Xcode project file in the [Demo](Demo) 
 folder. Make sure that the AUv3Controls package [Package.swift](Package.swift) file is not current open or else the demo
 will fail to build. 
