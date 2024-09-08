@@ -38,7 +38,7 @@ final class EditorFeatureTests: XCTestCase {
   }
 
   func testAcceptButtonTapped() async {
-    await store.send(.start(12.34)) { state in
+    await store.send(.beginEditing(12.34)) { state in
       state.value = "12.34"
       state.focus = .value
     }
@@ -48,7 +48,7 @@ final class EditorFeatureTests: XCTestCase {
   }
 
   func testCancelButtonTapped() async {
-    await store.send(.start(12.34)) { state in
+    await store.send(.beginEditing(12.34)) { state in
       state.value = "12.34"
       state.focus = .value
     }

@@ -66,7 +66,7 @@ public struct KnobFeature {
 
         case .title(let titleAction) where titleAction == .tapped:
           let value = config.normToValue(state.control.track.norm)
-          return startEditingEffect(state: &state.editor, value: value)
+          return beginEditingEffect(state: &state.editor, value: value)
 
         default:
           break
@@ -115,8 +115,8 @@ private extension KnobFeature {
       .map(Action.control)
   }
 
-  func startEditingEffect(state: inout EditorFeature.State, value: Double) -> Effect<Action> {
-    editorFeature.reduce(into: &state, action: .start(value))
+  func beginEditingEffect(state: inout EditorFeature.State, value: Double) -> Effect<Action> {
+    editorFeature.reduce(into: &state, action: .beginEditing(value))
       .map(Action.editor)
   }
 

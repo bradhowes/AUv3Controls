@@ -32,10 +32,10 @@ public struct EditorFeature {
 
   public enum Action: BindableAction, Equatable, Sendable {
     case acceptButtonTapped
+    case beginEditing(Double)
     case binding(BindingAction<State>)
     case cancelButtonTapped
     case clearButtonTapped
-    case start(Double)
     case valueChanged(String)
   }
 
@@ -44,12 +44,12 @@ public struct EditorFeature {
     Reduce { state, action in
       switch action {
       case .acceptButtonTapped: state.focus = nil
+      case .beginEditing(let value):
+        state.value = config.formattedValue(value)
+        state.focus = .value
       case .binding: break
       case .cancelButtonTapped: state.focus = nil
       case .clearButtonTapped: state.value = ""
-      case .start(let value):
-        state.value = config.formattedValue(value)
-        state.focus = .value
       case let .valueChanged(newValue): state.value = newValue
       }
       return .none
@@ -78,12 +78,12 @@ struct EditorView: View {
             .keyboardType(.numbersAndPunctuation)
             .focused($focus, equals: .value)
             .submitLabel(.go)
-            .onSubmit { store.send(.acceptButtonTapped, animation: .linear) }
+            .onSubmit { sendAcceptButtonTapped() }
             .disableAutocorrection(true)
             .textFieldStyle(.roundedBorder)
 #elseif os(macOS)
           TextField(store.value, text: $store.value)
-            .onSubmit { store.send(.acceptButtonTapped, animation: .linear) }
+            .onSubmit { sendAcceptButtonTapped() }
             .textFieldStyle(.roundedBorder)
 #endif
           Image(systemName: "xmark.circle.fill")
@@ -93,12 +93,16 @@ struct EditorView: View {
         }
       }
       HStack(spacing: 24) {
-        Button(action: { store.send(.acceptButtonTapped, animation: .linear) }) {
+        Button {
+          sendAcceptButtonTapped()
+        } label: {
           Text("Accept", comment: "Name of button that accepts an edited value")
         }
         .buttonStyle(.bordered)
         .foregroundColor(config.theme.textColor)
-        Button(action: { store.send(.cancelButtonTapped, animation: .linear) }) {
+        Button {
+          sendCancelButtonTapped()
+        } label: {
           Text("Cancel", comment: "Name of button that cancels editing")
         }
         .buttonStyle(.borderless)
@@ -109,6 +113,14 @@ struct EditorView: View {
     .background(.quaternary)
     .clipShape(RoundedRectangle(cornerRadius: 12))
     .bind($store.focus, to: $focus)
+  }
+
+  func sendAcceptButtonTapped() {
+    store.send(.acceptButtonTapped, animation: .linear)
+  }
+
+  func sendCancelButtonTapped() {
+    store.send(.acceptButtonTapped, animation: .linear)
   }
 }
 
