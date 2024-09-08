@@ -31,7 +31,7 @@ final class KnobFeatureTests: XCTestCase {
       state.control.track.lastDrag = .init(x: 40, y: -80)
       state.control.title.formattedValue = "50"
     }
-    await store.receive(.control(.title(.stoppedShowingValue))) { state in
+    await store.receive(.control(.title(.showValueTimerElapsed))) { state in
       state.control.title.formattedValue = nil
     }
   }
@@ -42,10 +42,10 @@ final class KnobFeatureTests: XCTestCase {
       state.control.track.lastDrag = .init(x: 40, y: -80)
       state.control.title.formattedValue = "50"
     }
-    await store.receive(.control(.title(.stoppedShowingValue))) { state in
+    await store.receive(.control(.title(.showValueTimerElapsed))) { state in
       state.control.title.formattedValue = nil
     }
-    await store.send(.control(.title(.tapped))) { state in
+    await store.send(.control(.title(.titleTapped))) { state in
       state.editor.focus = .value
       state.editor.value = "50"
     }
@@ -57,10 +57,10 @@ final class KnobFeatureTests: XCTestCase {
       state.control.track.lastDrag = .init(x: 40, y: -80)
       state.control.title.formattedValue = "50"
     }
-    await store.receive(.control(.title(.stoppedShowingValue))) { state in
+    await store.receive(.control(.title(.showValueTimerElapsed))) { state in
       state.control.title.formattedValue = nil
     }
-    await store.send(.control(.title(.tapped))) { state in
+    await store.send(.control(.title(.titleTapped))) { state in
       state.editor.focus = .value
       state.editor.value = "50"
     }
@@ -80,10 +80,10 @@ final class KnobFeatureTests: XCTestCase {
       state.control.track.lastDrag = .init(x: 40, y: -80)
       state.control.title.formattedValue = "50"
     }
-    await store.receive(.control(.title(.stoppedShowingValue))) { state in
+    await store.receive(.control(.title(.showValueTimerElapsed))) { state in
       state.control.title.formattedValue = nil
     }
-    await store.send(.control(.title(.tapped))) { state in
+    await store.send(.control(.title(.titleTapped))) { state in
       state.editor.focus = .value
       state.editor.value = "50"
     }
@@ -103,10 +103,10 @@ final class KnobFeatureTests: XCTestCase {
       state.control.track.lastDrag = .init(x: 40, y: -80)
       state.control.title.formattedValue = "50"
     }
-    await store.receive(.control(.title(.stoppedShowingValue))) { state in
+    await store.receive(.control(.title(.showValueTimerElapsed))) { state in
       state.control.title.formattedValue = nil
     }
-    await store.send(.control(.title(.tapped))) { state in
+    await store.send(.control(.title(.titleTapped))) { state in
       state.editor.focus = .value
       state.editor.value = "50"
     }

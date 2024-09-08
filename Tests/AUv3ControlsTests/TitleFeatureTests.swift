@@ -49,7 +49,7 @@ final class TitleFeatureTests: XCTestCase {
       state.formattedValue = "12.34"
     }
     await clock.run()
-    await store.receive(.stoppedShowingValue) { state in
+    await store.receive(.showValueTimerElapsed) { state in
       state.formattedValue = nil
     }
     await clock.advance(by: .seconds(1))
@@ -60,7 +60,7 @@ final class TitleFeatureTests: XCTestCase {
     await store.send(.valueChanged(12.34)) { state in
       state.formattedValue = "12.34"
     }
-    await store.send(.tapped) { state in
+    await store.send(.titleTapped) { state in
       state.formattedValue = nil
     }
   }
@@ -81,7 +81,7 @@ final class TitleFeatureTests: XCTestCase {
     
     try assertSnapshot(matching: view)
 
-    await view.store.send(.stoppedShowingValue).finish()
+    await view.store.send(.showValueTimerElapsed).finish()
   }
   
   func testShowingValue() async throws {
@@ -104,7 +104,7 @@ final class TitleFeatureTests: XCTestCase {
 
     try assertSnapshot(matching: view)
 
-    await view.store.send(.stoppedShowingValue).finish()
+    await view.store.send(.showValueTimerElapsed).finish()
   }
 
   @MainActor

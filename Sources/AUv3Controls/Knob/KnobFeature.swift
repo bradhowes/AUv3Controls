@@ -64,7 +64,7 @@ public struct KnobFeature {
             return setParameterEffect(state: state, value: value)
           }
 
-        case .title(let titleAction) where titleAction == .tapped:
+        case .title(let titleAction) where titleAction == .titleTapped:
           let value = config.normToValue(state.control.track.norm)
           return beginEditingEffect(state: &state.editor, value: value)
 

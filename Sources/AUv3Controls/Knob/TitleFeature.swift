@@ -22,8 +22,8 @@ public struct TitleFeature {
   }
 
   public enum Action: Equatable, Sendable {
-    case stoppedShowingValue
-    case tapped
+    case showValueTimerElapsed
+    case titleTapped
     case valueChanged(Double)
   }
 
@@ -33,8 +33,8 @@ public struct TitleFeature {
     Reduce { state, action in
       switch action {
       case .valueChanged(let value): return showValueEffect(state: &state, value: value)
-      case .stoppedShowingValue: return showTitleEffect(state: &state)
-      case .tapped: return showTitleEffect(state: &state)
+      case .showValueTimerElapsed: return showTitleEffect(state: &state)
+      case .titleTapped: return showTitleEffect(state: &state)
       }
     }
   }
@@ -55,7 +55,7 @@ private extension TitleFeature {
     return .run { send in
       try await withTaskCancellation(id: cancelId, cancelInFlight: true) {
         try await clock.sleep(for: duration)
-        await send(.stoppedShowingValue, animation: .linear)
+        await send(.showValueTimerElapsed, animation: .linear)
       }
     }
   }
@@ -93,7 +93,7 @@ public struct TitleView: View {
     .onTapGesture(count: 1) {
       // TODO: can this move into the KnobFeature reducer? First attempt failed to animate display of editor.
       withAnimation {
-        store.send(.tapped)
+        store.send(.titleTapped)
         proxy?.scrollTo(config.id, anchor: UnitPoint(x: 0.6, y: 0.5))
       }
     }
