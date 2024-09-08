@@ -3,21 +3,21 @@ import AUv3Controls
 import ComposableArchitecture
 import SwiftUI
 
-let param1 = AUParameterTree.createBoolean(withIdentifier: "Retrigger", name: "Retrigger", address: 1)
-let param2 = AUParameterTree.createBoolean(withIdentifier: "Monophonic", name: "Monophonic", address: 2)
-let param3 = AUParameterTree.createFloat(withIdentifier: "Volume", name: "Volume", address: 3, range: 0...100)
-let param4 = AUParameterTree.createFloat(withIdentifier: "Pan", name: "Pan", address: 4, range: -50...50)
+private let param1 = AUParameterTree.createBoolean(withIdentifier: "Retrigger", name: "Retrigger", address: 1)
+private let param2 = AUParameterTree.createBoolean(withIdentifier: "Monophonic", name: "Monophonic", address: 2)
+private let param3 = AUParameterTree.createFloat(withIdentifier: "Volume", name: "Volume", address: 3, range: 0...100)
+private let param4 = AUParameterTree.createFloat(withIdentifier: "Pan", name: "Pan", address: 4, range: -50...50)
 
 let theme = Theme()
 
-let config3 = KnobConfig(parameter: param3, theme: theme)
-let config4 = KnobConfig(parameter: param4, theme: theme)
+private let config3 = KnobConfig(parameter: param3, theme: theme)
+private let config4 = KnobConfig(parameter: param4, theme: theme)
 
-class MockAUv3 {
+private class MockAUv3 {
   private let paramTree: AUParameterTree
 
   // Bindings to a state value but with a twist. We only ever use the 'setter' part of the binding when we see that
-  // the AUParameter is belongs to has changed.
+  // the AUParameter it belongs to has changed.
   private var bindings: [AUParameterAddress: Binding<Double>] = [:]
 
   init() {
@@ -51,9 +51,9 @@ class MockAUv3 {
   }
 }
 
-struct ContentView: View {
+struct DualityView: View {
 
-  var mockAUv3: MockAUv3!
+  private var mockAUv3: MockAUv3!
 
   @State var store1: StoreOf<ToggleFeature>
   @State var store2: StoreOf<ToggleFeature>
@@ -106,5 +106,5 @@ struct ContentView: View {
 
 
 #Preview {
-  ContentView()
+  DualityView()
 }
