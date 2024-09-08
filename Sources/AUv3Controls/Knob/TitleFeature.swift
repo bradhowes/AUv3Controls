@@ -69,12 +69,10 @@ private extension TitleFeature {
 public struct TitleView: View {
   private let store: StoreOf<TitleFeature>
   private let config: KnobConfig
-  private let proxy: ScrollViewProxy?
 
-  public init(store: StoreOf<TitleFeature>, config: KnobConfig, proxy: ScrollViewProxy?) {
+  public init(store: StoreOf<TitleFeature>, config: KnobConfig) {
     self.store = store
     self.config = config
-    self.proxy = proxy
   }
 
   public var body: some View {
@@ -91,10 +89,8 @@ public struct TitleView: View {
     .font(config.theme.font)
     .foregroundColor(config.theme.textColor)
     .onTapGesture(count: 1) {
-      // TODO: can this move into the KnobFeature reducer? First attempt failed to animate display of editor.
       withAnimation {
-        store.send(.titleTapped)
-        proxy?.scrollTo(config.id, anchor: UnitPoint(x: 0.6, y: 0.5))
+        _ = store.send(.titleTapped)
       }
     }
   }
@@ -112,7 +108,7 @@ struct TitleViewPreview: PreviewProvider {
   static var previews: some View {
     VStack(spacing: 24) {
       Button(action: { self.store.send(.valueChanged(1.24), animation: .linear) }) { Text("Send") }
-      TitleView(store: store, config: config, proxy: nil)
+      TitleView(store: store, config: config)
         .task { store.send(.valueChanged(1.24), animation: .linear) }
     }
   }

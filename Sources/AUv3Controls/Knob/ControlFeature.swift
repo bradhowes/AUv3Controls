@@ -76,18 +76,16 @@ private extension ControlFeature {
 struct ControlView: View {
   private let store: StoreOf<ControlFeature>
   private let config: KnobConfig
-  private let proxy: ScrollViewProxy?
 
-  init(store: StoreOf<ControlFeature>, config: KnobConfig, proxy: ScrollViewProxy?) {
+  init(store: StoreOf<ControlFeature>, config: KnobConfig) {
     self.store = store
     self.config = config
-    self.proxy = proxy
   }
 
   var body: some View {
     VStack(spacing: config.theme.controlTitleGap) {
       TrackView(store: store.scope(state: \.track, action: \.track), config: config)
-      TitleView(store: store.scope(state: \.title, action: \.title), config: config, proxy: proxy)
+      TitleView(store: store.scope(state: \.title, action: \.title), config: config)
     }
   }
 }
@@ -103,7 +101,7 @@ struct ControlViewPreview: PreviewProvider {
   }
 
   static var previews: some View {
-    ControlView(store: store, config: config, proxy: nil)
+    ControlView(store: store, config: config)
       .padding()
   }
 }

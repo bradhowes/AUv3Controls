@@ -57,7 +57,7 @@ final class ControlFeatureTests: XCTestCase {
       @State var store: StoreOf<ControlFeature>
 
       var body: some SwiftUI.View {
-        ControlView(store: store, config: config, proxy: nil)
+        ControlView(store: store, config: config)
       }
     }
 

@@ -26,15 +26,13 @@ public struct KnobFeature {
   }
 
   @ObservableState
-  public struct State: Equatable, Identifiable {
-    public let id: UInt64
-
+  public struct State: Equatable {
     var control: ControlFeature.State
     var editor: EditorFeature.State
     var observerToken: AUParameterObserverToken?
+    var scrollToDestination: UInt64?
 
     public init(config: KnobConfig) {
-      self.id = config.id
       self.control = .init(config: config, value: Double(config.parameter.value))
       self.editor = .init()
     }
@@ -43,6 +41,7 @@ public struct KnobFeature {
   public enum Action: Equatable, Sendable {
     case control(ControlFeature.Action)
     case editor(EditorFeature.Action)
+    case performScrollTo(UInt64?)
     case observationStart
     case observationStopped
     case observedValueChanged(AUValue)
@@ -73,13 +72,18 @@ public struct KnobFeature {
         }
         return .none
 
-      case .editor(let editorAction) where editorAction == .acceptButtonTapped:
+      case .editor(let editorAction):
+        guard editorAction == .acceptButtonTapped else { return .none }
         guard let editorValue = Double(state.editor.value) else { return .none }
         let value = config.normToValue(config.valueToNorm(editorValue))
         return .merge(
           setParameterEffect(state: state, value: value),
           updateControlEffect(state: &state.control, value: value)
         )
+
+      case .performScrollTo(let id):
+        state.scrollToDestination = id
+        return .none
 
       case .observationStart:
         let stream: AsyncStream<AUValue>
@@ -89,20 +93,17 @@ public struct KnobFeature {
             await send(.observedValueChanged(value))
           }
           await send(.observationStopped)
-        }.cancellable(id: state.id, cancelInFlight: true)
+        }.cancellable(id: config.id, cancelInFlight: true)
 
       case .observationStopped:
         if let token = state.observerToken {
           config.parameter.removeParameterObserver(token)
           state.observerToken = nil
         }
-        return .cancel(id: state.id)
+        return .cancel(id: config.id)
 
       case .observedValueChanged(let value):
         return updateControlEffect(state: &state.control, value: Double(value))
-
-      default:
-        return .none
       }
     }
   }
@@ -152,14 +153,29 @@ public struct KnobView: View {
 #if os(iOS)
   public var body: some View {
     ZStack {
-      ControlView(store: store.scope(state: \.control, action: \.control), config: config, proxy: proxy)
+      ControlView(store: store.scope(state: \.control, action: \.control), config: config)
         .visible(when: !store.editor.hasFocus)
       EditorView(store: store.scope(state: \.editor, action: \.editor), config: config)
         .visible(when: store.editor.hasFocus)
     }
+    .id(config.id)
     .frame(maxWidth: config.controlWidthIf(store.editor.focus), maxHeight: config.controlHeight)
     .frame(width: config.controlWidthIf(store.editor.focus), height: config.controlHeight)
     .task { await store.send(.observationStart).finish() }
+    .onChange(of: store.editor.hasFocus) { _, newValue in
+      if newValue && proxy != nil {
+        store.send(.performScrollTo(config.id))
+      }
+    }
+    .onChange(of: store.scrollToDestination) { _, newValue in
+      if let newValue,
+         let proxy = proxy {
+        withAnimation {
+          proxy.scrollTo(newValue)
+        }
+        store.send(.performScrollTo(nil))
+      }
+    }
   }
 #elseif os(macOS)
   public var body: some View {

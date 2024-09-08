@@ -71,7 +71,7 @@ final class TitleFeatureTests: XCTestCase {
       @State var store: StoreOf<TitleFeature>
       
       var body: some SwiftUI.View {
-        TitleView(store: store, config: config, proxy: nil)
+        TitleView(store: store, config: config)
       }
     }
     
@@ -90,7 +90,7 @@ final class TitleFeatureTests: XCTestCase {
       @State var store: StoreOf<TitleFeature>
       
       var body: some SwiftUI.View {
-        TitleView(store: store, config: config, proxy: nil)
+        TitleView(store: store, config: config)
       }
     }
     
