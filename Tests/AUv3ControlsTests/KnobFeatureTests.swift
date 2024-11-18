@@ -7,113 +7,123 @@ import XCTest
 
 @testable import AUv3Controls
 
-final class KnobFeatureTests: XCTestCase {
+@MainActor
+private final class Context {
   let param = AUParameterTree.createParameter(withIdentifier: "RELEASE", name: "Release", address: 1,
                                               min: 0.0, max: 100.0, unit: .generic, unitName: nil,
                                               valueStrings: nil, dependentParameters: nil)
-  var config: KnobConfig!
-  var store: TestStore<KnobFeature.State, KnobFeature.Action>!
+  lazy var config = KnobConfig(parameter: param, theme: Theme())
+  lazy var store = TestStore(initialState: .init(config: config)) {
+    KnobFeature(config: config)
+  } withDependencies: { $0.continuousClock = ImmediateClock() }
 
-  override func setUpWithError() throws {
-    isRecording = false
-    config = KnobConfig(parameter: param, theme: Theme())
-    store = TestStore(initialState: .init(config: config)) {
-      KnobFeature(config: config)
-    } withDependencies: { $0.continuousClock = ImmediateClock() }
-  }
+  init() {}
+}
 
-  override func tearDownWithError() throws {
-  }
+final class KnobFeatureTests: XCTestCase {
 
+  @MainActor
   func testValueChanged() async {
-    await store.send(.control(.track(.dragChanged(start: .init(x: 40, y: 0), position: .init(x: 40, y: -80))))) { state in
+    let ctx = Context()
+    await ctx.store.send(.control(.track(.dragChanged(start: .init(x: 40, y: 0), position: .init(x: 40, y: -80))))) { state in
       state.control.track.norm = 0.5
       state.control.track.lastDrag = .init(x: 40, y: -80)
       state.control.title.formattedValue = "50"
     }
-    await store.receive(.control(.title(.showValueTimerElapsed))) { state in
+    await ctx.store.receive(.control(.title(.showValueTimerElapsed))) { state in
       state.control.title.formattedValue = nil
     }
   }
 
+  @MainActor
   func testValueEditing() async {
-    await store.send(.control(.track(.dragChanged(start: .init(x: 40, y: 0), position: .init(x: 40, y: -80))))) { state in
+    let ctx = Context()
+    await ctx.store.send(.control(.track(.dragChanged(start: .init(x: 40, y: 0), position: .init(x: 40, y: -80))))) { state in
       state.control.track.norm = 0.5
       state.control.track.lastDrag = .init(x: 40, y: -80)
       state.control.title.formattedValue = "50"
     }
-    await store.receive(.control(.title(.showValueTimerElapsed))) { state in
+    await ctx.store.receive(.control(.title(.showValueTimerElapsed))) { state in
       state.control.title.formattedValue = nil
     }
-    await store.send(.control(.title(.titleTapped))) { state in
+    await ctx.store.send(.control(.title(.titleTapped))) { state in
       state.editor.focus = .value
       state.editor.value = "50"
     }
   }
 
+  @MainActor
   func testAcceptValidEdit() async {
-    await store.send(.control(.track(.dragChanged(start: .init(x: 40, y: 0), position: .init(x: 40, y: -80))))) { state in
+    let ctx = Context()
+    await ctx.store.send(.control(.track(.dragChanged(start: .init(x: 40, y: 0), position: .init(x: 40, y: -80))))) { state in
       state.control.track.norm = 0.5
       state.control.track.lastDrag = .init(x: 40, y: -80)
       state.control.title.formattedValue = "50"
     }
-    await store.receive(.control(.title(.showValueTimerElapsed))) { state in
+    await ctx.store.receive(.control(.title(.showValueTimerElapsed))) { state in
       state.control.title.formattedValue = nil
     }
-    await store.send(.control(.title(.titleTapped))) { state in
+    await ctx.store.send(.control(.title(.titleTapped))) { state in
       state.editor.focus = .value
       state.editor.value = "50"
     }
-    await store.send(.editor(.valueChanged("32.124"))) { state in
+    await ctx.store.send(.editor(.valueChanged("32.124"))) { state in
       state.editor.value = "32.124"
     }
-    await store.send(.editor(.acceptButtonTapped)) { state in
+    await ctx.store.send(.editor(.acceptButtonTapped)) { state in
       state.control.track.norm = 0.32124
       state.control.title.formattedValue = "32.124"
       state.editor.focus = nil
     }
+    await ctx.store.receive(.control(.title(.showValueTimerElapsed))) {
+      $0.control.title.formattedValue = nil
+    }
   }
 
+  @MainActor
   func testAcceptInvalidEdit() async {
-    await store.send(.control(.track(.dragChanged(start: .init(x: 40, y: 0), position: .init(x: 40, y: -80))))) { state in
+    let ctx = Context()
+    await ctx.store.send(.control(.track(.dragChanged(start: .init(x: 40, y: 0), position: .init(x: 40, y: -80))))) { state in
       state.control.track.norm = 0.5
       state.control.track.lastDrag = .init(x: 40, y: -80)
       state.control.title.formattedValue = "50"
     }
-    await store.receive(.control(.title(.showValueTimerElapsed))) { state in
+    await ctx.store.receive(.control(.title(.showValueTimerElapsed))) { state in
       state.control.title.formattedValue = nil
     }
-    await store.send(.control(.title(.titleTapped))) { state in
+    await ctx.store.send(.control(.title(.titleTapped))) { state in
       state.editor.focus = .value
       state.editor.value = "50"
     }
-    await store.send(.editor(.clearButtonTapped)) { state in
+    await ctx.store.send(.editor(.clearButtonTapped)) { state in
       state.editor.value = ""
     }
-    await store.send(.editor(.acceptButtonTapped)) { state in
+    await ctx.store.send(.editor(.acceptButtonTapped)) { state in
       state.control.track.norm = 0.5
       state.control.title.formattedValue = nil
       state.editor.focus = nil
     }
   }
 
+  @MainActor
   func testCancelEdit() async {
-    await store.send(.control(.track(.dragChanged(start: .init(x: 40, y: 0), position: .init(x: 40, y: -80))))) { state in
+    let ctx = Context()
+    await ctx.store.send(.control(.track(.dragChanged(start: .init(x: 40, y: 0), position: .init(x: 40, y: -80))))) { state in
       state.control.track.norm = 0.5
       state.control.track.lastDrag = .init(x: 40, y: -80)
       state.control.title.formattedValue = "50"
     }
-    await store.receive(.control(.title(.showValueTimerElapsed))) { state in
+    await ctx.store.receive(.control(.title(.showValueTimerElapsed))) { state in
       state.control.title.formattedValue = nil
     }
-    await store.send(.control(.title(.titleTapped))) { state in
+    await ctx.store.send(.control(.title(.titleTapped))) { state in
       state.editor.focus = .value
       state.editor.value = "50"
     }
-    await store.send(.editor(.valueChanged("32.124"))) { state in
+    await ctx.store.send(.editor(.valueChanged("32.124"))) { state in
       state.editor.value = "32.124"
     }
-    await store.send(.editor(.cancelButtonTapped)) { state in
+    await ctx.store.send(.editor(.cancelButtonTapped)) { state in
       state.control.track.norm = 0.5
       state.control.title.formattedValue = nil
       state.editor.focus = nil
@@ -122,6 +132,7 @@ final class KnobFeatureTests: XCTestCase {
 
   @MainActor
   func testChangedValue() async throws {
+    let ctx = Context()
     struct MyView: SwiftUI.View {
       let config: KnobConfig
       @State var store: StoreOf<KnobFeature>
@@ -131,8 +142,8 @@ final class KnobFeatureTests: XCTestCase {
       }
     }
 
-    let view = MyView(config: config, store: Store(initialState: .init(config: config)) {
-      KnobFeature(config: config)
+    let view = MyView(config: ctx.config, store: Store(initialState: .init(config: ctx.config)) {
+      KnobFeature(config: ctx.config)
     } withDependencies: {
       $0.continuousClock = ContinuousClock()
     })

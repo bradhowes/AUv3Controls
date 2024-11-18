@@ -44,7 +44,7 @@ private extension TitleFeature {
 
   func showTitleEffect(state: inout State) -> Effect<Action> {
     state.formattedValue = nil
-    return .none
+    return .cancel(id: self.config.showValueCancelId)
   }
 
   func showValueEffect(state: inout State, value: Double) -> Effect<Action> {

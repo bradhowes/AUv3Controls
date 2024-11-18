@@ -11,16 +11,9 @@ public extension AUParameter {
    */
   func startObserving() -> (AUParameterObserverToken, AsyncStream<AUValue>) {
     let (stream, continuation) = AsyncStream<AUValue>.makeStream()
-    let observerToken = self.token(byAddingParameterObserver: { address, value in
-      var lastSeen: AUValue?
-      if address == self.address && value != lastSeen {
-        lastSeen = value
-        continuation.yield(value)
-      }
-    })
-
+    let ourAddress = self.address
+    let observerToken = self.token(byAddingParameterObserver: { continuation.yield($1) })
     continuation.onTermination = { value in }
-
     return (observerToken, stream)
   }
 }

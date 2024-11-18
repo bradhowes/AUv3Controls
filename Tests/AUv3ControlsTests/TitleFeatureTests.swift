@@ -7,65 +7,74 @@ import XCTest
 
 @testable import AUv3Controls
 
-final class TitleFeatureTests: XCTestCase {
+@MainActor
+private final class Context {
   let param = AUParameterTree.createParameter(withIdentifier: "RELEASE", name: "Release", address: 1,
                                               min: 0.0, max: 100.0, unit: .generic, unitName: nil,
                                               valueStrings: nil, dependentParameters: nil)
-  var config: KnobConfig!
-  var store: TestStore<TitleFeature.State, TitleFeature.Action>!
   let clock = TestClock()
+  lazy var config = KnobConfig(parameter: param, theme: Theme())
+  lazy var store = TestStore(initialState: .init()) {
+    TitleFeature(config: config)
+  } withDependencies: {
+    $0.continuousClock = clock
+  }
 
-  override func setUpWithError() throws {
-    isRecording = false
-    config = KnobConfig(parameter: param, theme: Theme())
-    store = TestStore(initialState: .init()) {
-      TitleFeature(config: config)
-    } withDependencies: {
-      $0.continuousClock = clock
-    }
-  }
-  
-  override func tearDownWithError() throws {
-  }
-  
+  init() {}
+}
+
+final class TitleFeatureTests: XCTestCase {
+
+  @MainActor
   func testInit() {
-    XCTAssertNil(store.state.formattedValue)
+    let ctx = Context()
+    XCTAssertNil(ctx.store.state.formattedValue)
   }
   
+  @MainActor
   func testValueChanged() async {
-    await store.send(.valueChanged(12.34)) { state in
+    let ctx = Context()
+    await ctx.store.send(.valueChanged(12.34)) { state in
       state.formattedValue = "12.34"
     }
-    await store.send(.valueChanged(12.3456789)) { state in
-      state.formattedValue = "12.346"
+    await ctx.clock.advance(by: .seconds(ctx.config.showValueDuration / 2.0))
+    await ctx.store.send(.valueChanged(56.78)) { state in
+      state.formattedValue = "56.78"
     }
-    await store.send(.valueChanged(0.0)) { state in
-      state.formattedValue = "0"
+    await ctx.clock.advance(by: .seconds(ctx.config.showValueDuration))
+    await ctx.store.receive(.showValueTimerElapsed) {
+      $0.formattedValue = nil
     }
   }
 
+  @MainActor
   func testStoppedShowingValue() async {
-    await store.send(.valueChanged(12.34)) { state in
+    let ctx = Context()
+    await ctx.store.send(.valueChanged(12.34)) { state in
       state.formattedValue = "12.34"
     }
-    await clock.run()
-    await store.receive(.showValueTimerElapsed) { state in
+    await ctx.clock.run()
+    await ctx.store.receive(.showValueTimerElapsed) { state in
       state.formattedValue = nil
     }
-    await clock.advance(by: .seconds(1))
-    await clock.run()
   }
 
+  @MainActor
   func testTapped() async {
-    await store.send(.valueChanged(12.34)) { state in
+    let ctx = Context()
+    await ctx.store.send(.valueChanged(12.34)) { state in
       state.formattedValue = "12.34"
     }
-    await store.send(.titleTapped) { state in
+    await ctx.store.send(.titleTapped) { state in
       state.formattedValue = nil
     }
+    // Nothing should be running now.
   }
 
+  @MainActor
   func testNormalRendering() async throws {
+    let ctx = Context()
+
     struct MyView: SwiftUI.View {
       let config: KnobConfig
       @State var store: StoreOf<TitleFeature>
@@ -75,8 +84,8 @@ final class TitleFeatureTests: XCTestCase {
       }
     }
     
-    let view = MyView(config: config, store: Store(initialState: .init()) {
-      TitleFeature(config: config)
+    let view = MyView(config: ctx.config, store: Store(initialState: .init()) {
+      TitleFeature(config: ctx.config)
     })
     
     try assertSnapshot(matching: view)
@@ -84,7 +93,9 @@ final class TitleFeatureTests: XCTestCase {
     await view.store.send(.showValueTimerElapsed).finish()
   }
   
+  @MainActor
   func testShowingValue() async throws {
+    let ctx = Context()
     struct MyView: SwiftUI.View {
       let config: KnobConfig
       @State var store: StoreOf<TitleFeature>
@@ -94,8 +105,8 @@ final class TitleFeatureTests: XCTestCase {
       }
     }
     
-    let view = MyView(config: config, store: Store(initialState: .init()) {
-      TitleFeature(config: config)
+    let view = MyView(config: ctx.config, store: Store(initialState: .init()) {
+      TitleFeature(config: ctx.config)
     } withDependencies: { 
       $0.continuousClock = ContinuousClock()
     })

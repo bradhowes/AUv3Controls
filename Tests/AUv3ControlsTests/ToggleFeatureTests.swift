@@ -7,22 +7,24 @@ import XCTest
 
 @testable import AUv3Controls
 
-final class ToggleFeatureTests: XCTestCase {
+@MainActor
+private final class Context {
   let param = AUParameterTree.createBoolean(withIdentifier: "RETRIGGER", name: "Retrigger", address: 10)
-  var tree: AUParameterTree!
-  var store: TestStore<ToggleFeature.State, ToggleFeature.Action>!
+  lazy var tree = AUParameterTree.createTree(withChildren: [param])
 
-  override func setUpWithError() throws {
-    tree = AUParameterTree.createTree(withChildren: [param])
-    store = TestStore(initialState: ToggleFeature.State(parameter: param)) {
+  func makeStore() -> TestStoreOf<ToggleFeature> {
+    TestStore(initialState: ToggleFeature.State(parameter: param)) {
       ToggleFeature()
-    } withDependencies: { $0.continuousClock = ImmediateClock() }
+    }
   }
+}
 
-  override func tearDownWithError() throws {
-  }
+final class ToggleFeatureTests: XCTestCase {
 
+  @MainActor
   func testInit() {
+    let ctx = Context()
+    let store = ctx.makeStore()
     XCTAssertEqual(10, store.state.parameter.address)
     XCTAssertEqual("Retrigger", store.state.parameter.displayName)
     XCTAssertEqual("RETRIGGER", store.state.parameter.identifier)
@@ -32,17 +34,22 @@ final class ToggleFeatureTests: XCTestCase {
     XCTAssertFalse(store.state.isOn)
   }
 
+  @MainActor
   func testToggleObservations() async {
-    store.exhaustivity = .off
-    await store.send(.observationStart)
-    store.exhaustivity = .on
+    let ctx = Context()
+    let store = ctx.makeStore()
 
-    param.setValue(1.0, originator: nil)
+    await store.send(.observationStart)
+
+    Task.detached {
+      ctx.param.setValue(1.0, originator: nil)
+    }
+
     await store.receive(.observedValueChanged(1.0)) {
       $0.isOn = true
     }
 
-    param.setValue(0.0, originator: nil)
+    ctx.param.setValue(0.0, originator: nil)
     await store.receive(.observedValueChanged(0.0)) {
       $0.isOn = false
     }
@@ -52,26 +59,31 @@ final class ToggleFeatureTests: XCTestCase {
     }
   }
 
+  @MainActor
   func testToggling() async {
-    store.exhaustivity = .off
+    let ctx = Context()
+    let store = ctx.makeStore()
     await store.send(.observationStart)
 
     await store.send(.toggleTapped) {
       $0.isOn = true
     }
-    XCTAssertEqual(1.0, param.value)
+    XCTAssertEqual(1.0, ctx.param.value)
 
     await store.send(.toggleTapped) {
       $0.isOn = false
     }
-    XCTAssertEqual(0.0, param.value)
+    XCTAssertEqual(0.0, ctx.param.value)
 
     await store.send(.observationStopped) {
       $0.observerToken = nil
     }
   }
 
+  @MainActor
   func testOffRendering() async throws {
+    let ctx = Context()
+
     struct MyView: SwiftUI.View {
       @State var store: StoreOf<ToggleFeature>
 
@@ -80,7 +92,7 @@ final class ToggleFeatureTests: XCTestCase {
       }
     }
 
-    let view = MyView(store: Store(initialState: .init(parameter: param, isOn: false)) {
+    let view = MyView(store: Store(initialState: .init(parameter: ctx.param, isOn: false)) {
       ToggleFeature()
     })
 
@@ -89,7 +101,10 @@ final class ToggleFeatureTests: XCTestCase {
     await view.store.send(.observationStopped).finish()
   }
 
+  @MainActor
   func testOnRendering() async throws {
+    let ctx = Context()
+
     struct MyView: SwiftUI.View {
       @State var store: StoreOf<ToggleFeature>
 
@@ -98,7 +113,7 @@ final class ToggleFeatureTests: XCTestCase {
       }
     }
 
-    let view = MyView(store: Store(initialState: .init(parameter: param, isOn: true)) {
+    let view = MyView(store: Store(initialState: .init(parameter: ctx.param, isOn: true)) {
       ToggleFeature()
     })
 

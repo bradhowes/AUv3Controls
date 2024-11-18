@@ -3,6 +3,7 @@ import Clocks
 import ComposableArchitecture
 import SwiftUI
 
+
 public struct ToggleFeature: Reducer {
 
   public init() {}
@@ -32,10 +33,12 @@ public struct ToggleFeature: Reducer {
     switch action {
 
     case .observationStart:
+      print("starting observation")
       let stream: AsyncStream<AUValue>
       (state.observerToken, stream) = state.parameter.startObserving()
       return .run { send in
         for await value in stream {
+          print("got value: \(value)")
           await send(.observedValueChanged(value))
         }
         await send(.observationStopped)
@@ -49,6 +52,7 @@ public struct ToggleFeature: Reducer {
       return .cancel(id: state.id)
 
     case let .observedValueChanged(value):
+      print("observedValueChanged: \(value)")
       state.isOn = value.asBool
       return .none
 
