@@ -6,7 +6,7 @@ public extension AUParameter {
   /**
    Obtain a stream of value changes from a parameter, presumably changed by another entity such as a MIDI
    connection.
-   
+
    - returns: 2-tuple containing a token for cancelling the observation and an AsyncStream of observed values
    */
   func startObserving() -> (AUParameterObserverToken, AsyncStream<AUValue>) {

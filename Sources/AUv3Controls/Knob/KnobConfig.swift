@@ -5,8 +5,9 @@ import SwiftUI
 private let maxParameterAddress: UInt64 = 100_000
 
 /**
- Shabby attempt at isolating customizations for a KnobFeature. Right now there is a 1-1 relationship between this and
- a
+ Shabby attempt at isolating customizations for a `KnobFeature`. Right now there is a 1-1 relationship between this and
+ an AUParameter instance. Appearance configuration has been split out into a separate `Theme` class, but there are
+ still too many details here that would be better shared across `KnobFeature` instances.
  */
 public struct KnobConfig {
 
