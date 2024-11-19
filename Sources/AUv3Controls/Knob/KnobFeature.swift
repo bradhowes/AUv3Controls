@@ -154,7 +154,7 @@ public struct KnobView: View {
 #if os(macOS)
     self.showBinding = Binding<Bool>(
       get: { store.editor.hasFocus },
-      set: { $0 }
+      set: { _ in }
     )
 #endif
   }
@@ -188,10 +188,10 @@ public struct KnobView: View {
   }
 #elseif os(macOS)
   public var body: some View {
-    ControlView(store: store.scope(state: \.control, action: \.control), config: config, proxy: proxy)
+    ControlView(store: store.scope(state: \.control, action: \.control), config: config)
       .frame(maxWidth: config.controlDiameter, maxHeight: config.controlHeight)
       .frame(width: config.controlDiameter, height: config.controlHeight)
-      .task { await store.send(.observationStart).finish() }
+      .task { await store.send(.startValueObservation).finish() }
       .sheet(isPresented: showBinding) {
       } content: {
         EditorView(store: store.scope(state: \.editor, action: \.editor), config: config)
