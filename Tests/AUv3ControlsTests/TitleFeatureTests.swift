@@ -42,7 +42,7 @@ final class TitleFeatureTests: XCTestCase {
       state.formattedValue = "56.78"
     }
     await ctx.clock.advance(by: .seconds(ctx.config.showValueDuration))
-    await ctx.store.receive(.showValueTimerElapsed) {
+    await ctx.store.receive(.cancelValueDisplayTimer) {
       $0.formattedValue = nil
     }
   }
@@ -54,7 +54,7 @@ final class TitleFeatureTests: XCTestCase {
       state.formattedValue = "12.34"
     }
     await ctx.clock.run()
-    await ctx.store.receive(.showValueTimerElapsed) { state in
+    await ctx.store.receive(.cancelValueDisplayTimer) { state in
       state.formattedValue = nil
     }
   }
@@ -90,7 +90,7 @@ final class TitleFeatureTests: XCTestCase {
     
     try assertSnapshot(matching: view)
 
-    await view.store.send(.showValueTimerElapsed).finish()
+    await view.store.send(.cancelValueDisplayTimer).finish()
   }
   
   @MainActor
@@ -115,7 +115,7 @@ final class TitleFeatureTests: XCTestCase {
 
     try assertSnapshot(matching: view)
 
-    await view.store.send(.showValueTimerElapsed).finish()
+    await view.store.send(.cancelValueDisplayTimer).finish()
   }
 
   @MainActor

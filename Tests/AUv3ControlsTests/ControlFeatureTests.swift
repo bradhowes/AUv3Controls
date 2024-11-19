@@ -40,7 +40,7 @@ final class ControlFeatureTests: XCTestCase {
       state.track.lastDrag = .init(x: 40, y: -40)
       state.title.formattedValue = "25"
     }
-    await store.receive(.title(.showValueTimerElapsed)) {
+    await store.receive(.title(.cancelValueDisplayTimer)) {
       $0.title.formattedValue = nil
     }
     await store.finish()
@@ -55,7 +55,7 @@ final class ControlFeatureTests: XCTestCase {
       state.track.lastDrag = .init(x: 40, y: -40)
       state.title.formattedValue = "25"
     }
-    await store.receive(.title(.showValueTimerElapsed)) {
+    await store.receive(.title(.cancelValueDisplayTimer)) {
       $0.title.formattedValue = nil
     }
     await store.send(.track(.dragEnded(start: .init(x: 40, y: 0.0), position: .init(x: 40, y: -40)))) { state in
@@ -63,7 +63,7 @@ final class ControlFeatureTests: XCTestCase {
       state.track.lastDrag = nil
       state.title.formattedValue = "25"
     }
-    await store.receive(.title(.showValueTimerElapsed)) {
+    await store.receive(.title(.cancelValueDisplayTimer)) {
       $0.title.formattedValue = nil
     }
   }

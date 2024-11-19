@@ -37,8 +37,8 @@ public struct ControlFeature {
   }
 
   public var body: some Reducer<State, Action> {
-    Scope(state: \.track, action: /Action.track) { trackFeature }
-    Scope(state: \.title, action: /Action.title) { titleFeature }
+    Scope(state: \.track, action: \.track) { trackFeature }
+    Scope(state: \.title, action: \.title) { titleFeature }
 
     Reduce { state, action in
       switch action {

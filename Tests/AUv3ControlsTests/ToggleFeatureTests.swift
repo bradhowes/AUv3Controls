@@ -13,7 +13,7 @@ private final class Context {
   lazy var tree = AUParameterTree.createTree(withChildren: [param])
 
   func makeStore() -> TestStoreOf<ToggleFeature> {
-    TestStore(initialState: ToggleFeature.State(parameter: param)) {
+    TestStore(initialState: ToggleFeature.State(parameter: tree.parameter(withAddress: 10)!)) {
       ToggleFeature()
     }
   }
@@ -39,11 +39,11 @@ final class ToggleFeatureTests: XCTestCase {
     let ctx = Context()
     let store = ctx.makeStore()
 
-    await store.send(.observationStart)
-
-    Task.detached {
-      ctx.param.setValue(1.0, originator: nil)
+    _ = await store.withExhaustivity(.off) {
+      await store.send(.startValueObservation)
     }
+
+    ctx.param.setValue(1.0, originator: nil)
 
     await store.receive(.observedValueChanged(1.0)) {
       $0.isOn = true
@@ -54,7 +54,7 @@ final class ToggleFeatureTests: XCTestCase {
       $0.isOn = false
     }
 
-    await store.send(.observationStopped) {
+    await store.send(.stopValueObservation) {
       $0.observerToken = nil
     }
   }
@@ -63,7 +63,10 @@ final class ToggleFeatureTests: XCTestCase {
   func testToggling() async {
     let ctx = Context()
     let store = ctx.makeStore()
-    await store.send(.observationStart)
+
+    _ = await store.withExhaustivity(.off) {
+      await store.send(.startValueObservation)
+    }
 
     await store.send(.toggleTapped) {
       $0.isOn = true
@@ -75,7 +78,7 @@ final class ToggleFeatureTests: XCTestCase {
     }
     XCTAssertEqual(0.0, ctx.param.value)
 
-    await store.send(.observationStopped) {
+    await store.send(.stopValueObservation) {
       $0.observerToken = nil
     }
   }
@@ -98,7 +101,7 @@ final class ToggleFeatureTests: XCTestCase {
 
     try assertSnapshot(matching: view)
 
-    await view.store.send(.observationStopped).finish()
+    await view.store.send(.stopValueObservation).finish()
   }
 
   @MainActor
@@ -119,7 +122,7 @@ final class ToggleFeatureTests: XCTestCase {
 
     try assertSnapshot(matching: view)
 
-    await view.store.send(.observationStopped).finish()
+    await view.store.send(.stopValueObservation).finish()
   }
 
   @MainActor

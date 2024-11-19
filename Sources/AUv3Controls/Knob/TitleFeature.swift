@@ -22,7 +22,7 @@ public struct TitleFeature {
   }
 
   public enum Action: Equatable, Sendable {
-    case showValueTimerElapsed
+    case cancelValueDisplayTimer
     case titleTapped
     case valueChanged(Double)
   }
@@ -32,9 +32,9 @@ public struct TitleFeature {
   public var body: some Reducer<State, Action> {
     Reduce { state, action in
       switch action {
-      case .valueChanged(let value): return showValueEffect(state: &state, value: value)
-      case .showValueTimerElapsed: return showTitleEffect(state: &state)
+      case .cancelValueDisplayTimer: return showTitleEffect(state: &state)
       case .titleTapped: return showTitleEffect(state: &state)
+      case .valueChanged(let value): return showValueEffect(state: &state, value: value)
       }
     }
   }
@@ -55,7 +55,7 @@ private extension TitleFeature {
     return .run { send in
       try await withTaskCancellation(id: cancelId, cancelInFlight: true) {
         try await clock.sleep(for: duration)
-        await send(.showValueTimerElapsed, animation: .linear)
+        await send(.cancelValueDisplayTimer, animation: .linear)
       }
     }
   }

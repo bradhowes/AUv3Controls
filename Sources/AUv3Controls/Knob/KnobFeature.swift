@@ -42,14 +42,14 @@ public struct KnobFeature {
     case control(ControlFeature.Action)
     case editor(EditorFeature.Action)
     case performScrollTo(UInt64?)
-    case observationStart
-    case observationStopped
     case observedValueChanged(AUValue)
+    case startValueObservation
+    case stopValueObservation
   }
 
   public var body: some Reducer<State, Action> {
-    Scope(state: \.control, action: /Action.control) { controlFeature }
-    Scope(state: \.editor, action: /Action.editor) { editorFeature }
+    Scope(state: \.control, action: \.control) { controlFeature }
+    Scope(state: \.editor, action: \.editor) { editorFeature }
 
     Reduce { state, action in
 
@@ -85,22 +85,26 @@ public struct KnobFeature {
         state.scrollToDestination = id
         return .none
 
-      case .observationStart:
+      case .startValueObservation:
         let stream: AsyncStream<AUValue>
         (state.observerToken, stream) = config.parameter.startObserving()
         return .run { send in
           for await value in stream {
             await send(.observedValueChanged(value))
           }
-          await send(.observationStopped)
+          await send(.stopValueObservation)
         }.cancellable(id: config.id, cancelInFlight: true)
 
-      case .observationStopped:
+      case .stopValueObservation:
         if let token = state.observerToken {
           config.parameter.removeParameterObserver(token)
           state.observerToken = nil
         }
-        return .cancel(id: config.id)
+        return .merge(
+          .cancel(id: config.id),
+          cancelAnyTitleEffect(state: &state.control)
+        )
+
 
       case .observedValueChanged(let value):
         return updateControlEffect(state: &state.control, value: Double(value))
@@ -110,7 +114,12 @@ public struct KnobFeature {
 }
 
 private extension KnobFeature {
-  
+
+  func cancelAnyTitleEffect(state: inout ControlFeature.State) -> Effect<Action> {
+    controlFeature.reduce(into: &state, action: .title(.cancelValueDisplayTimer))
+      .map(Action.control)
+  }
+
   func updateControlEffect(state: inout ControlFeature.State, value: Double) -> Effect<Action> {
     controlFeature.reduce(into: &state, action: .valueChanged(value))
       .map(Action.control)
@@ -161,7 +170,7 @@ public struct KnobView: View {
     .id(config.id)
     .frame(maxWidth: config.controlWidthIf(store.editor.focus), maxHeight: config.controlHeight)
     .frame(width: config.controlWidthIf(store.editor.focus), height: config.controlHeight)
-    .task { await store.send(.observationStart).finish() }
+    .task { await store.send(.startValueObservation).finish() }
     .onChange(of: store.editor.hasFocus) { _, newValue in
       if newValue && proxy != nil {
         store.send(.performScrollTo(config.id))

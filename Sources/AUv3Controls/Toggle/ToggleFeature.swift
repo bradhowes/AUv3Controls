@@ -23,16 +23,16 @@ public struct ToggleFeature: Reducer {
   }
 
   public enum Action: Equatable, Sendable {
-    case observationStart
-    case observationStopped
     case observedValueChanged(AUValue)
+    case startValueObservation
+    case stopValueObservation
     case toggleTapped
   }
 
   public func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
 
-    case .observationStart:
+    case .startValueObservation:
       print("starting observation")
       let stream: AsyncStream<AUValue>
       (state.observerToken, stream) = state.parameter.startObserving()
@@ -41,10 +41,10 @@ public struct ToggleFeature: Reducer {
           print("got value: \(value)")
           await send(.observedValueChanged(value))
         }
-        await send(.observationStopped)
+        await send(.stopValueObservation)
       }.cancellable(id: state.id, cancelInFlight: true)
 
-    case .observationStopped:
+    case .stopValueObservation:
       if let token = state.observerToken {
         state.parameter.removeParameterObserver(token)
         state.observerToken = nil
@@ -78,7 +78,7 @@ public struct ToggleView: View {
     WithViewStore(self.store, observe: { $0 }, content: { viewStore in
       Toggle(isOn: viewStore.binding(get: \.isOn, send: .toggleTapped)) { Text(viewStore.parameter.displayName) }
         .toggleStyle(.checked(theme: theme))
-        .task { viewStore.send(.observationStart) }
+        .task { viewStore.send(.startValueObservation) }
     })
   }
 }
