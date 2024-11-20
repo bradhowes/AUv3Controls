@@ -1,9 +1,10 @@
-PLATFORM_IOS = iOS Simulator,name=iPad mini (6th generation)
+PLATFORM_IOS = iOS Simulator,name=iPad mini (A17 Pro)
 PLATFORM_MACOS = macOS
 PLATFORM_TVOS = tvOS Simulator,name=Apple TV 4K (3rd generation) (at 1080p)
 TARGET = AUv3Controls
 BUILD_FLAGS = -quiet -skipMacroValidation
 WORKSPACE = $(PWD)/.workspace
+XCCOV = xcrunn xccov view --report --only-targets
 
 default: percentage
 
@@ -15,15 +16,15 @@ percentage: coverage-ios
     fi
 
 coverage-ios: test-ios
-	xcrun xccov view --report --only-targets $(PWD)/.DerivedData-ios/Logs/Test/*.xcresult > coverage.txt
+    $(XCCOV) $(PWD)/.DerivedData-ios/Logs/Test/*.xcresult > coverage.txt
 	cat coverage.txt
 
 coverage-macos: test-macos
-	xcrun xccov view --report --only-targets $(PWD)/.DerivedData-macos/Logs/Test/*.xcresult > coverage.txt
+	$(XCCOV) $(PWD)/.DerivedData-macos/Logs/Test/*.xcresult > coverage.txt
 	cat coverage.txt
 
 coverage-tvos: test-tvos
-	xcrun xccov view --report --only-targets $(PWD)/.DerivedData-tvos/Logs/Test/*.xcresult > coverage.txt
+	$(XCCOV) $(PWD)/.DerivedData-tvos/Logs/Test/*.xcresult > coverage.txt
 	cat coverage.txt
 
 test: test-ios test-macos test-tvos
