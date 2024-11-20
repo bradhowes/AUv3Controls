@@ -4,7 +4,7 @@ PLATFORM_TVOS = tvOS Simulator,name=Apple TV 4K (3rd generation) (at 1080p)
 TARGET = AUv3Controls
 BUILD_FLAGS = -quiet -skipMacroValidation
 WORKSPACE = $(PWD)/.workspace
-XCCOV = xcrunn xccov view --report --only-targets
+XCCOV = xcrun xccov view --report --only-targets
 
 default: percentage
 
@@ -16,7 +16,7 @@ percentage: coverage-ios
     fi
 
 coverage-ios: test-ios
-    $(XCCOV) $(PWD)/.DerivedData-ios/Logs/Test/*.xcresult > coverage.txt
+	$(XCCOV) $(PWD)/.DerivedData-ios/Logs/Test/*.xcresult > coverage.txt
 	cat coverage.txt
 
 coverage-macos: test-macos
