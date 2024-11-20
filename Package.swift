@@ -1,11 +1,11 @@
-// swift-tools-version: 6.0
+// swift-tools-version: 5.9
 
 import PackageDescription
 
 let package = Package(
   name: "AUv3Controls",
   platforms: [
-    .iOS(.v17),
+    .iOS(.v16),
     .macOS(.v14)
   ],
   products: [
@@ -14,8 +14,8 @@ let package = Package(
       targets: ["AUv3Controls"])
   ],
   dependencies: [
-    .package(url: "https://github.com/pointfreeco/swift-composable-architecture", from: "1.8.0"),
-    .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", from: "1.15.3")
+    .package(url: "https://github.com/pointfreeco/swift-composable-architecture", from: "1.16.0"),
+    .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", from: "1.17.0")
   ],
   targets: [
     .target(
