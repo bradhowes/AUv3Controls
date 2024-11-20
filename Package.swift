@@ -5,7 +5,7 @@ import PackageDescription
 let package = Package(
   name: "AUv3Controls",
   platforms: [
-    .iOS(.v16),
+    .iOS(.v17),
     .macOS(.v14)
   ],
   products: [
