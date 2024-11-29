@@ -28,6 +28,7 @@ public struct TrackFeature {
     case dragChanged(start: CGPoint, position: CGPoint)
     case dragEnded(start: CGPoint, position: CGPoint)
     case valueChanged(Double)
+    case normChanged(Double)
   }
 
   public var body: some Reducer<State, Action> {
@@ -43,7 +44,13 @@ public struct TrackFeature {
                                     atEnd: true)
 
       case let .valueChanged(value):
-        state.norm = config.valueToNorm(value)
+        let normValue = config.valueToNorm(value)
+        return .run { send in
+          await send(.normChanged(normValue))
+        }.animation(.easeInOut)
+
+      case let .normChanged(value):
+        state.norm = value
         return .none
       }
     }
@@ -80,7 +87,9 @@ public struct TrackView: View {
         rotatedCircle
           .trackStroke(config: config)
         rotatedCircle
-          .indicatorStroke(config: config, norm: store.norm)
+          .progressStroke(config: config, norm: store.norm)
+        rotatedIndicator
+          .stroke(config.theme.controlForegroundColor, style: config.theme.controlValueStrokeStyle)
       }
       .gesture(DragGesture(minimumDistance: 0.0, coordinateSpace: .local)
         .onChanged { store.send(.dragChanged(start: $0.startLocation, position: $0.location)) }
@@ -92,6 +101,18 @@ public struct TrackView: View {
     Circle()
       .rotation(.degrees(-270))
   }
+
+  var indicator: some Shape {
+    var path = Path()
+    path.move(to: .init(x: 0.0, y: config.controlRadius))
+    path.addLine(to: .init(x: config.theme.controlIndicatorLength, y: config.controlRadius))
+    return path
+  }
+
+  var rotatedIndicator: some Shape {
+    indicator
+      .rotation(.degrees(-50 + store.norm * 280))
+  }
 }
 
 private extension Shape {
@@ -102,7 +123,7 @@ private extension Shape {
       .frame(width: config.controlDiameter, height: config.controlDiameter, alignment: .center)
   }
 
-  func indicatorStroke(config: KnobConfig, norm: Double) -> some View {
+  func progressStroke(config: KnobConfig, norm: Double) -> some View {
     self.trim(from: config.indicatorStartAngle.normalized, to: config.normToTrim(norm))
       .stroke(config.theme.controlForegroundColor, style: config.theme.controlValueStrokeStyle)
       .frame(width: config.controlDiameter, height: config.controlDiameter, alignment: .center)
@@ -119,6 +140,18 @@ struct TrackViewPreview: PreviewProvider {
   }
 
   static var previews: some View {
-    TrackView(store: store, config: config)
+    VStack {
+      TrackView(store: store, config: config)
+      Button {
+        store.send(.valueChanged(0.0))
+      } label: {
+        Text("Goto 0")
+      }
+      Button {
+        store.send(.valueChanged(40.0))
+      } label: {
+        Text("Goto 40")
+      }
+    }
   }
 }

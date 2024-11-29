@@ -130,7 +130,14 @@ struct DualityView: View {
           }
         }
         GroupBox(label: Label("Mock MIDI", systemImage: "pianokeys")) {
-          Slider(value: mockAUv3.binding(to: param3.address, with: $slider3), in: config3.range)
+          HStack {
+            Slider(value: mockAUv3.binding(to: param3.address, with: $slider3), in: config3.range)
+            Button {
+              param3.setValue(0.0, originator: nil)
+            } label: {
+              Text("Reset")
+            }
+          }
           Text("Volume: \(slider3)")
           Slider(value: mockAUv3.binding(to: param4.address, with: $slider4), in: config4.range)
           Text("Pan: \(slider4)")

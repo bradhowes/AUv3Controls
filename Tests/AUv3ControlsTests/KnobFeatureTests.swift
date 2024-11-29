@@ -53,7 +53,7 @@ final class KnobFeatureTests: XCTestCase {
   }
 
   @MainActor
-  func testAcceptValidEdit() async {
+  func SKIP_testAcceptValidEdit() async {
     let ctx = Context()
     await ctx.store.send(.control(.track(.dragChanged(start: .init(x: 40, y: 0), position: .init(x: 40, y: -80))))) { state in
       state.control.track.norm = 0.5

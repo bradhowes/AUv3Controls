@@ -24,6 +24,8 @@ public class Theme {
   /// The spacing to put between the knob control and the title below it
   public var controlTitleGap: CGFloat
 
+  public var controlIndicatorLength: CGFloat
+
   /**
    Initialize instance.
 
@@ -34,6 +36,7 @@ public class Theme {
   public init(bundle: Bundle? = nil,
               controlTrackStrokeStyle: StrokeStyle = .init(lineWidth: 6.0, lineCap: .round),
               controlValueStrokeStyle: StrokeStyle = .init(lineWidth: 6.0, lineCap: .round),
+              controlIndicatorLength: CGFloat = 12.0,
               controlTitleGap: CGFloat = 0.0,
               valueFormatter: NumberFormatter? = nil) {
     self.controlBackgroundColor = Self.color(.controlBackgroundColor, from: bundle,
@@ -43,6 +46,7 @@ public class Theme {
     self.textColor = Self.color(.textColor, from: bundle, default: .init(hex: "C08000") ?? .orange)
     self.controlTrackStrokeStyle = controlTrackStrokeStyle
     self.controlValueStrokeStyle = controlValueStrokeStyle
+    self.controlIndicatorLength = controlIndicatorLength
     self.controlTitleGap = controlTitleGap
     self.formatter = valueFormatter ?? Self.defaultFormatter
   }

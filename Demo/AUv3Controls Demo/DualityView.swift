@@ -89,9 +89,33 @@ struct DualityView: View {
       // .border(theme.controlBackgroundColor)
       GroupBox(label: Label("MIDI Controls", systemImage: "pianokeys")) {
         Slider(value: self.mockAUv3.binding(to: param3.address, with: $slider3), in: config3.range)
-        Text("Volume: \(slider3)")
+        HStack {
+          Button {
+            param3.setValue(0.0, originator: nil)
+          } label: {
+            Text("Min")
+          }
+          Text("Volume: \(String(format: "%6.2f", slider3))")
+          Button {
+            param3.setValue(100.0, originator: nil)
+          } label: {
+            Text("Max")
+          }
+        }
         Slider(value: self.mockAUv3.binding(to: param4.address, with: $slider4), in: config4.range)
-        Text("Pan: \(slider4)")
+        HStack {
+          Button {
+            param4.setValue(-50.0, originator: nil)
+          } label: {
+            Text("Min")
+          }
+          Text("Pan: \(String(format: "%6.2f", slider4))")
+          Button {
+            param4.setValue(50.0, originator: nil)
+          } label: {
+            Text("Max")
+          }
+        }
         Toggle(isOn: self.mockAUv3.binding(to: param1.address, with: $toggle1)) {
           Text("Retrigger")
         }

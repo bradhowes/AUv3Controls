@@ -16,6 +16,7 @@
 		BD2F12E62B0175ED00E5D0CE /* AUv3Controls in Frameworks */ = {isa = PBXBuildFile; productRef = BD2F12E52B0175ED00E5D0CE /* AUv3Controls */; };
 		BD2F12E92B0176F800E5D0CE /* AUv3Controls in Frameworks */ = {isa = PBXBuildFile; productRef = BD2F12E82B0176F800E5D0CE /* AUv3Controls */; };
 		BD4F94E02C8E09C100E5BA37 /* EnvelopeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD4F94DF2C8E09C100E5BA37 /* EnvelopeView.swift */; };
+		BD7A93512CFA03C300B848BB /* AUv3Controls in Frameworks */ = {isa = PBXBuildFile; productRef = BD7A93502CFA03C300B848BB /* AUv3Controls */; };
 		BDEC132A2B95790600789D13 /* DualityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD2F12BB2B0175C300E5D0CE /* DualityView.swift */; };
 /* End PBXBuildFile section */
 
@@ -57,6 +58,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				BD2F12E62B0175ED00E5D0CE /* AUv3Controls in Frameworks */,
+				BD7A93512CFA03C300B848BB /* AUv3Controls in Frameworks */,
 				BD2F12E92B0176F800E5D0CE /* AUv3Controls in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -155,6 +157,7 @@
 			packageProductDependencies = (
 				BD2F12E52B0175ED00E5D0CE /* AUv3Controls */,
 				BD2F12E82B0176F800E5D0CE /* AUv3Controls */,
+				BD7A93502CFA03C300B848BB /* AUv3Controls */,
 			);
 			productName = "AUv3Controls Demo";
 			productReference = BD2F12B62B0175C300E5D0CE /* AUv3Controls Demo.app */;
@@ -229,7 +232,7 @@
 			);
 			mainGroup = BD2F12AD2B0175C300E5D0CE;
 			packageReferences = (
-				BD2F12E72B0176F800E5D0CE /* XCLocalSwiftPackageReference ".." */,
+				BD7A934F2CFA03C300B848BB /* XCLocalSwiftPackageReference "../../AUv3Controls" */,
 			);
 			productRefGroup = BD2F12B72B0175C300E5D0CE /* Products */;
 			projectDirPath = "";
@@ -650,9 +653,9 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		BD2F12E72B0176F800E5D0CE /* XCLocalSwiftPackageReference ".." */ = {
+		BD7A934F2CFA03C300B848BB /* XCLocalSwiftPackageReference "../../AUv3Controls" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = ..;
+			relativePath = ../../AUv3Controls;
 		};
 /* End XCLocalSwiftPackageReference section */
 
@@ -662,6 +665,10 @@
 			productName = AUv3Controls;
 		};
 		BD2F12E82B0176F800E5D0CE /* AUv3Controls */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = AUv3Controls;
+		};
+		BD7A93502CFA03C300B848BB /* AUv3Controls */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = AUv3Controls;
 		};

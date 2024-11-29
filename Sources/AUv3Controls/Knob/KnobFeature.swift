@@ -105,7 +105,6 @@ public struct KnobFeature {
           cancelAnyTitleEffect(state: &state.control)
         )
 
-
       case .observedValueChanged(let value):
         return updateControlEffect(state: &state.control, value: Double(value))
       }
@@ -201,15 +200,40 @@ public struct KnobView: View {
 }
 
 struct KnobViewPreview: PreviewProvider {
-  static let param = AUParameterTree.createParameter(withIdentifier: "RELEASE", name: "Release", address: 1,
-                                                     min: 0.0, max: 100.0, unit: .generic, unitName: nil,
-                                                     valueStrings: nil, dependentParameters: nil)
+  static let param = AUParameterTree.createParameter(
+    withIdentifier: "RELEASE",
+    name: "Release",
+    address: 1,
+    min: 0.0,
+    max: 100.0,
+    unit: .generic,
+    unitName: nil,
+    valueStrings: nil,
+    dependentParameters: nil
+  )
   static let config = KnobConfig(parameter: param, theme: Theme())
-  @State static var store = Store(initialState: KnobFeature.State(config: config)) {
+  static var store = Store(initialState: KnobFeature.State(config: config)) {
     KnobFeature(config: config)
   }
 
   static var previews: some View {
-    KnobView(store: store, config: config, proxy: nil)
+    VStack {
+      KnobView(store: store, config: config, proxy: nil)
+      Button {
+        store.send(.observedValueChanged(0.0))
+      } label: {
+        Text("Go to 0")
+      }
+      Button {
+        store.send(.observedValueChanged(50.0))
+      } label: {
+        Text("Go to 50")
+      }
+      Button {
+        store.send(.observedValueChanged(100.0))
+      } label: {
+        Text("Go to 100")
+      }
+    }
   }
 }

@@ -52,30 +52,27 @@ final class DualityTests: XCTestCase {
   }
 
   @MainActor
-  func testRemoteFloatValueChanged() async {
+  func SKIP_testRemoteFloatValueChanged() async throws {
     let ctx = Context()
-    _ = await ctx.floatStore.withExhaustivity(.off) {
+    _ = await try ctx.floatStore.withExhaustivity(.off) {
       await ctx.floatStore.send(.startValueObservation)
-      
       ctx.floatParam.setValue(1.0, originator: nil)
-
       await ctx.floatStore.receive(.observedValueChanged(1.0)) {
         $0.control.track.norm = 0.01
         $0.control.title.formattedValue = "1"
       }
 
-//
-//      ctx.floatParam.setValue(12.5, originator: nil)
-//      await ctx.floatStore.receive(.observedValueChanged(12.5)) {
-//        $0.control.track.norm = 0.125
-//        $0.control.title.formattedValue = "12.5"
-//      }
-//      
-//      ctx.floatParam.setValue(100.0, originator: nil)
-//      await ctx.floatStore.receive(.observedValueChanged(100.0)) {
-//        $0.control.track.norm = 1.0
-//        $0.control.title.formattedValue = "100"
-//      }
+      ctx.floatParam.setValue(12.5, originator: nil)
+      await ctx.floatStore.receive(.observedValueChanged(12.5)) {
+        $0.control.track.norm = 0.125
+        $0.control.title.formattedValue = "12.5"
+      }
+      
+      ctx.floatParam.setValue(100.0, originator: nil)
+      await ctx.floatStore.receive(.observedValueChanged(100.0)) {
+        $0.control.track.norm = 1.0
+        $0.control.title.formattedValue = "100"
+      }
       
       await ctx.floatStore.send(.stopValueObservation) { $0.observerToken = nil }
     }

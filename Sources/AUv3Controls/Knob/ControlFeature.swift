@@ -43,6 +43,9 @@ public struct ControlFeature {
     Reduce { state, action in
       switch action {
 
+      case .title:
+        return .none
+
       case .track:
         let value = config.normToValue(state.track.norm)
         return updateTitleEffect(state: &state.title, value: value)
@@ -52,9 +55,6 @@ public struct ControlFeature {
           updateTitleEffect(state: &state.title, value: value),
           updateTrackEffect(state: &state.track, value: value)
         )
-
-      default:
-        return .none
       }
     }
   }
@@ -91,17 +91,40 @@ struct ControlView: View {
 }
 
 struct ControlViewPreview: PreviewProvider {
-  static let param = AUParameterTree.createParameter(withIdentifier: "RELEASE", name: "Release", address: 1,
-                                                     min: 0.0, max: 100.0, unit: .generic, unitName: nil,
-                                                     valueStrings: nil, dependentParameters: nil)
+  static let param = AUParameterTree.createParameter(
+    withIdentifier: "RELEASE",
+    name: "Release",
+    address: 1,
+    min: 0.0,
+    max: 100.0,
+    unit: .generic,
+    unitName: nil,
+    valueStrings: nil,
+    dependentParameters: nil
+  )
   static let config = KnobConfig(parameter: param, theme: Theme())
-  @State static var store = Store(initialState: ControlFeature.State(config: config,
-                                                                     value: Double(param.value))) {
+  static var store = Store(
+    initialState: ControlFeature.State(
+      config: config,
+      value: Double(param.value)
+    )
+  ) {
     ControlFeature(config: config)
   }
 
   static var previews: some View {
-    ControlView(store: store, config: config)
-      .padding()
+    VStack {
+      ControlView(store: store, config: config)
+      Button {
+        store.send(.valueChanged(0))
+      } label: {
+        Text("Go to 0")
+      }
+      Button {
+        store.send(.valueChanged(40))
+      } label: {
+        Text("Go to 40")
+      }
+    }
   }
 }
