@@ -86,7 +86,6 @@ struct DualityView: View {
         }
       }
       .padding()
-      // .border(theme.controlBackgroundColor)
       GroupBox(label: Label("MIDI Controls", systemImage: "pianokeys")) {
         Slider(value: self.mockAUv3.binding(to: param3.address, with: $slider3), in: config3.range)
         HStack {

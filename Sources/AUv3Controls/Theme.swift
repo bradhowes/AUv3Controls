@@ -23,7 +23,8 @@ public class Theme {
   public var controlValueStrokeStyle: StrokeStyle
   /// The spacing to put between the knob control and the title below it
   public var controlTitleGap: CGFloat
-
+  /// The length of the indicator at the end of the progress track. Positive value points toward the center of the
+  /// track, negative values will point away from the center.
   public var controlIndicatorLength: CGFloat
 
   /**
@@ -33,12 +34,14 @@ public class Theme {
    - parameter controlTrackStrokeStyle the stroke style to use when drawing the background track of a knob
    - parameter controlValueStrokeStyle the stroke style to use when drawing the value track of a knob
    */
-  public init(bundle: Bundle? = nil,
-              controlTrackStrokeStyle: StrokeStyle = .init(lineWidth: 6.0, lineCap: .round),
-              controlValueStrokeStyle: StrokeStyle = .init(lineWidth: 6.0, lineCap: .round),
-              controlIndicatorLength: CGFloat = 12.0,
-              controlTitleGap: CGFloat = 0.0,
-              valueFormatter: NumberFormatter? = nil) {
+  public init(
+    bundle: Bundle? = nil,
+    controlTrackStrokeStyle: StrokeStyle = .init(lineWidth: 10.0, lineCap: .round),
+    controlValueStrokeStyle: StrokeStyle = .init(lineWidth: 10.0, lineCap: .round),
+    controlIndicatorLength: CGFloat = 16.0,
+    controlTitleGap: CGFloat = 0.0,
+    valueFormatter: NumberFormatter? = nil
+  ) {
     self.controlBackgroundColor = Self.color(.controlBackgroundColor, from: bundle,
                                              default: .init(hex: "333333") ?? .gray)
     self.controlForegroundColor = Self.color(.controlForegroundColor, from: bundle,

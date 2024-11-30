@@ -68,8 +68,13 @@ public struct KnobConfig {
 
   let maxChangeRegionWidthHalf: CGFloat
 
-  public init(parameter: AUParameter, controlDiameter: CGFloat = 80.0, controlHeight: CGFloat = 100.0,
-              touchSensitivity: CGFloat = 2.0, theme: Theme) {
+  public init(
+    parameter: AUParameter,
+    controlDiameter: CGFloat = 100.0,
+    controlHeight: CGFloat = 120.0,
+    touchSensitivity: CGFloat = 2.0,
+    theme: Theme
+  ) {
     precondition(parameter.address < maxParameterAddress, "AUParameter address must be < \(maxParameterAddress)")
 
     self.parameter = parameter
