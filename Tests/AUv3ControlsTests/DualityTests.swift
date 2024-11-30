@@ -54,7 +54,7 @@ final class DualityTests: XCTestCase {
   @MainActor
   func SKIP_testRemoteFloatValueChanged() async throws {
     let ctx = Context()
-    _ = await try ctx.floatStore.withExhaustivity(.off) {
+    _ = await ctx.floatStore.withExhaustivity(.off) {
       await ctx.floatStore.send(.startValueObservation)
       ctx.floatParam.setValue(1.0, originator: nil)
       await ctx.floatStore.receive(.observedValueChanged(1.0)) {

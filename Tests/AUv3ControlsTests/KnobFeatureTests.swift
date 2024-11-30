@@ -26,9 +26,9 @@ final class KnobFeatureTests: XCTestCase {
   func testValueChanged() async {
     let ctx = Context()
     await ctx.store.send(.control(.track(.dragChanged(start: .init(x: 40, y: 0), position: .init(x: 40, y: -80))))) { state in
-      state.control.track.norm = 0.5
+      state.control.track.norm = 0.36000000000000004
       state.control.track.lastDrag = .init(x: 40, y: -80)
-      state.control.title.formattedValue = "50"
+      state.control.title.formattedValue = "36"
     }
     await ctx.store.receive(.control(.title(.cancelValueDisplayTimer))) { state in
       state.control.title.formattedValue = nil
@@ -39,16 +39,16 @@ final class KnobFeatureTests: XCTestCase {
   func testValueEditing() async {
     let ctx = Context()
     await ctx.store.send(.control(.track(.dragChanged(start: .init(x: 40, y: 0), position: .init(x: 40, y: -80))))) { state in
-      state.control.track.norm = 0.5
+      state.control.track.norm = 0.36000000000000004
       state.control.track.lastDrag = .init(x: 40, y: -80)
-      state.control.title.formattedValue = "50"
+      state.control.title.formattedValue = "36"
     }
     await ctx.store.receive(.control(.title(.cancelValueDisplayTimer))) { state in
       state.control.title.formattedValue = nil
     }
     await ctx.store.send(.control(.title(.titleTapped))) { state in
       state.editor.focus = .value
-      state.editor.value = "50"
+      state.editor.value = "36"
     }
   }
 
@@ -84,22 +84,22 @@ final class KnobFeatureTests: XCTestCase {
   func testAcceptInvalidEdit() async {
     let ctx = Context()
     await ctx.store.send(.control(.track(.dragChanged(start: .init(x: 40, y: 0), position: .init(x: 40, y: -80))))) { state in
-      state.control.track.norm = 0.5
+      state.control.track.norm = 0.36000000000000004
       state.control.track.lastDrag = .init(x: 40, y: -80)
-      state.control.title.formattedValue = "50"
+      state.control.title.formattedValue = "36"
     }
     await ctx.store.receive(.control(.title(.cancelValueDisplayTimer))) { state in
       state.control.title.formattedValue = nil
     }
     await ctx.store.send(.control(.title(.titleTapped))) { state in
       state.editor.focus = .value
-      state.editor.value = "50"
+      state.editor.value = "36"
     }
     await ctx.store.send(.editor(.clearButtonTapped)) { state in
       state.editor.value = ""
     }
     await ctx.store.send(.editor(.acceptButtonTapped)) { state in
-      state.control.track.norm = 0.5
+      state.control.track.norm = 0.36000000000000004
       state.control.title.formattedValue = nil
       state.editor.focus = nil
     }
@@ -109,22 +109,22 @@ final class KnobFeatureTests: XCTestCase {
   func testCancelEdit() async {
     let ctx = Context()
     await ctx.store.send(.control(.track(.dragChanged(start: .init(x: 40, y: 0), position: .init(x: 40, y: -80))))) { state in
-      state.control.track.norm = 0.5
+      state.control.track.norm = 0.36000000000000004
       state.control.track.lastDrag = .init(x: 40, y: -80)
-      state.control.title.formattedValue = "50"
+      state.control.title.formattedValue = "36"
     }
     await ctx.store.receive(.control(.title(.cancelValueDisplayTimer))) { state in
       state.control.title.formattedValue = nil
     }
     await ctx.store.send(.control(.title(.titleTapped))) { state in
       state.editor.focus = .value
-      state.editor.value = "50"
+      state.editor.value = "36"
     }
     await ctx.store.send(.editor(.valueChanged("32.124"))) { state in
       state.editor.value = "32.124"
     }
     await ctx.store.send(.editor(.cancelButtonTapped)) { state in
-      state.control.track.norm = 0.5
+      state.control.track.norm = 0.36000000000000004
       state.control.title.formattedValue = nil
       state.editor.focus = nil
     }

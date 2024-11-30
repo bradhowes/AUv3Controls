@@ -36,9 +36,9 @@ final class ControlFeatureTests: XCTestCase {
     let ctx = Context()
     let store = ctx.makeStore()
     await store.send(.track(.dragChanged(start: .init(x: 40, y: 0.0), position: .init(x: 40, y: -40)))) { state in
-      state.track.norm = 0.25
+      state.track.norm = 0.18000000000000002
       state.track.lastDrag = .init(x: 40, y: -40)
-      state.title.formattedValue = "25"
+      state.title.formattedValue = "18"
     }
     await store.receive(.title(.cancelValueDisplayTimer)) {
       $0.title.formattedValue = nil
@@ -51,17 +51,17 @@ final class ControlFeatureTests: XCTestCase {
     let ctx = Context()
     let store = ctx.makeStore()
     await store.send(.track(.dragChanged(start: .init(x: 40, y: 0.0), position: .init(x: 40, y: -40)))) { state in
-      state.track.norm = 0.25
+      state.track.norm = 0.18000000000000002
       state.track.lastDrag = .init(x: 40, y: -40)
-      state.title.formattedValue = "25"
+      state.title.formattedValue = "18"
     }
     await store.receive(.title(.cancelValueDisplayTimer)) {
       $0.title.formattedValue = nil
     }
     await store.send(.track(.dragEnded(start: .init(x: 40, y: 0.0), position: .init(x: 40, y: -40)))) { state in
-      state.track.norm = 0.25
+      state.track.norm = 0.18000000000000002
       state.track.lastDrag = nil
-      state.title.formattedValue = "25"
+      state.title.formattedValue = "18"
     }
     await store.receive(.title(.cancelValueDisplayTimer)) {
       $0.title.formattedValue = nil

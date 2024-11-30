@@ -44,7 +44,7 @@ final class TrackFeatureTests: XCTestCase {
                                       position: .init(x: ctx.config.controlRadius,
                                                       y: -ctx.config.controlDiameter * 0.4))) { store in
       store.norm = 0.20
-      store.lastDrag = CGPoint(x: 40, y: -32)
+      store.lastDrag = CGPoint(x: 50, y: -40)
     }
     
     ctx.config.touchSensitivity = 2.0
@@ -54,7 +54,7 @@ final class TrackFeatureTests: XCTestCase {
                                   position: .init(x: ctx.config.controlRadius,
                                                   y: -ctx.config.controlDiameter * 0.8))) { store in
       store.norm = 0.40
-      store.lastDrag = CGPoint(x: 40, y: -64)
+      store.lastDrag = CGPoint(x: 50, y: -80)
     }
   }
   
@@ -69,7 +69,7 @@ final class TrackFeatureTests: XCTestCase {
         await ctx.store.send(.dragChanged(start: .init(x: ctx.config.controlRadius, y: 0.0),
                                           position: .init(x: ctx.config.controlRadius + offset,
                                                           y: -ctx.config.controlDiameter * 0.7))) { store in
-          store.norm = 0.5950000000000001
+          store.norm = 0.6300000000000001
         }
       }
     }
