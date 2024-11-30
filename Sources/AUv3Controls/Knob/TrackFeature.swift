@@ -47,7 +47,7 @@ public struct TrackFeature {
         let normValue = config.valueToNorm(value)
         return .run { send in
           await send(.normChanged(normValue))
-        }.animation(.easeInOut)
+        }.animation(.easeInOut(duration: config.theme.controlChangeAnimationDuration))
 
       case let .normChanged(value):
         state.norm = value

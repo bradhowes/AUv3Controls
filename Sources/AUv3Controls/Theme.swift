@@ -27,6 +27,7 @@ public class Theme {
   /// track, negative values will point away from the center.
   public var controlIndicatorLength: CGFloat
 
+  public var controlChangeAnimationDuration: TimeInterval = 0.35
   /**
    Initialize instance.
 
