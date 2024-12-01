@@ -25,17 +25,27 @@ public struct TrackFeature {
   }
 
   public enum Action: Equatable, Sendable {
+    case dragStarted(start: CGPoint, position: CGPoint)
     case dragChanged(start: CGPoint, position: CGPoint)
     case dragEnded(start: CGPoint, position: CGPoint)
     case valueChanged(Double)
     case normChanged(Double)
+
+    var cause: AUParameterAutomationEventType? {
+      switch self {
+      case .dragStarted: return .touch
+      case .dragChanged: return .value
+      case .dragEnded: return .release
+      default: return nil
+      }
+    }
   }
 
   public var body: some Reducer<State, Action> {
     Reduce { state, action in
 
       switch action {
-      case let .dragChanged(start, position): 
+      case let .dragStarted(start, position), let .dragChanged(start, position):
         return updateFromDragEffect(state: &state, start: state.lastDrag ?? start, position: position,
                                     atEnd: false)
 
@@ -92,7 +102,12 @@ public struct TrackView: View {
           .stroke(config.theme.controlForegroundColor, style: config.theme.controlValueStrokeStyle)
       }
       .gesture(DragGesture(minimumDistance: 0.0, coordinateSpace: .local)
-        .onChanged { store.send(.dragChanged(start: $0.startLocation, position: $0.location)) }
+        .onChanged {
+          let action: TrackFeature.Action = store.lastDrag == nil ?
+            .dragStarted(start: $0.startLocation, position: $0.location) :
+            .dragChanged(start: $0.startLocation, position: $0.location)
+          store.send(action)
+        }
         .onEnded { store.send(.dragEnded(start: $0.startLocation, position: $0.location))
         })
   }
@@ -151,6 +166,16 @@ struct TrackViewPreview: PreviewProvider {
         store.send(.valueChanged(40.0))
       } label: {
         Text("Goto 40")
+      }
+      Button {
+        store.send(.valueChanged(50.0))
+      } label: {
+        Text("Goto 50")
+      }
+      Button {
+        store.send(.valueChanged(100.0))
+      } label: {
+        Text("Goto 100")
       }
     }
   }

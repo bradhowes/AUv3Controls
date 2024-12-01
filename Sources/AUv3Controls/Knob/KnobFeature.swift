@@ -57,12 +57,13 @@ public struct KnobFeature {
 
       case .control(let controlAction):
         switch controlAction {
-        case .track(let trackAction):
-          if case .dragChanged = trackAction {
-            let value = config.normToValue(state.control.track.norm)
-            return setParameterEffect(state: state, value: value)
-          }
 
+          // Update the associated AUParameter when the track changes value
+        case .track(let trackAction):
+          let value = config.normToValue(state.control.track.norm)
+          return setParameterEffect(state: state, value: value, cause: trackAction.cause)
+
+          // Show the value editor when the title is tapped
         case .title(let titleAction) where titleAction == .titleTapped:
           let value = config.normToValue(state.control.track.norm)
           return beginEditingEffect(state: &state.editor, value: value)
@@ -77,7 +78,7 @@ public struct KnobFeature {
         guard let editorValue = Double(state.editor.value) else { return .none }
         let value = config.normToValue(config.valueToNorm(editorValue))
         return .merge(
-          setParameterEffect(state: state, value: value),
+          setParameterEffect(state: state, value: value, cause: .value),
           updateControlEffect(state: &state.control, value: value)
         )
 
@@ -129,12 +130,11 @@ private extension KnobFeature {
       .map(Action.editor)
   }
 
-  func setParameterEffect(state: State, value: Double) -> Effect<Action> {
-    guard let token = state.observerToken else { return .none }
+  func setParameterEffect(state: State, value: Double, cause: AUParameterAutomationEventType?) -> Effect<Action> {
+    guard let token = state.observerToken, let cause else { return .none }
     let parameter = config.parameter
-    return .run(priority: .userInitiated) { _ in
-      parameter.setValue(AUValue(value), originator: token)
-    }
+    parameter.setValue(AUValue(value), originator: token, atHostTime: 0, eventType: cause)
+    return .none
   }
 }
 

@@ -3,14 +3,11 @@ import Clocks
 import ComposableArchitecture
 import SwiftUI
 
+@Reducer
+public struct ToggleFeature {
 
-public struct ToggleFeature: Reducer {
-
-  public init() {}
-
-  public struct State: Equatable, Identifiable {
-    public var id: ID { ObjectIdentifier(parameter) }
-
+  @ObservableState
+  public struct State: Equatable {
     public let parameter: AUParameter
     public var isOn: Bool
     public var observerToken: AUParameterObserverToken?
@@ -23,44 +20,50 @@ public struct ToggleFeature: Reducer {
   }
 
   public enum Action: Equatable, Sendable {
+    case animatedObservedValueChanged(Bool)
     case observedValueChanged(AUValue)
     case startValueObservation
     case stopValueObservation
     case toggleTapped
   }
 
-  public func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
+  public var body: some Reducer<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .startValueObservation:
+        let stream: AsyncStream<AUValue>
+        (state.observerToken, stream) = state.parameter.startObserving()
+        return .run { send in
+          for await value in stream {
+            await send(.observedValueChanged(value))
+          }
+          await send(.stopValueObservation)
+        }.cancellable(id: state.parameter.address, cancelInFlight: true)
 
-    case .startValueObservation:
-      print("starting observation")
-      let stream: AsyncStream<AUValue>
-      (state.observerToken, stream) = state.parameter.startObserving()
-      return .run { send in
-        for await value in stream {
-          print("got value: \(value)")
-          await send(.observedValueChanged(value))
+      case .stopValueObservation:
+        if let token = state.observerToken {
+          state.parameter.removeParameterObserver(token)
+          state.observerToken = nil
         }
-        await send(.stopValueObservation)
-      }.cancellable(id: state.id, cancelInFlight: true)
+        return .cancel(id: state.parameter.address)
 
-    case .stopValueObservation:
-      if let token = state.observerToken {
-        state.parameter.removeParameterObserver(token)
-        state.observerToken = nil
+      case let .observedValueChanged(value):
+        return .run { send in await send(.animatedObservedValueChanged(value.asBool)) }.animation()
+
+      case let .animatedObservedValueChanged(value):
+        state.isOn = value
+        return .none
+
+      case .toggleTapped:
+        state.isOn.toggle()
+        state.parameter.setValue(
+          state.isOn.asValue,
+          originator: state.observerToken,
+          atHostTime: 0,
+          eventType: .value
+        )
+        return .none
       }
-      return .cancel(id: state.id)
-
-    case let .observedValueChanged(value):
-      print("observedValueChanged: \(value)")
-      state.isOn = value.asBool
-      return .none
-
-    case .toggleTapped:
-      state.isOn.toggle()
-      state.parameter.setValue(state.isOn.asValue, originator: state.observerToken)
-      return .none
-
     }
   }
 }
@@ -99,6 +102,16 @@ struct ToggleViewPreview: PreviewProvider {
     VStack(alignment: .leading, spacing: 12) {
       ToggleView(store: store1, theme: Theme())
       ToggleView(store: store2, theme: Theme())
+      Button {
+        store1.send(.observedValueChanged(store1.isOn ? 0.0 : 1.0))
+      } label: {
+        Text("Toggle Parameter 1")
+      }
+      Button {
+        store2.send(.observedValueChanged(store2.isOn ? 0.0 : 1.0))
+      } label: {
+        Text("Toggle Parameter 2")
+      }
     }
   }
 }

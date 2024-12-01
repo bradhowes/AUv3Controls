@@ -44,15 +44,12 @@ final class ToggleFeatureTests: XCTestCase {
     }
 
     ctx.param.setValue(1.0, originator: nil)
-
-    await store.receive(.observedValueChanged(1.0)) {
-      $0.isOn = true
-    }
+    await store.receive(.observedValueChanged(1.0))
+    await store.receive(.animatedObservedValueChanged(true)) { $0.isOn = true }
 
     ctx.param.setValue(0.0, originator: nil)
-    await store.receive(.observedValueChanged(0.0)) {
-      $0.isOn = false
-    }
+    await store.receive(.observedValueChanged(0.0))
+    await store.receive(.animatedObservedValueChanged(false)) { $0.isOn = false }
 
     await store.send(.stopValueObservation) {
       $0.observerToken = nil
