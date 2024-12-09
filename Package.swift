@@ -15,13 +15,15 @@ let package = Package(
   ],
   dependencies: [
     .package(url: "https://github.com/pointfreeco/swift-composable-architecture", from: "1.16.0"),
-    .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", from: "1.17.0")
+    .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", from: "1.17.0"),
+    .package(url: "https://github.com/apple/swift-async-algorithms", from: "1.0.2")
   ],
   targets: [
     .target(
       name: "AUv3Controls",
       dependencies: [
-        .product(name: "ComposableArchitecture", package: "swift-composable-architecture")
+        .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
+        .product(name: "AsyncAlgorithms", package: "swift-async-algorithms")
       ],
       swiftSettings: [
         .enableExperimentalFeature("StrictConcurrency=complete")

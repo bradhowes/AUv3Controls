@@ -1,3 +1,4 @@
+import AsyncAlgorithms
 import AVFoundation
 import ComposableArchitecture
 import SwiftUI
@@ -87,10 +88,11 @@ public struct KnobFeature {
         return .none
 
       case .startValueObservation:
+        let duration = config.debounceDuration
         let stream: AsyncStream<AUValue>
         (state.observerToken, stream) = config.parameter.startObserving()
         return .run { send in
-          for await value in stream {
+          for await value in stream.debounce(for: duration) {
             await send(.observedValueChanged(value))
           }
           await send(.stopValueObservation)

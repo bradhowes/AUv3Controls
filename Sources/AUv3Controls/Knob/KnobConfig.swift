@@ -58,8 +58,13 @@ public struct KnobConfig {
 
   public let indicatorStartAngle = Angle(degrees: 40)
   public let indicatorEndAngle = Angle(degrees: 320)
-
   public var showValueDuration = 1.25
+
+  /// Amount of time to wait with no more AUParameter changes before emitting the last one in the async stream of
+  /// values. Reduces traffic at the expense of increased latency. Note that this is *not* the same as throttling where
+  /// one limits the rate of emission but ultimately emits all events: throttling drops all but the last event in a
+  /// debouncing window of time.
+  public var debounceDuration: Duration = .milliseconds(10)
 
   /// Percentage of `controlDiameter` where a touch/mouse event will perform maximum value change. This defines a
   /// vertical region in the middle of the view. Events outside of this region will have finer sensitivity and control
