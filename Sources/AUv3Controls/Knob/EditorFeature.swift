@@ -8,19 +8,16 @@ import SwiftUI
  */
 @Reducer
 public struct EditorFeature {
-  private let config: KnobConfig
-
-  public init(config: KnobConfig) {
-    self.config = config
-  }
 
   @ObservableState
   public struct State: Equatable {
+    let config: KnobConfig
     var value: String
     var focus: Field?
     var hasFocus: Bool { focus != nil }
 
-    public init() {
+    public init(config: KnobConfig) {
+      self.config = config
       self.value = ""
       self.focus = nil
     }
@@ -45,7 +42,7 @@ public struct EditorFeature {
       switch action {
       case .acceptButtonTapped: state.focus = nil
       case .beginEditing(let value):
-        state.value = config.formattedValue(value)
+        state.value = state.config.formattedValue(value)
         state.focus = .value
       case .binding: break
       case .cancelButtonTapped: state.focus = nil
@@ -129,8 +126,8 @@ struct EditorViewPreview: PreviewProvider {
                                                      min: 0.0, max: 100.0, unit: .generic, unitName: nil,
                                                      valueStrings: nil, dependentParameters: nil)
   static let config = KnobConfig(parameter: param, theme: Theme())
-  @State static var store = Store(initialState: EditorFeature.State()) {
-    EditorFeature(config: config)
+  @State static var store = Store(initialState: EditorFeature.State(config: config)) {
+    EditorFeature()
   }
 
   static var previews: some View {

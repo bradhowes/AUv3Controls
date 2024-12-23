@@ -12,14 +12,10 @@ import SwiftUI
  */
 @Reducer
 public struct TrackFeature {
-  private let config: KnobConfig
-
-  init(config: KnobConfig) {
-    self.config = config
-  }
 
   @ObservableState
-  public struct State: Equatable, Sendable {
+  public struct State: Equatable {
+    let config: KnobConfig
     var norm: Double
     var lastDrag: CGPoint?
   }
@@ -54,10 +50,10 @@ public struct TrackFeature {
                                     atEnd: true)
 
       case let .valueChanged(value):
-        let normValue = config.valueToNorm(value)
+        let normValue = state.config.valueToNorm(value)
         return .run { send in
           await send(.normChanged(normValue))
-        }.animation(.easeInOut(duration: config.theme.controlChangeAnimationDuration))
+        }.animation(.easeInOut(duration: state.config.theme.controlChangeAnimationDuration))
 
       case let .normChanged(value):
         state.norm = value
@@ -70,7 +66,7 @@ public struct TrackFeature {
 private extension TrackFeature {
 
   func updateFromDragEffect(state: inout State, start: CGPoint, position: CGPoint, atEnd: Bool) -> Effect<Action> {
-    state.norm = (state.norm + config.dragChangeValue(last: start, position: position)).clamped(to: 0.0...1.0)
+    state.norm = (state.norm + state.config.dragChangeValue(last: start, position: position)).clamped(to: 0.0...1.0)
     state.lastDrag = atEnd ? nil : position
     return .none
   }
@@ -133,15 +129,21 @@ public struct TrackView: View {
 private extension Shape {
 
   func trackStroke(config: KnobConfig) -> some View {
-    self.trim(from: config.indicatorStartAngle.normalized, to: config.indicatorEndAngle.normalized)
-      .stroke(config.theme.controlBackgroundColor, style: config.theme.controlTrackStrokeStyle)
-      .frame(width: config.controlDiameter, height: config.controlDiameter, alignment: .center)
+    self.trim(
+      from: config.theme.controlIndicatorStartAngle.normalized,
+      to: config.theme.controlIndicatorEndAngle.normalized
+    )
+    .stroke(config.theme.controlBackgroundColor, style: config.theme.controlTrackStrokeStyle)
+    .frame(width: config.controlDiameter, height: config.controlDiameter, alignment: .center)
   }
 
   func progressStroke(config: KnobConfig, norm: Double) -> some View {
-    self.trim(from: config.indicatorStartAngle.normalized, to: config.normToTrim(norm))
-      .stroke(config.theme.controlForegroundColor, style: config.theme.controlValueStrokeStyle)
-      .frame(width: config.controlDiameter, height: config.controlDiameter, alignment: .center)
+    self.trim(
+      from: config.theme.controlIndicatorStartAngle.normalized,
+      to: config.normToTrim(norm)
+    )
+    .stroke(config.theme.controlForegroundColor, style: config.theme.controlValueStrokeStyle)
+    .frame(width: config.controlDiameter, height: config.controlDiameter, alignment: .center)
   }
 }
 
@@ -150,8 +152,8 @@ struct TrackViewPreview: PreviewProvider {
                                                      min: 0.0, max: 100.0, unit: .generic, unitName: nil,
                                                      valueStrings: nil, dependentParameters: nil)
   static let config = KnobConfig(parameter: param, theme: Theme())
-  @State static var store = Store(initialState: TrackFeature.State(norm: 0.5)) {
-    TrackFeature(config: config)
+  @State static var store = Store(initialState: TrackFeature.State(config: config, norm: 0.5)) {
+    TrackFeature()
   }
 
   static var previews: some View {

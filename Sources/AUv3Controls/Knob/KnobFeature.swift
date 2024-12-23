@@ -16,26 +16,26 @@ import SwiftUI
  */
 @Reducer
 public struct KnobFeature {
-  private let config: KnobConfig
   private let controlFeature: ControlFeature
   private let editorFeature: EditorFeature
 
   public init(config: KnobConfig) {
-    self.config = config
     self.controlFeature = ControlFeature(config: config)
-    self.editorFeature = EditorFeature(config: config)
+    self.editorFeature = EditorFeature()
   }
 
   @ObservableState
   public struct State: Equatable {
+    let config: KnobConfig
     var control: ControlFeature.State
     var editor: EditorFeature.State
     var observerToken: AUParameterObserverToken?
     var scrollToDestination: UInt64?
 
     public init(config: KnobConfig) {
+      self.config = config
       self.control = .init(config: config, value: Double(config.parameter.value))
-      self.editor = .init()
+      self.editor = .init(config: config)
     }
   }
 
@@ -61,12 +61,12 @@ public struct KnobFeature {
 
           // Update the associated AUParameter when the track changes value
         case .track(let trackAction):
-          let value = config.normToValue(state.control.track.norm)
+          let value = state.config.normToValue(state.control.track.norm)
           return setParameterEffect(state: state, value: value, cause: trackAction.cause)
 
           // Show the value editor when the title is tapped
         case .title(let titleAction) where titleAction == .titleTapped:
-          let value = config.normToValue(state.control.track.norm)
+          let value = state.config.normToValue(state.control.track.norm)
           return beginEditingEffect(state: &state.editor, value: value)
 
         default:
@@ -77,7 +77,7 @@ public struct KnobFeature {
       case .editor(let editorAction):
         guard editorAction == .acceptButtonTapped else { return .none }
         guard let editorValue = Double(state.editor.value) else { return .none }
-        let value = config.normToValue(config.valueToNorm(editorValue))
+        let value = state.config.normToValue(state.config.valueToNorm(editorValue))
         return .merge(
           setParameterEffect(state: state, value: value, cause: .value),
           updateControlEffect(state: &state.control, value: value)
@@ -88,23 +88,23 @@ public struct KnobFeature {
         return .none
 
       case .startValueObservation:
-        let duration = config.debounceDuration
+        let duration = state.config.debounceDuration
         let stream: AsyncStream<AUValue>
-        (state.observerToken, stream) = config.parameter.startObserving()
+        (state.observerToken, stream) = state.config.parameter.startObserving()
         return .run { send in
           for await value in stream.debounce(for: duration) {
             await send(.observedValueChanged(value))
           }
           await send(.stopValueObservation)
-        }.cancellable(id: config.id, cancelInFlight: true)
+        }.cancellable(id: state.config.id, cancelInFlight: true)
 
       case .stopValueObservation:
         if let token = state.observerToken {
-          config.parameter.removeParameterObserver(token)
+          state.config.parameter.removeParameterObserver(token)
           state.observerToken = nil
         }
         return .merge(
-          .cancel(id: config.id),
+          .cancel(id: state.config.id),
           cancelAnyTitleEffect(state: &state.control)
         )
 
@@ -134,7 +134,7 @@ private extension KnobFeature {
 
   func setParameterEffect(state: State, value: Double, cause: AUParameterAutomationEventType?) -> Effect<Action> {
     guard let token = state.observerToken, let cause else { return .none }
-    let parameter = config.parameter
+    let parameter = state.config.parameter
     parameter.setValue(AUValue(value), originator: token, atHostTime: 0, eventType: cause)
     return .none
   }

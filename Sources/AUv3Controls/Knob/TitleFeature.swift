@@ -9,14 +9,10 @@ import SwiftUI
  */
 @Reducer
 public struct TitleFeature {
-  private let config: KnobConfig
 
-  public init(config: KnobConfig) {
-    self.config = config
-  }
-  
   @ObservableState
   public struct State: Equatable {
+    let config: KnobConfig
     var formattedValue: String?
     var showingValue: Bool { formattedValue != nil }
   }
@@ -44,14 +40,14 @@ private extension TitleFeature {
 
   func showTitleEffect(state: inout State) -> Effect<Action> {
     state.formattedValue = nil
-    return .cancel(id: self.config.showValueCancelId)
+    return .cancel(id: state.config.showValueCancelId)
   }
 
   func showValueEffect(state: inout State, value: Double) -> Effect<Action> {
-    state.formattedValue = config.formattedValue(value)
-    let duration: Duration = .seconds(config.showValueDuration)
+    state.formattedValue = state.config.formattedValue(value)
+    let duration: Duration = .seconds(state.config.theme.controlShowValueDuration)
     let clock = self.clock
-    let cancelId = self.config.showValueCancelId
+    let cancelId = state.config.showValueCancelId
     return .run { send in
       try await withTaskCancellation(id: cancelId, cancelInFlight: true) {
         try await clock.sleep(for: duration)
@@ -101,8 +97,8 @@ struct TitleViewPreview: PreviewProvider {
                                                      min: 0.0, max: 100.0, unit: .generic, unitName: nil,
                                                      valueStrings: nil, dependentParameters: nil)
   static let config = KnobConfig(parameter: param, theme: Theme())
-  @State static var store = Store(initialState: TitleFeature.State()) {
-    TitleFeature(config: config)
+  @State static var store = Store(initialState: TitleFeature.State(config: config)) {
+    TitleFeature()
   }
 
   static var previews: some View {

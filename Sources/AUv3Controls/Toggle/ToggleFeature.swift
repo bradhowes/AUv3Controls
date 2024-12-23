@@ -27,6 +27,8 @@ public struct ToggleFeature {
     case toggleTapped
   }
 
+  public init() {}
+
   public var body: some Reducer<State, Action> {
     Reduce { state, action in
       switch action {

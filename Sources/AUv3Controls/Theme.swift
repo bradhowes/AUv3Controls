@@ -1,7 +1,24 @@
 import SwiftUI
 
 /// Shared attributes for controls that represents some theme of an app/view.
-public class Theme {
+public class Theme: Equatable {
+
+  public static func == (lhs: Theme, rhs: Theme) -> Bool {
+    lhs.controlBackgroundColor == rhs.controlBackgroundColor &&
+    lhs.controlForegroundColor == rhs.controlForegroundColor &&
+    lhs.textColor == rhs.textColor &&
+    lhs.font == rhs.font &&
+    lhs.toggleOnIndicatorSystemName == rhs.toggleOnIndicatorSystemName &&
+    lhs.toggleOffIndicatorSystemName == rhs.toggleOffIndicatorSystemName &&
+    lhs.controlTrackStrokeStyle == rhs.controlTrackStrokeStyle &&
+    lhs.controlValueStrokeStyle == rhs.controlValueStrokeStyle &&
+    lhs.controlTitleGap == rhs.controlTitleGap &&
+    lhs.controlIndicatorLength == rhs.controlIndicatorLength &&
+    lhs.controlIndicatorStartAngle == rhs.controlIndicatorStartAngle &&
+    lhs.controlIndicatorEndAngle == rhs.controlIndicatorEndAngle &&
+    lhs.controlShowValueDuration == rhs.controlShowValueDuration &&
+    lhs.controlChangeAnimationDuration == rhs.controlChangeAnimationDuration
+  }
 
   /// The background color to use when drawing the control
   public var controlBackgroundColor: Color
@@ -26,8 +43,15 @@ public class Theme {
   /// The length of the indicator at the end of the progress track. Positive value points toward the center of the
   /// track, negative values will point away from the center.
   public var controlIndicatorLength: CGFloat
+  /// Starting angle for a Knob track
+  public var controlIndicatorStartAngle = Angle(degrees: 40)
+  /// Ending angle for a Knob track
+  public var controlIndicatorEndAngle = Angle(degrees: 320)
+  /// How long to show the value in the knob's label
+  public var controlShowValueDuration = 1.25
 
   public var controlChangeAnimationDuration: TimeInterval = 0.35
+
   /**
    Initialize instance.
 

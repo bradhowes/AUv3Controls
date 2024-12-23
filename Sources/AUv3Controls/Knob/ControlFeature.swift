@@ -10,23 +10,23 @@ import SwiftUI
  */
 @Reducer
 public struct ControlFeature {
-  private let config: KnobConfig
   private let trackFeature: TrackFeature
   private let titleFeature: TitleFeature
 
   public init(config: KnobConfig) {
-    self.config = config
-    self.trackFeature = TrackFeature(config: config)
-    self.titleFeature = TitleFeature(config: config)
+    self.trackFeature = TrackFeature()
+    self.titleFeature = TitleFeature()
   }
 
   public struct State: Equatable {
+    let config: KnobConfig
     var title: TitleFeature.State
     var track: TrackFeature.State
 
     public init(config: KnobConfig, value: Double) {
-      self.title = .init()
-      self.track = .init(norm: config.valueToNorm(value))
+      self.config = config
+      self.title = .init(config: config)
+      self.track = .init(config: config, norm: config.valueToNorm(value))
     }
   }
 
@@ -47,7 +47,7 @@ public struct ControlFeature {
         return .none
 
       case .track:
-        let value = config.normToValue(state.track.norm)
+        let value = state.config.normToValue(state.track.norm)
         return updateTitleEffect(state: &state.title, value: value)
 
       case let .valueChanged(value):

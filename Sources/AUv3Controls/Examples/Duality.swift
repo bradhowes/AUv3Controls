@@ -137,7 +137,9 @@ struct DualityView: View {
             } label: {
               Text("Min")
             }
+            Spacer()
             Text("Volume: \(String(format: "%6.2f", slider3))")
+            Spacer()
             Button {
               param3.setValue(100.0, originator: nil)
             } label: {
@@ -151,7 +153,9 @@ struct DualityView: View {
             } label: {
               Text("Min")
             }
-            Text("Volume: \(String(format: "%6.2f", slider3))")
+            Spacer()
+            Text("Pan: \(String(format: "%6.2f", slider4))")
+            Spacer()
             Button {
               param4.setValue(50.0, originator: nil)
             } label: {

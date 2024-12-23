@@ -14,8 +14,8 @@ private final class Context {
                                               valueStrings: nil, dependentParameters: nil)
   let clock = TestClock()
   lazy var config = KnobConfig(parameter: param, theme: Theme())
-  lazy var store = TestStore(initialState: .init()) {
-    TitleFeature(config: config)
+  lazy var store = TestStore(initialState: .init(config: config)) {
+    TitleFeature()
   } withDependencies: {
     $0.continuousClock = clock
   }
@@ -37,11 +37,11 @@ final class TitleFeatureTests: XCTestCase {
     await ctx.store.send(.valueChanged(12.34)) { state in
       state.formattedValue = "12.34"
     }
-    await ctx.clock.advance(by: .seconds(ctx.config.showValueDuration / 2.0))
+    await ctx.clock.advance(by: .seconds(ctx.config.theme.controlShowValueDuration / 2.0))
     await ctx.store.send(.valueChanged(56.78)) { state in
       state.formattedValue = "56.78"
     }
-    await ctx.clock.advance(by: .seconds(ctx.config.showValueDuration))
+    await ctx.clock.advance(by: .seconds(ctx.config.theme.controlShowValueDuration))
     await ctx.store.receive(.cancelValueDisplayTimer) {
       $0.formattedValue = nil
     }
@@ -84,8 +84,8 @@ final class TitleFeatureTests: XCTestCase {
       }
     }
     
-    let view = MyView(config: ctx.config, store: Store(initialState: .init()) {
-      TitleFeature(config: ctx.config)
+    let view = MyView(config: ctx.config, store: Store(initialState: .init(config: ctx.config)) {
+      TitleFeature()
     })
     
     try assertSnapshot(matching: view)
@@ -105,8 +105,8 @@ final class TitleFeatureTests: XCTestCase {
       }
     }
     
-    let view = MyView(config: ctx.config, store: Store(initialState: .init()) {
-      TitleFeature(config: ctx.config)
+    let view = MyView(config: ctx.config, store: Store(initialState: .init(config: ctx.config)) {
+      TitleFeature()
     } withDependencies: { 
       $0.continuousClock = ContinuousClock()
     })
@@ -122,7 +122,9 @@ final class TitleFeatureTests: XCTestCase {
   func testPreview() async throws {
     try withDependencies { $0 = .live } operation: {
       let view = TitleViewPreview.previews
-      try assertSnapshot(matching: view)
+      try withSnapshotTesting(record: .failed) {
+        try assertSnapshot(matching: view)
+      }
     }
   }
 }

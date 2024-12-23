@@ -1,7 +1,13 @@
 import ComposableArchitecture
-import AVFoundation
+import AudioToolbox
 
-public extension AUParameter {
+extension AUParameter {
+
+  /// Limit to the max AUParameter address value that is supported below. Enforced at `KnobConfig` initialization.
+  public static let maxParameterAddress: UInt64 = 100_000
+
+  /// The unique ID to identify a task associated with the AUParameter.
+  public var associatedTaskId: UInt64 { self.address + Self.maxParameterAddress }
 
   /**
    Obtain a stream of value changes from a parameter, presumably changed by another entity such as a MIDI
@@ -9,7 +15,7 @@ public extension AUParameter {
 
    - returns: 2-tuple containing a token for cancelling the observation and an AsyncStream of observed values
    */
-  func startObserving() -> (AUParameterObserverToken, AsyncStream<AUValue>) {
+  public func startObserving() -> (AUParameterObserverToken, AsyncStream<AUValue>) {
     let (stream, continuation) = AsyncStream<AUValue>.makeStream()
     let observerToken = self.token(byAddingParameterObserver: { address, value in
       var lastSeen: AUValue?

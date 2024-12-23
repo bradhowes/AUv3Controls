@@ -13,8 +13,8 @@ private final class Context {
                                               min: 0.0, max: 100.0, unit: .generic, unitName: nil,
                                               valueStrings: nil, dependentParameters: nil)
   lazy var config = KnobConfig(parameter: param, theme: Theme())
-  lazy var store = TestStore(initialState: .init()) {
-    EditorFeature(config: config)
+  lazy var store = TestStore(initialState: .init(config: config)) {
+    EditorFeature()
   } withDependencies: { $0.continuousClock = ImmediateClock() }
 
   init() {}
@@ -84,8 +84,8 @@ final class EditorFeatureTests: XCTestCase {
       }
     }
 
-    let view = MyView(config: ctx.config, store: Store(initialState: .init()) {
-      EditorFeature(config: ctx.config)
+    let view = MyView(config: ctx.config, store: Store(initialState: .init(config: ctx.config)) {
+      EditorFeature()
     } withDependencies: {
       $0.continuousClock = ContinuousClock()
     })

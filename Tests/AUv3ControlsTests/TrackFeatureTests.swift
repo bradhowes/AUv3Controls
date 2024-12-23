@@ -8,16 +8,24 @@ import XCTest
 
 @MainActor
 private final class Context {
-  let param = AUParameterTree.createParameter(withIdentifier: "RELEASE", name: "Release", address: 1,
-                                              min: 0.0, max: 100.0, unit: .generic, unitName: nil,
-                                              valueStrings: nil, dependentParameters: nil)
-  lazy var config = KnobConfig(parameter: param, theme: Theme())
+  let param = AUParameterTree.createParameter(
+    withIdentifier: "RELEASE",
+    name: "Release",
+    address: 1,
+    min: 0.0,
+    max: 100.0,
+    unit: .generic,
+    unitName: nil,
+    valueStrings: nil,
+    dependentParameters: nil
+  )
 
+  lazy var config = KnobConfig(parameter: param, theme: Theme())
   var store: TestStore<TrackFeature.State, TrackFeature.Action>!
 
   func makeStore() {
-    store = TestStore(initialState: TrackFeature.State(norm: 0.0)) {
-      TrackFeature(config: config)
+    store = TestStore(initialState: TrackFeature.State(config: config, norm: 0.0)) {
+      TrackFeature()
     }
   }
 
@@ -98,8 +106,8 @@ final class TrackFeatureTests: XCTestCase {
       }
     }
     
-    let view = MyView(config: ctx.config, store: Store(initialState: .init(norm: 0.0)) {
-      TrackFeature(config: ctx.config)
+    let view = MyView(config: ctx.config, store: Store(initialState: .init(config: ctx.config, norm: 0.0)) {
+      TrackFeature()
     })
     
     try assertSnapshot(matching: view)
@@ -118,8 +126,8 @@ final class TrackFeatureTests: XCTestCase {
       }
     }
     
-    let view = MyView(config: ctx.config, store: Store(initialState: .init(norm: 0.5)) {
-      TrackFeature(config: ctx.config)
+    let view = MyView(config: ctx.config, store: Store(initialState: .init(config: ctx.config, norm: 0.5)) {
+      TrackFeature()
     })
     
     try assertSnapshot(matching: view)
@@ -138,8 +146,8 @@ final class TrackFeatureTests: XCTestCase {
       }
     }
     
-    let view = MyView(config: ctx.config, store: Store(initialState: .init(norm: 1.0)) {
-      TrackFeature(config: ctx.config)
+    let view = MyView(config: ctx.config, store: Store(initialState: .init(config: ctx.config, norm: 1.0)) {
+      TrackFeature()
     })
     
     try assertSnapshot(matching: view)
@@ -160,8 +168,8 @@ final class TrackFeatureTests: XCTestCase {
       }
     }
 
-    let view = MyView(config: config, store: Store(initialState: .init(norm: 0.5)) {
-      TrackFeature(config: config)
+    let view = MyView(config: config, store: Store(initialState: .init(config: ctx.config, norm: 0.5)) {
+      TrackFeature()
     })
 
     try assertSnapshot(matching: view)
