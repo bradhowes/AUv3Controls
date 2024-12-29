@@ -103,15 +103,15 @@ struct DualityView: View {
 
   init() {
     let mockAUv3 = MockAUv3()
-
+    let theme = Theme()
     self.mockAUv3 = mockAUv3
-    self.store1 = .init(initialState: ToggleFeature.State(parameter: mockAUv3.param1)) { ToggleFeature() }
-    self.store2 = .init(initialState: ToggleFeature.State(parameter: mockAUv3.param2)) { ToggleFeature() }
+    self.store1 = .init(initialState: ToggleFeature.State(parameter: mockAUv3.param1, theme: mockAUv3.theme)) { ToggleFeature() }
+    self.store2 = .init(initialState: ToggleFeature.State(parameter: mockAUv3.param2, theme: mockAUv3.theme)) { ToggleFeature() }
 
     self.store3 = .init(initialState: KnobFeature.State(config: mockAUv3.config3)) {
-      KnobFeature(config: mockAUv3.config3) }
+      KnobFeature() }
     self.store4 = .init(initialState: KnobFeature.State(config: mockAUv3.config4)) {
-      KnobFeature(config: mockAUv3.config4) }
+      KnobFeature() }
   }
 
   var body: some View {
@@ -120,12 +120,12 @@ struct DualityView: View {
         GroupBox(label: Label("AUv3Controls", systemImage: "waveform")) {
           VStack(spacing: 24) {
             HStack(spacing: 18) {
-              KnobView(store: store3, config: mockAUv3.config3)
-              KnobView(store: store4, config: mockAUv3.config4)
+              KnobView(store: store3)
+              KnobView(store: store4)
             }
             VStack(alignment: .leading, spacing: 12) {
-              ToggleView(store: store1, theme: mockAUv3.theme)
-              ToggleView(store: store2, theme: mockAUv3.theme)
+              ToggleView(store: store1)
+              ToggleView(store: store2)
             }
           }
         }

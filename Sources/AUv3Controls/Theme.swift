@@ -65,7 +65,8 @@ public class Theme: Equatable {
     controlValueStrokeStyle: StrokeStyle = .init(lineWidth: 10.0, lineCap: .round),
     controlIndicatorLength: CGFloat = 16.0,
     controlTitleGap: CGFloat = 0.0,
-    valueFormatter: NumberFormatter? = nil
+    valueFormatter: NumberFormatter? = nil,
+    font: Font = .callout
   ) {
     self.controlBackgroundColor = Self.color(.controlBackgroundColor, from: bundle,
                                              default: .init(hex: "333333") ?? .gray)
@@ -77,6 +78,7 @@ public class Theme: Equatable {
     self.controlIndicatorLength = controlIndicatorLength
     self.controlTitleGap = controlTitleGap
     self.formatter = valueFormatter ?? Self.defaultFormatter
+    self.font = font
   }
 
   /**

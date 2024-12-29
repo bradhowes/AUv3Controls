@@ -10,13 +10,10 @@ import SwiftUI
  */
 @Reducer
 public struct ControlFeature {
-  private let trackFeature: TrackFeature
-  private let titleFeature: TitleFeature
+  private let trackFeature = TrackFeature()
+  private let titleFeature = TitleFeature()
 
-  public init(config: KnobConfig) {
-    self.trackFeature = TrackFeature()
-    self.titleFeature = TitleFeature()
-  }
+  public init() {}
 
   public struct State: Equatable {
     let config: KnobConfig
@@ -103,13 +100,8 @@ struct ControlViewPreview: PreviewProvider {
     dependentParameters: nil
   )
   static let config = KnobConfig(parameter: param, theme: Theme())
-  static var store = Store(
-    initialState: ControlFeature.State(
-      config: config,
-      value: Double(param.value)
-    )
-  ) {
-    ControlFeature(config: config)
+  static var store = Store( initialState: ControlFeature.State(config: config, value: Double(param.value))) {
+    ControlFeature()
   }
 
   static var previews: some View {

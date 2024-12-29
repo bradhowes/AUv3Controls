@@ -9,11 +9,13 @@ public struct ToggleFeature {
   @ObservableState
   public struct State: Equatable {
     public let parameter: AUParameter
+    public let theme: Theme
     public var isOn: Bool
     public var observerToken: AUParameterObserverToken?
 
-    public init(parameter: AUParameter, isOn: Bool = false) {
+    public init(parameter: AUParameter, theme: Theme, isOn: Bool = false) {
       self.parameter = parameter
+      self.theme = theme
       self.isOn = isOn
       self.parameter.setValue(isOn.asValue, originator: nil)
     }
@@ -72,17 +74,15 @@ public struct ToggleFeature {
 
 public struct ToggleView: View {
   let store: StoreOf<ToggleFeature>
-  let theme: Theme
 
-  public init(store: StoreOf<ToggleFeature>, theme: Theme) {
+  public init(store: StoreOf<ToggleFeature>) {
     self.store = store
-    self.theme = theme
   }
 
   public var body: some View {
     WithViewStore(self.store, observe: { $0 }, content: { viewStore in
       Toggle(isOn: viewStore.binding(get: \.isOn, send: .toggleTapped)) { Text(viewStore.parameter.displayName) }
-        .toggleStyle(.checked(theme: theme))
+        .toggleStyle(.checked(theme: store.theme))
         .task { viewStore.send(.startValueObservation) }
     })
   }
@@ -92,18 +92,18 @@ struct ToggleViewPreview: PreviewProvider {
   static let param1 = AUParameterTree.createBoolean(withIdentifier: "Retrigger", name: "Retrigger", address: 1)
   static let param2 = AUParameterTree.createBoolean(withIdentifier: "Monophonic", name: "Monophonic", address: 2)
 
-  @State static var store1 = Store(initialState: ToggleFeature.State(parameter: param1)) {
+  @State static var store1 = Store(initialState: ToggleFeature.State(parameter: param1, theme: Theme())) {
     ToggleFeature()
   }
 
-  @State static var store2 = Store(initialState: ToggleFeature.State(parameter: param2, isOn: true)) {
+  @State static var store2 = Store(initialState: ToggleFeature.State(parameter: param2, theme: Theme(), isOn: true)) {
     ToggleFeature()
   }
 
   static var previews: some View {
     VStack(alignment: .leading, spacing: 12) {
-      ToggleView(store: store1, theme: Theme())
-      ToggleView(store: store2, theme: Theme())
+      ToggleView(store: store1)
+      ToggleView(store: store2)
       Button {
         store1.send(.observedValueChanged(store1.isOn ? 0.0 : 1.0))
       } label: {

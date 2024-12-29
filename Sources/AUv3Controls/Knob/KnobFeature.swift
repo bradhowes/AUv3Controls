@@ -16,13 +16,10 @@ import SwiftUI
  */
 @Reducer
 public struct KnobFeature {
-  private let controlFeature: ControlFeature
-  private let editorFeature: EditorFeature
+  private let controlFeature = ControlFeature()
+  private let editorFeature = EditorFeature()
 
-  public init(config: KnobConfig) {
-    self.controlFeature = ControlFeature(config: config)
-    self.editorFeature = EditorFeature()
-  }
+  public init() {}
 
   @ObservableState
   public struct State: Equatable {
@@ -142,15 +139,14 @@ private extension KnobFeature {
 
 public struct KnobView: View {
   private let store: StoreOf<KnobFeature>
-  private let config: KnobConfig
   private let proxy: ScrollViewProxy?
+  private var config: KnobConfig { store.config }
 #if os(macOS)
   private let showBinding: Binding<Bool>
 #endif
 
-  public init(store: StoreOf<KnobFeature>, config: KnobConfig, proxy: ScrollViewProxy? = nil) {
+  public init(store: StoreOf<KnobFeature>, proxy: ScrollViewProxy? = nil) {
     self.store = store
-    self.config = config
     self.proxy = proxy
 #if os(macOS)
     self.showBinding = Binding<Bool>(
@@ -215,12 +211,12 @@ struct KnobViewPreview: PreviewProvider {
   )
   static let config = KnobConfig(parameter: param, theme: Theme())
   static var store = Store(initialState: KnobFeature.State(config: config)) {
-    KnobFeature(config: config)
+    KnobFeature()
   }
 
   static var previews: some View {
     VStack {
-      KnobView(store: store, config: config, proxy: nil)
+      KnobView(store: store, proxy: nil)
       Button {
         store.send(.observedValueChanged(0.0))
       } label: {
