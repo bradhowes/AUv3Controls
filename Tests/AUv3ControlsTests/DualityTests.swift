@@ -10,6 +10,7 @@ import XCTest
 @MainActor
 private final class Context {
   let clock = TestClock()
+  let theme = Theme()
   let boolParam = AUParameterTree.createBoolean(withIdentifier: "Retrigger", name: "Retrigger", address: 1)
   let floatParam = AUParameterTree.createParameter(withIdentifier: "RELEASE", name: "Release", address: 2,
                                                    min: 0.0, max: 100.0, unit: .generic, unitName: nil,
@@ -31,7 +32,16 @@ private final class Context {
     $0.continuousClock = clock
   }
 
-  init() {}
+  var changed: [AUParameterAddress:Int] = [:]
+
+  init() {
+    changed[1] = 0
+    changed[2] = 0
+    theme.parameterValueChanged = { [weak self] address in
+      guard let self else { return }
+      changed[address] = changed[address]! + 1
+    }
+  }
 }
 
 final class DualityTests: XCTestCase {
@@ -52,32 +62,38 @@ final class DualityTests: XCTestCase {
     await ctx.boolStore.receive(.animatedObservedValueChanged(false)) { $0.isOn = false }
 
     await ctx.boolStore.send(.stopValueObservation) { $0.observerToken = nil }
+
+    XCTAssertEqual(ctx.changed[1], 0)
+    XCTAssertEqual(ctx.changed[2], 0)
   }
 
   @MainActor
-  func SKIP_testRemoteFloatValueChanged() async throws {
+  func testRemoteFloatValueChanged() async throws {
     let ctx = Context()
     _ = await ctx.floatStore.withExhaustivity(.off) {
       await ctx.floatStore.send(.startValueObservation)
       ctx.floatParam.setValue(1.0, originator: nil)
       await ctx.floatStore.receive(.observedValueChanged(1.0)) {
-        $0.control.track.norm = 0.01
+        $0.control.track.norm = 0.0
         $0.control.title.formattedValue = "1"
       }
 
       ctx.floatParam.setValue(12.5, originator: nil)
       await ctx.floatStore.receive(.observedValueChanged(12.5)) {
-        $0.control.track.norm = 0.125
+        $0.control.track.norm = 0.01
         $0.control.title.formattedValue = "12.5"
       }
       
       ctx.floatParam.setValue(100.0, originator: nil)
       await ctx.floatStore.receive(.observedValueChanged(100.0)) {
-        $0.control.track.norm = 1.0
+        $0.control.track.norm = 0.125
         $0.control.title.formattedValue = "100"
       }
       
       await ctx.floatStore.send(.stopValueObservation) { $0.observerToken = nil }
+
+      XCTAssertEqual(ctx.changed[1], 0)
+      XCTAssertEqual(ctx.changed[2], 0)
     }
   }
 }

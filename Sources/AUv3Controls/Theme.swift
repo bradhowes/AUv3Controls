@@ -1,3 +1,4 @@
+import AudioUnit
 import SwiftUI
 
 /// Shared attributes for controls that represents some theme of an app/view.
@@ -49,8 +50,10 @@ public class Theme: Equatable {
   public var controlIndicatorEndAngle = Angle(degrees: 320)
   /// How long to show the value in the knob's label
   public var controlShowValueDuration = 1.25
-
+  /// Duration of the animation when changing between value and title in control label
   public var controlChangeAnimationDuration: TimeInterval = 0.35
+  /// Notifier to invoke when a parameter changes value due to user manipulation.
+  public var parameterValueChanged: ((AUParameterAddress) -> Void)?
 
   /**
    Initialize instance.
@@ -66,7 +69,8 @@ public class Theme: Equatable {
     controlIndicatorLength: CGFloat = 16.0,
     controlTitleGap: CGFloat = 0.0,
     valueFormatter: NumberFormatter? = nil,
-    font: Font = .callout
+    font: Font = .callout,
+    parameterValueChanged: ((AUParameterAddress) -> Void)? = nil
   ) {
     self.controlBackgroundColor = Self.color(.controlBackgroundColor, from: bundle,
                                              default: .init(hex: "333333") ?? .gray)
@@ -79,6 +83,7 @@ public class Theme: Equatable {
     self.controlTitleGap = controlTitleGap
     self.formatter = valueFormatter ?? Self.defaultFormatter
     self.font = font
+    self.parameterValueChanged = parameterValueChanged
   }
 
   /**

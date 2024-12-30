@@ -132,9 +132,13 @@ private extension KnobFeature {
   }
 
   func setParameterEffect(state: State, value: Double, cause: AUParameterAutomationEventType?) -> Effect<Action> {
-    guard let token = state.observerToken, let cause else { return .none }
+    guard let cause else { return .none }
     let parameter = state.config.parameter
-    parameter.setValue(AUValue(value), originator: token, atHostTime: 0, eventType: cause)
+    let newValue = AUValue(value)
+    if parameter.value != newValue {
+      parameter.setValue(newValue, originator: state.observerToken, atHostTime: 0, eventType: cause)
+      state.config.theme.parameterValueChanged?(parameter.address)
+    }
     return .none
   }
 }
