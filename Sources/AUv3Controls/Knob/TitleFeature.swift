@@ -13,8 +13,14 @@ public struct TitleFeature {
   @ObservableState
   public struct State: Equatable {
     let config: KnobConfig
+    let showValueCancelId: String
     var formattedValue: String?
     var showingValue: Bool { formattedValue != nil }
+
+    public init(config: KnobConfig) {
+      self.config = config
+      self.showValueCancelId = "ShowValueCancelId[AUParameter: \(config.id)])"
+    }
   }
 
   public enum Action: Equatable, Sendable {
@@ -40,14 +46,14 @@ private extension TitleFeature {
 
   func showTitleEffect(state: inout State) -> Effect<Action> {
     state.formattedValue = nil
-    return .cancel(id: state.config.showValueCancelId)
+    return .cancel(id: state.showValueCancelId)
   }
 
   func showValueEffect(state: inout State, value: Double) -> Effect<Action> {
     state.formattedValue = state.config.formattedValue(value)
     let duration: Duration = .seconds(state.config.theme.controlShowValueDuration)
     let clock = self.clock
-    let cancelId = state.config.showValueCancelId
+    let cancelId = state.showValueCancelId
     return .run { send in
       try await withTaskCancellation(id: cancelId, cancelInFlight: true) {
         try await clock.sleep(for: duration)

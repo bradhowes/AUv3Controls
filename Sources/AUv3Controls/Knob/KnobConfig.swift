@@ -20,10 +20,6 @@ public struct KnobConfig: Equatable {
   /// The height of the control (knob + title)
   public let controlHeight: CGFloat
 
-  /// The unique ID to identify the task that reverts the knob's title after a value change. This is based on
-  /// the `id` value above, but it must not collide with any other visible `showCancelId` values.
-  public var showValueCancelId: UInt64 { parameter.associatedTaskId }
-
   /// The unique ID to identify the SwiftUI view -- this is the same as the AUParamete `address` attribute
   public var id: UInt64 { parameter.address }
 
@@ -81,9 +77,6 @@ public struct KnobConfig: Equatable {
     touchSensitivity: CGFloat = 2.0,
     theme: Theme
   ) {
-    precondition(parameter.address < AUParameter.maxParameterAddress,
-                 "AUParameter address must be < \(AUParameter.maxParameterAddress)")
-
     self.parameter = parameter
     self.controlDiameter = controlDiameter
     self.logScale = parameter.flags.contains(.flag_DisplayLogarithmic)

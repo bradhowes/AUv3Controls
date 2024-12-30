@@ -87,8 +87,10 @@ final class TitleFeatureTests: XCTestCase {
     let view = MyView(config: ctx.config, store: Store(initialState: .init(config: ctx.config)) {
       TitleFeature()
     })
-    
-    try assertSnapshot(matching: view)
+
+    try withSnapshotTesting(record: .failed) {
+      try assertSnapshot(matching: view)
+    }
 
     await view.store.send(.cancelValueDisplayTimer).finish()
   }
@@ -113,7 +115,9 @@ final class TitleFeatureTests: XCTestCase {
     
     await view.store.send(.valueChanged(12.34)).finish()
 
-    try assertSnapshot(matching: view)
+    try withSnapshotTesting(record: .failed) {
+      try assertSnapshot(matching: view)
+    }
 
     await view.store.send(.cancelValueDisplayTimer).finish()
   }

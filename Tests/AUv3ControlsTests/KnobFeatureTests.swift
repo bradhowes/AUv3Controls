@@ -14,7 +14,7 @@ private final class Context {
                                               valueStrings: nil, dependentParameters: nil)
   lazy var config = KnobConfig(parameter: param, theme: Theme())
   lazy var store = TestStore(initialState: .init(config: config)) {
-    KnobFeature(config: config)
+    KnobFeature()
   } withDependencies: { $0.continuousClock = ImmediateClock() }
 
   init() {}
@@ -138,12 +138,12 @@ final class KnobFeatureTests: XCTestCase {
       @State var store: StoreOf<KnobFeature>
 
       var body: some SwiftUI.View {
-        KnobView(store: store, config: config, proxy: nil)
+        KnobView(store: store, proxy: nil)
       }
     }
 
     let view = MyView(config: ctx.config, store: Store(initialState: .init(config: ctx.config)) {
-      KnobFeature(config: ctx.config)
+      KnobFeature()
     } withDependencies: {
       $0.continuousClock = ContinuousClock()
     })
@@ -151,14 +151,18 @@ final class KnobFeatureTests: XCTestCase {
     await view.store.send(
       .control(.track(.dragChanged(start: .init(x: 40, y: 0), position: .init(x: 40, y: -80))))).finish()
 
-    try assertSnapshot(matching: view)
+    try withSnapshotTesting(record: .failed) {
+      try assertSnapshot(matching: view)
+    }
   }
 
   @MainActor
   func testPreview() async throws {
     try withDependencies { $0 = .live } operation: {
       let view = KnobViewPreview.previews
-      try assertSnapshot(matching: view)
+      try withSnapshotTesting(record: .failed) {
+        try assertSnapshot(matching: view)
+      }
     }
   }
 }

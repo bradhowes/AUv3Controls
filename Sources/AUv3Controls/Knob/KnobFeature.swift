@@ -24,6 +24,7 @@ public struct KnobFeature {
   @ObservableState
   public struct State: Equatable {
     let config: KnobConfig
+    let valueObservationCancelId: String
     var control: ControlFeature.State
     var editor: EditorFeature.State
     var observerToken: AUParameterObserverToken?
@@ -31,6 +32,7 @@ public struct KnobFeature {
 
     public init(config: KnobConfig) {
       self.config = config
+      self.valueObservationCancelId = "valueObservationCancelId[AUParameter: \(config.id)])"
       self.control = .init(config: config, value: Double(config.parameter.value))
       self.editor = .init(config: config)
     }
@@ -93,7 +95,7 @@ public struct KnobFeature {
             await send(.observedValueChanged(value))
           }
           await send(.stopValueObservation)
-        }.cancellable(id: state.config.id, cancelInFlight: true)
+        }.cancellable(id: state.valueObservationCancelId, cancelInFlight: true)
 
       case .stopValueObservation:
         if let token = state.observerToken {
@@ -101,7 +103,7 @@ public struct KnobFeature {
           state.observerToken = nil
         }
         return .merge(
-          .cancel(id: state.config.id),
+          .cancel(id: state.valueObservationCancelId),
           cancelAnyTitleEffect(state: &state.control)
         )
 

@@ -4,6 +4,25 @@ import XCTest
 
 @testable import AUv3Controls
 
+public struct __SnapshotTestViewWrapper<Content: View>: View {
+  let size: CGSize
+  let content: Content
+
+  public init(size: CGSize, @ViewBuilder _ content: () -> Content) {
+    self.size = size
+    self.content = content()
+  }
+
+  public var body: some View {
+    Group {
+      content
+    }
+    .frame(width: size.width, height: size.height)
+    .background(Color.black)
+    .environment(\.colorScheme, .dark)
+  }
+}
+
 extension XCTest {
 
   @inlinable
@@ -13,7 +32,7 @@ extension XCTest {
     return funcName + "-" + platform
   }
 
-  @inlinable
+  @MainActor @inlinable
   func assertSnapshot<V: SwiftUI.View>(
     matching: V,
     size: CGSize = CGSize(width: 220, height: 220),
@@ -25,8 +44,13 @@ extension XCTest {
     let isOnGithub = ProcessInfo.processInfo.environment["XCTestBundlePath"]?.contains("/Users/runner/work") ?? false
 
 #if os(iOS)
+
+    let view = __SnapshotTestViewWrapper(size: size) {
+      matching
+    }
+
     if let result = SnapshotTesting.verifySnapshot(
-      of: matching,
+      of: view,
       as: .image(
         drawHierarchyInKeyWindow: false,
         layout: .fixed(width: size.width, height: size.height)

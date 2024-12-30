@@ -13,7 +13,7 @@ private final class Context {
   lazy var tree = AUParameterTree.createTree(withChildren: [param])
 
   func makeStore() -> TestStoreOf<ToggleFeature> {
-    TestStore(initialState: ToggleFeature.State(parameter: tree.parameter(withAddress: 10)!)) {
+    TestStore(initialState: ToggleFeature.State(parameter: tree.parameter(withAddress: 10)!, theme: Theme())) {
       ToggleFeature()
     }
   }
@@ -88,15 +88,17 @@ final class ToggleFeatureTests: XCTestCase {
       @State var store: StoreOf<ToggleFeature>
 
       var body: some SwiftUI.View {
-        ToggleView(store: store, theme: Theme())
+        ToggleView(store: store)
       }
     }
 
-    let view = MyView(store: Store(initialState: .init(parameter: ctx.param, isOn: false)) {
+    let view = MyView(store: Store(initialState: .init(parameter: ctx.param, theme: Theme(), isOn: false)) {
       ToggleFeature()
     })
 
-    try assertSnapshot(matching: view)
+    try withSnapshotTesting(record: .failed) {
+      try assertSnapshot(matching: view)
+    }
 
     await view.store.send(.stopValueObservation).finish()
   }
@@ -109,15 +111,17 @@ final class ToggleFeatureTests: XCTestCase {
       @State var store: StoreOf<ToggleFeature>
 
       var body: some SwiftUI.View {
-        ToggleView(store: store, theme: Theme())
+        ToggleView(store: store)
       }
     }
 
-    let view = MyView(store: Store(initialState: .init(parameter: ctx.param, isOn: true)) {
+    let view = MyView(store: Store(initialState: .init(parameter: ctx.param, theme: Theme(), isOn: true)) {
       ToggleFeature()
     })
 
-    try assertSnapshot(matching: view)
+    try withSnapshotTesting(record: .failed) {
+      try assertSnapshot(matching: view)
+    }
 
     await view.store.send(.stopValueObservation).finish()
   }
@@ -125,6 +129,8 @@ final class ToggleFeatureTests: XCTestCase {
   @MainActor
   func testToggleViewPreview() async throws {
     let view = ToggleViewPreview.previews
-    try assertSnapshot(matching: view)
+    try withSnapshotTesting(record: .failed) {
+      try assertSnapshot(matching: view)
+    }
   }
 }

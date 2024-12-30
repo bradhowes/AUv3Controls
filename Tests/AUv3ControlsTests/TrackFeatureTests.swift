@@ -109,8 +109,10 @@ final class TrackFeatureTests: XCTestCase {
     let view = MyView(config: ctx.config, store: Store(initialState: .init(config: ctx.config, norm: 0.0)) {
       TrackFeature()
     })
-    
-    try assertSnapshot(matching: view)
+
+    try withSnapshotTesting(record: .failed) {
+      try assertSnapshot(matching: view)
+    }
   }
   
   @MainActor
@@ -129,8 +131,10 @@ final class TrackFeatureTests: XCTestCase {
     let view = MyView(config: ctx.config, store: Store(initialState: .init(config: ctx.config, norm: 0.5)) {
       TrackFeature()
     })
-    
-    try assertSnapshot(matching: view)
+
+    try withSnapshotTesting(record: .failed) {
+      try assertSnapshot(matching: view)
+    }
   }
   
   @MainActor
@@ -149,8 +153,10 @@ final class TrackFeatureTests: XCTestCase {
     let view = MyView(config: ctx.config, store: Store(initialState: .init(config: ctx.config, norm: 1.0)) {
       TrackFeature()
     })
-    
-    try assertSnapshot(matching: view)
+
+    try withSnapshotTesting(record: .failed) {
+      try assertSnapshot(matching: view)
+    }
   }
   
   @MainActor
@@ -172,7 +178,9 @@ final class TrackFeatureTests: XCTestCase {
       TrackFeature()
     })
 
-    try assertSnapshot(matching: view)
+    try withSnapshotTesting(record: .failed) {
+      try assertSnapshot(matching: view)
+    }
   }
 
 //  func testPreview() async throws {

@@ -17,7 +17,8 @@ private final class Context {
 
   lazy var paramTree = AUParameterTree.createTree(withChildren: [boolParam, floatParam])
 
-  lazy var boolStore = TestStore(initialState: ToggleFeature.State(parameter: paramTree.parameter(withAddress: 1)!)) {
+  lazy var boolStore = TestStore(initialState: ToggleFeature.State(
+    parameter: paramTree.parameter(withAddress: 1)!, theme: Theme())) {
     ToggleFeature()
   } withDependencies: {
     $0.continuousClock = clock
@@ -25,7 +26,7 @@ private final class Context {
 
   lazy var config = KnobConfig(parameter: paramTree.parameter(withAddress: 2)!, theme: Theme())
   lazy var floatStore = TestStore(initialState: KnobFeature.State(config: config)) {
-    KnobFeature(config: config)
+    KnobFeature()
   } withDependencies: {
     $0.continuousClock = clock
   }

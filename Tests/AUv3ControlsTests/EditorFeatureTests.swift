@@ -92,14 +92,18 @@ final class EditorFeatureTests: XCTestCase {
 
     await view.store.send(.valueChanged("12.34")).finish()
 
-    try assertSnapshot(matching: view)
+    try withSnapshotTesting(record: .failed) {
+      try assertSnapshot(matching: view)
+    }
   }
 
   @MainActor
   func testPreview() async throws {
     try withDependencies { $0 = .live } operation: {
       let view = EditorViewPreview.previews
-      try assertSnapshot(matching: view)
+      try withSnapshotTesting(record: .failed) {
+        try assertSnapshot(matching: view)
+      }
     }
   }
 }

@@ -16,7 +16,7 @@ private final class Context {
 
   func makeStore() -> TestStore<ControlFeature.State, ControlFeature.Action> {
     .init(initialState: .init(config: config, value: 0)) {
-      ControlFeature(config: config)
+      ControlFeature()
     } withDependencies: {
       $0.continuousClock = ImmediateClock()
     }
@@ -71,31 +71,34 @@ final class ControlFeatureTests: XCTestCase {
   @MainActor
   func testDragged() async throws {
     let ctx = Context()
-    struct MyView: SwiftUI.View {
+    struct MyView: View {
       let config: KnobConfig
       @State var store: StoreOf<ControlFeature>
-
-      var body: some SwiftUI.View {
+      var body: some View {
         ControlView(store: store, config: config)
       }
     }
 
     let view = MyView(config: ctx.config, store: Store(initialState: .init(config: ctx.config, value: 0.0)) {
-      ControlFeature(config: ctx.config)
+      ControlFeature()
     } withDependencies: {
       $0.continuousClock = ContinuousClock()
     })
 
     await view.store.send(.track(.dragChanged(start: .init(x: 40, y: 0.0), position: .init(x: 40, y: -40)))).finish()
 
-    try assertSnapshot(matching: view)
+    try withSnapshotTesting(record: .failed) {
+      try assertSnapshot(matching: view)
+    }
   }
   
   @MainActor
   func testPreview() async throws {
     try withDependencies { $0 = .live } operation: {
       let view = ControlViewPreview.previews
-      try assertSnapshot(matching: view)
+      try withSnapshotTesting(record: .failed) {
+        try assertSnapshot(matching: view)
+      }
     }
   }
 }

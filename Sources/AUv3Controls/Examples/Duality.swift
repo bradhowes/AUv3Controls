@@ -103,7 +103,6 @@ struct DualityView: View {
 
   init() {
     let mockAUv3 = MockAUv3()
-    let theme = Theme()
     self.mockAUv3 = mockAUv3
     self.store1 = .init(initialState: ToggleFeature.State(parameter: mockAUv3.param1, theme: mockAUv3.theme)) { ToggleFeature() }
     self.store2 = .init(initialState: ToggleFeature.State(parameter: mockAUv3.param2, theme: mockAUv3.theme)) { ToggleFeature() }

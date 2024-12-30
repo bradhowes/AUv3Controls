@@ -31,7 +31,7 @@ struct EnvelopeView: View {
                                                     max: 100.0, unit: .generic, unitName: nil, flags: [],
                                                     valueStrings: nil, dependentParameters: nil)
     let holdConfig = KnobConfig(parameter: holdParam, theme: theme)
-    let holdStore = Store(initialState: KnobFeature.State(config: attackConfig)) {
+    let holdStore = Store(initialState: KnobFeature.State(config: holdConfig)) {
       KnobFeature()
     }
 

@@ -23,7 +23,9 @@ final class DemoPreviewTests: XCTestCase {
   func testEvenlopePreview() async throws {
     try withDependencies { $0 = .live } operation: {
       let view = EnvelopeViewPreview.previews
-      try assertSnapshot(matching: view, size: CGSize(width: 400, height: 800))
+      try withSnapshotTesting(record: .failed) {
+        try assertSnapshot(matching: view, size: CGSize(width: 400, height: 800))
+      }
     }
   }
 }
