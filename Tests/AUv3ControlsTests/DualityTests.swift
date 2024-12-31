@@ -50,7 +50,7 @@ final class DualityTests: XCTestCase {
   func testRemoteBoolValueChanged() async {
     let ctx = Context()
     _ = await ctx.boolStore.withExhaustivity(.off) {
-      await ctx.boolStore.send(.startValueObservation)
+      await ctx.boolStore.send(.task)
     }
 
     ctx.boolParam.setValue(1.0, originator: nil)
@@ -71,7 +71,7 @@ final class DualityTests: XCTestCase {
   func testRemoteFloatValueChanged() async throws {
     let ctx = Context()
     _ = await ctx.floatStore.withExhaustivity(.off) {
-      await ctx.floatStore.send(.startValueObservation)
+      await ctx.floatStore.send(.task)
       ctx.floatParam.setValue(1.0, originator: nil)
       await ctx.floatStore.receive(.observedValueChanged(1.0)) {
         $0.control.track.norm = 0.0

@@ -43,8 +43,8 @@ public struct KnobFeature {
     case editor(EditorFeature.Action)
     case performScrollTo(UInt64?)
     case observedValueChanged(AUValue)
-    case startValueObservation
     case stopValueObservation
+    case task
   }
 
   public var body: some Reducer<State, Action> {
@@ -86,17 +86,6 @@ public struct KnobFeature {
         state.scrollToDestination = id
         return .none
 
-      case .startValueObservation:
-        let duration = state.config.debounceDuration
-        let stream: AsyncStream<AUValue>
-        (state.observerToken, stream) = state.config.parameter.startObserving()
-        return .run { send in
-          for await value in stream.debounce(for: duration) {
-            await send(.observedValueChanged(value))
-          }
-          await send(.stopValueObservation)
-        }.cancellable(id: state.valueObservationCancelId, cancelInFlight: true)
-
       case .stopValueObservation:
         if let token = state.observerToken {
           state.config.parameter.removeParameterObserver(token)
@@ -106,6 +95,16 @@ public struct KnobFeature {
           .cancel(id: state.valueObservationCancelId),
           cancelAnyTitleEffect(state: &state.control)
         )
+
+      case .task:
+        let duration = state.config.debounceDuration
+        let stream: AsyncStream<AUValue>
+        (state.observerToken, stream) = state.config.parameter.startObserving()
+        return .run { send in
+          for await value in stream.debounce(for: duration) {
+            await send(.observedValueChanged(value))
+          }
+        }.cancellable(id: state.valueObservationCancelId, cancelInFlight: true)
 
       case .observedValueChanged(let value):
         return updateControlEffect(state: &state.control, value: Double(value))
@@ -173,7 +172,8 @@ public struct KnobView: View {
     .id(config.id)
     .frame(maxWidth: config.controlWidthIf(store.editor.focus), maxHeight: config.controlHeight)
     .frame(width: config.controlWidthIf(store.editor.focus), height: config.controlHeight)
-    .task { await store.send(.startValueObservation).finish() }
+    .task { await store.send(.task).finish() }
+    .onDisappear { store.send(.stopValueObservation) }
     .onChange(of: store.editor.hasFocus) { _, newValue in
       if newValue && proxy != nil {
         store.send(.performScrollTo(config.id))
@@ -194,7 +194,8 @@ public struct KnobView: View {
     ControlView(store: store.scope(state: \.control, action: \.control), config: config)
       .frame(maxWidth: config.controlDiameter, maxHeight: config.controlHeight)
       .frame(width: config.controlDiameter, height: config.controlHeight)
-      .task { await store.send(.startValueObservation).finish() }
+      .task { await store.send(.task).finish() }
+      .onDisappear { store.send(.stopValueObservation) }
       .sheet(isPresented: showBinding) {
       } content: {
         EditorView(store: store.scope(state: \.editor, action: \.editor), config: config)

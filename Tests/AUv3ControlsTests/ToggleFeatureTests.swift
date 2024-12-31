@@ -40,7 +40,7 @@ final class ToggleFeatureTests: XCTestCase {
     let store = ctx.makeStore()
 
     _ = await store.withExhaustivity(.off) {
-      await store.send(.startValueObservation)
+      await store.send(.task)
     }
 
     ctx.param.setValue(1.0, originator: nil)
@@ -62,7 +62,7 @@ final class ToggleFeatureTests: XCTestCase {
     let store = ctx.makeStore()
 
     _ = await store.withExhaustivity(.off) {
-      await store.send(.startValueObservation)
+      await store.send(.task)
     }
 
     await store.send(.toggleTapped) {
