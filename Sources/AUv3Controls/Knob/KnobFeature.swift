@@ -16,10 +16,6 @@ import SwiftUI
  */
 @Reducer
 public struct KnobFeature {
-  private let controlFeature = ControlFeature()
-  private let editorFeature = EditorFeature()
-
-  public init() {}
 
   @ObservableState
   public struct State: Equatable {
@@ -48,8 +44,8 @@ public struct KnobFeature {
   }
 
   public var body: some Reducer<State, Action> {
-    Scope(state: \.control, action: \.control) { controlFeature }
-    Scope(state: \.editor, action: \.editor) { editorFeature }
+    Scope(state: \.control, action: \.control) { ControlFeature() }
+    Scope(state: \.editor, action: \.editor) { EditorFeature() }
 
     Reduce { state, action in
 
@@ -66,7 +62,7 @@ public struct KnobFeature {
           // Show the value editor when the title is tapped
         case .title(let titleAction) where titleAction == .titleTapped:
           let value = state.config.normToValue(state.control.track.norm)
-          return beginEditingEffect(state: &state.editor, value: value)
+          return reduce(into: &state, action: .editor(.beginEditing(value)))
 
         default:
           break
@@ -79,7 +75,7 @@ public struct KnobFeature {
         let value = state.config.normToValue(state.config.valueToNorm(editorValue))
         return .merge(
           setParameterEffect(state: state, value: value, cause: .value),
-          updateControlEffect(state: &state.control, value: value)
+          reduce(into: &state, action: .control(.valueChanged(Double(value))))
         )
 
       case .performScrollTo(let id):
@@ -93,7 +89,7 @@ public struct KnobFeature {
         }
         return .merge(
           .cancel(id: state.valueObservationCancelId),
-          cancelAnyTitleEffect(state: &state.control)
+          reduce(into: &state, action: .control(.title(.cancelValueDisplayTimer)))
         )
 
       case .task:
@@ -107,28 +103,13 @@ public struct KnobFeature {
         }.cancellable(id: state.valueObservationCancelId, cancelInFlight: true)
 
       case .observedValueChanged(let value):
-        return updateControlEffect(state: &state.control, value: Double(value))
+        return reduce(into: &state, action: .control(.valueChanged(Double(value))))
       }
     }
   }
 }
 
 private extension KnobFeature {
-
-  func cancelAnyTitleEffect(state: inout ControlFeature.State) -> Effect<Action> {
-    controlFeature.reduce(into: &state, action: .title(.cancelValueDisplayTimer))
-      .map(Action.control)
-  }
-
-  func updateControlEffect(state: inout ControlFeature.State, value: Double) -> Effect<Action> {
-    controlFeature.reduce(into: &state, action: .valueChanged(value))
-      .map(Action.control)
-  }
-
-  func beginEditingEffect(state: inout EditorFeature.State, value: Double) -> Effect<Action> {
-    editorFeature.reduce(into: &state, action: .beginEditing(value))
-      .map(Action.editor)
-  }
 
   func setParameterEffect(state: State, value: Double, cause: AUParameterAutomationEventType?) -> Effect<Action> {
     guard let cause else { return .none }

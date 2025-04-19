@@ -70,11 +70,10 @@ private extension TitleFeature {
  */
 public struct TitleView: View {
   private let store: StoreOf<TitleFeature>
-  private let config: KnobConfig
+  private var config: KnobConfig { store.config }
 
-  public init(store: StoreOf<TitleFeature>, config: KnobConfig) {
+  public init(store: StoreOf<TitleFeature>) {
     self.store = store
-    self.config = config
   }
 
   public var body: some View {
@@ -110,7 +109,7 @@ struct TitleViewPreview: PreviewProvider {
   static var previews: some View {
     VStack(spacing: 24) {
       Button(action: { self.store.send(.valueChanged(1.24), animation: .linear) }) { Text("Send") }
-      TitleView(store: store, config: config)
+      TitleView(store: store)
         .task { store.send(.valueChanged(1.24), animation: .linear) }
     }
   }

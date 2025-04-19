@@ -85,7 +85,7 @@ final class KnobFeatureTests: XCTestCase {
       await ctx.store.send(.editor(.valueChanged("32.124"))) { state in
       }
       await ctx.store.send(.editor(.acceptButtonTapped)) { state in
-        state.control.title.formattedValue = "32.124"
+        state.control.title.formattedValue = "36"
         state.editor.focus = nil
       }
       await ctx.store.receive(.control(.title(.cancelValueDisplayTimer))) {

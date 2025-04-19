@@ -78,11 +78,10 @@ private extension TrackFeature {
  */
 public struct TrackView: View {
   private let store: StoreOf<TrackFeature>
-  private let config: KnobConfig
+  private var config: KnobConfig { store.config }
 
-  public init(store: StoreOf<TrackFeature>, config: KnobConfig) {
+  public init(store: StoreOf<TrackFeature>) {
     self.store = store
-    self.config = config
   }
 
   public var body: some View {
@@ -104,8 +103,8 @@ public struct TrackView: View {
             .dragChanged(start: $0.startLocation, position: $0.location)
           store.send(action)
         }
-        .onEnded { store.send(.dragEnded(start: $0.startLocation, position: $0.location))
-        })
+        .onEnded { store.send(.dragEnded(start: $0.startLocation, position: $0.location)) }
+      )
   }
 
   var rotatedCircle: some Shape {
@@ -148,9 +147,17 @@ private extension Shape {
 }
 
 struct TrackViewPreview: PreviewProvider {
-  static let param = AUParameterTree.createParameter(withIdentifier: "RELEASE", name: "Release", address: 1,
-                                                     min: 0.0, max: 100.0, unit: .generic, unitName: nil,
-                                                     valueStrings: nil, dependentParameters: nil)
+  static let param = AUParameterTree.createParameter(
+    withIdentifier: "RELEASE",
+    name: "Release",
+    address: 1,
+    min: 0.0,
+    max: 100.0,
+    unit: .generic,
+    unitName: nil,
+    valueStrings: nil,
+    dependentParameters: nil
+  )
   static let config = KnobConfig(parameter: param, theme: Theme())
   @State static var store = Store(initialState: TrackFeature.State(config: config, norm: 0.5)) {
     TrackFeature()
@@ -158,7 +165,7 @@ struct TrackViewPreview: PreviewProvider {
 
   static var previews: some View {
     VStack {
-      TrackView(store: store, config: config)
+      TrackView(store: store)
       Button {
         store.send(.valueChanged(0.0))
       } label: {

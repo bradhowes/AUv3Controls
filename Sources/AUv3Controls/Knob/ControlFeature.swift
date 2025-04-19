@@ -10,10 +10,6 @@ import SwiftUI
  */
 @Reducer
 public struct ControlFeature {
-  private let trackFeature = TrackFeature()
-  private let titleFeature = TitleFeature()
-
-  public init() {}
 
   public struct State: Equatable {
     let config: KnobConfig
@@ -34,8 +30,8 @@ public struct ControlFeature {
   }
 
   public var body: some Reducer<State, Action> {
-    Scope(state: \.track, action: \.track) { trackFeature }
-    Scope(state: \.title, action: \.title) { titleFeature }
+    Scope(state: \.track, action: \.track) { TrackFeature() }
+    Scope(state: \.title, action: \.title) { TitleFeature() }
 
     Reduce { state, action in
       switch action {
@@ -45,28 +41,15 @@ public struct ControlFeature {
 
       case .track:
         let value = state.config.normToValue(state.track.norm)
-        return updateTitleEffect(state: &state.title, value: value)
+        return reduce(into: &state, action: .title(.valueChanged(value)))
 
       case let .valueChanged(value):
         return .merge(
-          updateTitleEffect(state: &state.title, value: value),
-          updateTrackEffect(state: &state.track, value: value)
+          reduce(into: &state, action: .title(.valueChanged(value))),
+          reduce(into: &state, action: .track(.valueChanged(value)))
         )
       }
     }
-  }
-}
-
-private extension ControlFeature {
-
-  func updateTitleEffect(state: inout TitleFeature.State, value: Double) -> Effect<Action> {
-    titleFeature.reduce(into: &state, action: .valueChanged(value))
-      .map(Action.title)
-  }
-
-  func updateTrackEffect(state: inout TrackFeature.State, value: Double) -> Effect<Action> {
-    trackFeature.reduce(into: &state, action: .valueChanged(value))
-      .map(Action.track)
   }
 }
 
@@ -81,8 +64,8 @@ struct ControlView: View {
 
   var body: some View {
     VStack(spacing: config.theme.controlTitleGap) {
-      TrackView(store: store.scope(state: \.track, action: \.track), config: config)
-      TitleView(store: store.scope(state: \.title, action: \.title), config: config)
+      TrackView(store: store.scope(state: \.track, action: \.track))
+      TitleView(store: store.scope(state: \.title, action: \.title))
     }
   }
 }

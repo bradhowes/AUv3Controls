@@ -57,11 +57,10 @@ public struct EditorFeature {
 struct EditorView: View {
   @Bindable private var store: StoreOf<EditorFeature>
   @FocusState private var focus: EditorFeature.State.Field?
-  private let config: KnobConfig
+  private var config: KnobConfig { store.config }
 
   init(store: StoreOf<EditorFeature>, config: KnobConfig) {
     self.store = store
-    self.config = config
   }
 
   var body: some View {

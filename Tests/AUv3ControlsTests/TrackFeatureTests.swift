@@ -102,7 +102,7 @@ final class TrackFeatureTests: XCTestCase {
       @State var store: StoreOf<TrackFeature>
       
       var body: some SwiftUI.View {
-        TrackView(store: store, config: config)
+        TrackView(store: store)
       }
     }
     
@@ -124,7 +124,7 @@ final class TrackFeatureTests: XCTestCase {
       @State var store: StoreOf<TrackFeature>
       
       var body: some SwiftUI.View {
-        TrackView(store: store, config: config)
+        TrackView(store: store)
       }
     }
     
@@ -146,7 +146,7 @@ final class TrackFeatureTests: XCTestCase {
       @State var store: StoreOf<TrackFeature>
       
       var body: some SwiftUI.View {
-        TrackView(store: store, config: config)
+        TrackView(store: store)
       }
     }
     
@@ -170,7 +170,7 @@ final class TrackFeatureTests: XCTestCase {
       @State var store: StoreOf<TrackFeature>
       
       var body: some SwiftUI.View {
-        TrackView(store: store, config: config)
+        TrackView(store: store)
       }
     }
 
