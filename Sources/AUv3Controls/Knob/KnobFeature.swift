@@ -43,6 +43,8 @@ public struct KnobFeature {
     case task
   }
 
+  public init() {}
+
   public var body: some Reducer<State, Action> {
     Scope(state: \.control, action: \.control) { ControlFeature() }
     Scope(state: \.editor, action: \.editor) { EditorFeature() }

@@ -36,6 +36,8 @@ public struct EditorFeature {
     case valueChanged(String)
   }
 
+  public init() {}
+
   public var body: some Reducer<State, Action> {
     BindingReducer()
     Reduce { state, action in

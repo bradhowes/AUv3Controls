@@ -29,6 +29,8 @@ public struct ControlFeature {
     case valueChanged(Double)
   }
 
+  public init() {}
+
   public var body: some Reducer<State, Action> {
     Scope(state: \.track, action: \.track) { TrackFeature() }
     Scope(state: \.title, action: \.title) { TitleFeature() }
