@@ -102,7 +102,7 @@ public struct TrackView: View {
         rotatedCircle
           .trackStroke(config: config, theme: theme)
         rotatedCircle
-          .progressStroke(config: config, theme: theme, norm: store.norm)
+          .progressStroke(normValueTransform: store.normValueTransform, config: config, theme: theme, norm: store.norm)
         rotatedIndicator
           .stroke(theme.controlForegroundColor, style: theme.controlValueStrokeStyle)
       }
@@ -147,10 +147,10 @@ private extension Shape {
     .frame(width: config.controlDiameter, height: config.controlDiameter, alignment: .center)
   }
 
-  func progressStroke(config: KnobConfig, theme: Theme, norm: Double) -> some View {
+  func progressStroke(normValueTransform: NormValueTransform, config: KnobConfig, theme: Theme, norm: Double) -> some View {
     self.trim(
       from: theme.controlIndicatorStartAngle.normalized,
-      to: config.normToTrim(norm)
+      to: normValueTransform.normToTrim(norm)
     )
     .stroke(theme.controlForegroundColor, style: theme.controlValueStrokeStyle)
     .frame(width: config.controlDiameter, height: config.controlDiameter, alignment: .center)
