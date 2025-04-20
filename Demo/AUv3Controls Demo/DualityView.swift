@@ -76,7 +76,7 @@ struct DualityView: View {
   var body: some View {
     VStack {
       GroupBox(label: Label("AUv3Controls", systemImage: "waveform")) {
-        HStack(spacing: 24) {
+        HStack {
           KnobView(store: store3)
           KnobView(store: store4)
         }

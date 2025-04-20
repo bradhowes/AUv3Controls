@@ -63,7 +63,7 @@ struct EnvelopeView: View {
     ScrollViewReader { proxy in
       ScrollView(.horizontal) {
         GroupBox(label: label) {
-          HStack(spacing: 18) {
+          HStack {
             KnobView(store: delayStore)
             KnobView(store: attackStore)
             KnobView(store: holdStore)
