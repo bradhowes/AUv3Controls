@@ -14,7 +14,11 @@ private final class Context {
                                               valueStrings: nil, dependentParameters: nil)
   let clock = TestClock()
   lazy var config = KnobConfig(parameter: param)
-  lazy var store = TestStore(initialState: .init(config: config)) {
+  lazy var store = TestStore(initialState: .init(
+    displayName: config.displayName,
+    formatter: config.valueFormatter,
+    showValueDuration: config.controlShowValueDuration
+  )) {
     TitleFeature()
   } withDependencies: {
     $0.continuousClock = clock
@@ -84,7 +88,10 @@ final class TitleFeatureTests: XCTestCase {
       }
     }
     
-    let view = MyView(config: ctx.config, store: Store(initialState: .init(config: ctx.config)) {
+    let view = MyView(config: ctx.config, store: Store(initialState: .init(
+      displayName: ctx.config.displayName,
+      formatter: ctx.config.valueFormatter,
+      showValueDuration: ctx.config.controlShowValueDuration)) {
       TitleFeature()
     })
 
@@ -107,7 +114,11 @@ final class TitleFeatureTests: XCTestCase {
       }
     }
     
-    let view = MyView(config: ctx.config, store: Store(initialState: .init(config: ctx.config)) {
+    let view = MyView(config: ctx.config, store: Store(initialState: .init(
+      displayName: ctx.config.displayName,
+      formatter: ctx.config.valueFormatter,
+      showValueDuration: ctx.config.controlShowValueDuration
+    )) {
       TitleFeature()
     } withDependencies: { 
       $0.continuousClock = ContinuousClock()

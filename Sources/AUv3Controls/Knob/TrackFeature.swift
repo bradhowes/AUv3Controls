@@ -16,8 +16,15 @@ public struct TrackFeature {
   @ObservableState
   public struct State: Equatable {
     let config: KnobConfig
+    let normValueTransform: NormValueTransform
     var norm: Double
     var lastDrag: CGPoint?
+
+    public init(norm: Double, normValueTransform: NormValueTransform, config: KnobConfig) {
+      self.config = config
+      self.normValueTransform = normValueTransform
+      self.norm = norm
+    }
   }
 
   public enum Action: Equatable, Sendable {
@@ -52,7 +59,7 @@ public struct TrackFeature {
                                     atEnd: true)
 
       case let .valueChanged(value):
-        let normValue = state.config.valueToNorm(value)
+        let normValue = state.normValueTransform.valueToNorm(value)
         return .run { send in
           await send(.normChanged(normValue))
         }.animation(.easeInOut(duration: state.config.controlChangeAnimationDuration))
@@ -163,7 +170,11 @@ struct TrackViewPreview: PreviewProvider {
     dependentParameters: nil
   )
   static let config = KnobConfig(parameter: param)
-  @State static var store = Store(initialState: TrackFeature.State(config: config, norm: 0.5)) {
+  @State static var store = Store(initialState: TrackFeature.State(
+    norm: 0.5,
+    normValueTransform: .init(parameter: param),
+    config: config
+  )) {
     TrackFeature()
   }
 

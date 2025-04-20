@@ -24,7 +24,11 @@ private final class Context {
   var store: TestStore<TrackFeature.State, TrackFeature.Action>!
 
   func makeStore() {
-    store = TestStore(initialState: TrackFeature.State(config: config, norm: 0.0)) {
+    store = TestStore(initialState: TrackFeature.State(
+      norm: 0.0,
+      normValueTransform: .init(parameter: param),
+      config: config
+    )) {
       TrackFeature()
     }
   }
@@ -106,7 +110,11 @@ final class TrackFeatureTests: XCTestCase {
       }
     }
     
-    let view = MyView(config: ctx.config, store: Store(initialState: .init(config: ctx.config, norm: 0.0)) {
+    let view = MyView(config: ctx.config, store: Store(initialState: .init(
+      norm: 0.0,
+      normValueTransform: .init(parameter: ctx.param),
+      config: ctx.config
+    )) {
       TrackFeature()
     })
 
@@ -128,7 +136,11 @@ final class TrackFeatureTests: XCTestCase {
       }
     }
     
-    let view = MyView(config: ctx.config, store: Store(initialState: .init(config: ctx.config, norm: 0.5)) {
+    let view = MyView(config: ctx.config, store: Store(initialState: .init(
+      norm: 0.5,
+      normValueTransform: .init(parameter: ctx.param),
+      config: ctx.config
+    )) {
       TrackFeature()
     })
 
@@ -150,7 +162,11 @@ final class TrackFeatureTests: XCTestCase {
       }
     }
     
-    let view = MyView(config: ctx.config, store: Store(initialState: .init(config: ctx.config, norm: 1.0)) {
+    let view = MyView(config: ctx.config, store: Store(initialState: .init(
+      norm: 1.0,
+      normValueTransform: .init(parameter: ctx.param),
+      config: ctx.config
+    )) {
       TrackFeature()
     })
 
@@ -175,7 +191,11 @@ final class TrackFeatureTests: XCTestCase {
       }
     }
 
-    let view = MyView(config: config, store: Store(initialState: .init(config: ctx.config, norm: 0.5)) {
+    let view = MyView(config: config, store: Store(initialState: .init(
+      norm: 0.5,
+      normValueTransform: .init(parameter: ctx.param),
+      config: ctx.config
+    )) {
       TrackFeature()
     })
 

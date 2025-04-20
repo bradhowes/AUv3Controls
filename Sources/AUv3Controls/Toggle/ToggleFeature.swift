@@ -8,19 +8,27 @@ public struct ToggleFeature {
 
   @ObservableState
   public struct State: Equatable {
-    let parameter: AUParameter
-    let valueObservationCancelId: String
     var isOn: Bool
+    let parameter: AUParameter?
+    let displayName: String
+    let valueObservationCancelId: String?
     var observerToken: AUParameterObserverToken?
 
-    public init(
-      parameter: AUParameter,
-      isOn: Bool = false
-    ) {
-      self.valueObservationCancelId = "valueObservationCancelId[AUParameter: \(parameter.address)])"
-      self.parameter = parameter
+    public init(parameter: AUParameter, isOn: Bool = false) {
       self.isOn = isOn
-      self.parameter.setValue(isOn.asValue, originator: nil)
+      self.parameter = parameter
+      self.displayName = parameter.displayName
+      self.valueObservationCancelId = "valueObservationCancelId[AUParameter: \(parameter.address)])"
+      self.observerToken = nil
+      parameter.setValue(isOn.asValue, originator: nil)
+    }
+
+    public init(isOn: Bool = false, displayName: String) {
+      self.isOn = isOn
+      self.parameter = nil
+      self.displayName = displayName
+      self.valueObservationCancelId = nil
+      self.observerToken = nil
     }
   }
 
@@ -42,44 +50,55 @@ public struct ToggleFeature {
   public var body: some Reducer<State, Action> {
     Reduce { state, action in
       switch action {
-      case .stopValueObservation:
-        if let token = state.observerToken {
-          state.parameter.removeParameterObserver(token)
-          state.observerToken = nil
-        }
-        return .cancel(id: state.valueObservationCancelId)
-
-      case let .observedValueChanged(value):
-        return .run { send in await send(.animatedObservedValueChanged(value.asBool)) }.animation()
 
       case let .animatedObservedValueChanged(value):
         state.isOn = value
         return .none
 
-      case .task:
-        let stream: AsyncStream<AUValue>
-        (state.observerToken, stream) = state.parameter.startObserving()
-        return .run { send in
-          for await value in stream {
-            await send(.observedValueChanged(value))
-          }
-        }.cancellable(id: state.valueObservationCancelId, cancelInFlight: true)
+      case let .observedValueChanged(value):
+        return .run { send in await send(.animatedObservedValueChanged(value.asBool)) }.animation()
 
-      case .toggleTapped:
-        state.isOn.toggle()
-        return setParameterEffect(state: state)
+      case .stopValueObservation: return stopObserving(&state)
+
+      case .task: return task(&state)
+
+      case .toggleTapped: return setParameterEffect(&state)
       }
     }
   }
+}
 
-  private func setParameterEffect(state: State) -> Effect<Action> {
-    let parameter = state.parameter
-    let newValue = state.isOn.asValue
-    if parameter.value != newValue {
-      parameter.setValue(newValue, originator: state.observerToken, atHostTime: 0, eventType: .value)
-      parameterValueChanged?(parameter.address)
+extension ToggleFeature {
+
+  private func setParameterEffect(_ state: inout State) -> Effect<Action> {
+    state.isOn.toggle()
+    if let parameter = state.parameter {
+      let newValue = state.isOn.asValue
+      if parameter.value != newValue {
+        parameter.setValue(newValue, originator: state.observerToken, atHostTime: 0, eventType: .value)
+        parameterValueChanged?(parameter.address)
+      }
     }
     return .none
+  }
+
+  private func stopObserving(_ state: inout State) -> Effect<Action> {
+    if let token = state.observerToken {
+      state.parameter?.removeParameterObserver(token)
+      state.observerToken = nil
+    }
+    return .cancel(id: state.valueObservationCancelId)
+  }
+
+  private func task(_ state: inout State) -> Effect<Action> {
+    guard let parameter = state.parameter else { return .none }
+    let stream: AsyncStream<AUValue>
+    (state.observerToken, stream) = parameter.startObserving()
+    return .run { send in
+      for await value in stream {
+        await send(.observedValueChanged(value))
+      }
+    }.cancellable(id: state.valueObservationCancelId, cancelInFlight: true)
   }
 }
 
@@ -93,10 +112,12 @@ public struct ToggleView: View {
 
   public var body: some View {
     WithViewStore(self.store, observe: { $0 }, content: { viewStore in
-      Toggle(isOn: viewStore.binding(get: \.isOn, send: .toggleTapped)) { Text(viewStore.parameter.displayName) }
-        .toggleStyle(.checked(theme: theme))
-        .task { await viewStore.send(.task).finish() }
-        .onDisappear { viewStore.send(.stopValueObservation) }
+      Toggle(isOn: viewStore.binding(get: \.isOn, send: .toggleTapped)) {
+        Text(viewStore.displayName)
+      }
+      .toggleStyle(.checked(theme: theme))
+      .task { await viewStore.send(.task).finish() }
+      .onDisappear { viewStore.send(.stopValueObservation) }
     })
   }
 }

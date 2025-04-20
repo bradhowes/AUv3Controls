@@ -28,7 +28,7 @@ private final class Context {
   }
 
   lazy var config = KnobConfig(parameter: paramTree.parameter(withAddress: 2)!)
-  lazy var floatStore = TestStore(initialState: KnobFeature.State(config: config)) {
+  lazy var floatStore = TestStore(initialState: KnobFeature.State(parameter: floatParam, config: config)) {
     KnobFeature()
   } withDependencies: {
     $0.continuousClock = clock

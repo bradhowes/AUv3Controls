@@ -15,7 +15,7 @@ struct EnvelopeView: View {
                                                      max: 100.0, unit: .generic, unitName: nil, flags: [],
                                                      valueStrings: nil, dependentParameters: nil)
     let delayConfig = KnobConfig(parameter: delayParam)
-    let delayStore = Store(initialState: KnobFeature.State(config: delayConfig)) {
+    let delayStore = Store(initialState: KnobFeature.State(parameter: delayParam, config: delayConfig)) {
       KnobFeature()
     }
 
@@ -23,7 +23,7 @@ struct EnvelopeView: View {
                                                       max: 100.0, unit: .generic, unitName: nil, flags: [],
                                                       valueStrings: nil, dependentParameters: nil)
     let attackConfig = KnobConfig(parameter: attackParam)
-    let attackStore = Store(initialState: KnobFeature.State(config: attackConfig)) {
+    let attackStore = Store(initialState: KnobFeature.State(parameter: attackParam, config: attackConfig)) {
       KnobFeature()
     }
 
@@ -31,7 +31,7 @@ struct EnvelopeView: View {
                                                     max: 100.0, unit: .generic, unitName: nil, flags: [],
                                                     valueStrings: nil, dependentParameters: nil)
     let holdConfig = KnobConfig(parameter: holdParam)
-    let holdStore = Store(initialState: KnobFeature.State(config: holdConfig)) {
+    let holdStore = Store(initialState: KnobFeature.State(parameter: holdParam, config: holdConfig)) {
       KnobFeature()
     }
 
@@ -39,7 +39,7 @@ struct EnvelopeView: View {
                                                      max: 100.0, unit: .generic, unitName: nil, flags: [],
                                                      valueStrings: nil, dependentParameters: nil)
     let decayConfig = KnobConfig(parameter: decayParam)
-    let decayStore = Store(initialState: KnobFeature.State(config: decayConfig)) {
+    let decayStore = Store(initialState: KnobFeature.State(parameter: decayParam, config: decayConfig)) {
       KnobFeature()
     }
 
@@ -47,7 +47,7 @@ struct EnvelopeView: View {
                                                        max: 100.0, unit: .generic, unitName: nil, flags: [],
                                                        valueStrings: nil, dependentParameters: nil)
     let sustainConfig = KnobConfig(parameter: sustainParam)
-    let sustainStore = Store(initialState: KnobFeature.State(config: sustainConfig)) {
+    let sustainStore = Store(initialState: KnobFeature.State(parameter: sustainParam, config: sustainConfig)) {
       KnobFeature()
     }
 
@@ -55,7 +55,7 @@ struct EnvelopeView: View {
                                                        max: 100.0, unit: .generic, unitName: nil, flags: [],
                                                        valueStrings: nil, dependentParameters: nil)
     let releaseConfig = KnobConfig(parameter: releaseParam)
-    let releaseStore = Store(initialState: KnobFeature.State(config: releaseConfig)) {
+    let releaseStore = Store(initialState: KnobFeature.State(parameter: releaseParam, config: releaseConfig)) {
       KnobFeature()
     }
 

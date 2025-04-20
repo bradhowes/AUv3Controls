@@ -25,12 +25,12 @@ final class ToggleFeatureTests: XCTestCase {
   func testInit() {
     let ctx = Context()
     let store = ctx.makeStore()
-    XCTAssertEqual(10, store.state.parameter.address)
-    XCTAssertEqual("Retrigger", store.state.parameter.displayName)
-    XCTAssertEqual("RETRIGGER", store.state.parameter.identifier)
-    XCTAssertEqual(0.0, store.state.parameter.minValue)
-    XCTAssertEqual(1.0, store.state.parameter.maxValue)
-    XCTAssertEqual(0.0, store.state.parameter.value)
+    XCTAssertEqual(10, store.state.parameter?.address)
+    XCTAssertEqual("Retrigger", store.state.parameter?.displayName)
+    XCTAssertEqual("RETRIGGER", store.state.parameter?.identifier)
+    XCTAssertEqual(0.0, store.state.parameter?.minValue)
+    XCTAssertEqual(1.0, store.state.parameter?.maxValue)
+    XCTAssertEqual(0.0, store.state.parameter?.value)
     XCTAssertFalse(store.state.isOn)
   }
 

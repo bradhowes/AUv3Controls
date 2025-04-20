@@ -107,9 +107,9 @@ struct DualityView: View {
     self.store1 = .init(initialState: ToggleFeature.State(parameter: mockAUv3.param1)) { ToggleFeature() }
     self.store2 = .init(initialState: ToggleFeature.State(parameter: mockAUv3.param2)) { ToggleFeature() }
 
-    self.store3 = .init(initialState: KnobFeature.State(config: mockAUv3.config3)) {
+    self.store3 = .init(initialState: KnobFeature.State(parameter: mockAUv3.param3, config: mockAUv3.config3)) {
       KnobFeature() }
-    self.store4 = .init(initialState: KnobFeature.State(config: mockAUv3.config4)) {
+    self.store4 = .init(initialState: KnobFeature.State(parameter: mockAUv3.param4, config: mockAUv3.config4)) {
       KnobFeature() }
   }
 

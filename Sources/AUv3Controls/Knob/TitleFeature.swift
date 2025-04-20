@@ -12,14 +12,18 @@ public struct TitleFeature {
 
   @ObservableState
   public struct State: Equatable {
-    let config: KnobConfig
+    let displayName: String
+    let formatter: NumberFormatter
+    let showValueDuration: Double
     let showValueCancelId: String
     var formattedValue: String?
     var showingValue: Bool { formattedValue != nil }
 
-    public init(config: KnobConfig) {
-      self.config = config
-      self.showValueCancelId = "ShowValueCancelId[AUParameter: \(config.id)])"
+    public init(displayName: String, formatter: NumberFormatter, showValueDuration: Double) {
+      self.displayName = displayName
+      self.formatter = formatter
+      self.showValueDuration = showValueDuration
+      self.showValueCancelId = "ShowValueCancelId[\(UUID().uuidString)]"
     }
   }
 
@@ -52,8 +56,8 @@ private extension TitleFeature {
   }
 
   func showValueEffect(state: inout State, value: Double) -> Effect<Action> {
-    state.formattedValue = state.config.format(value: value)
-    let duration: Duration = .seconds(state.config.controlShowValueDuration)
+    state.formattedValue = state.formatter.format(value: value)
+    let duration: Duration = .seconds(state.showValueDuration)
     let clock = self.clock
     let cancelId = state.showValueCancelId
     return .run { send in
@@ -72,7 +76,6 @@ private extension TitleFeature {
  */
 public struct TitleView: View {
   private let store: StoreOf<TitleFeature>
-  private var config: KnobConfig { store.config }
   @Environment(\.auv3ControlsTheme) private var theme
 
   public init(store: StoreOf<TitleFeature>) {
@@ -86,7 +89,7 @@ public struct TitleView: View {
           .transition(.opacity)
           .fadeIn(when: store.showingValue)
       } else {
-        Text(config.parameter.displayName)
+        Text(store.displayName)
           .fadeOut(when: store.showingValue)
       }
     }
@@ -105,7 +108,11 @@ struct TitleViewPreview: PreviewProvider {
                                                      min: 0.0, max: 100.0, unit: .generic, unitName: nil,
                                                      valueStrings: nil, dependentParameters: nil)
   static let config = KnobConfig(parameter: param)
-  @State static var store = Store(initialState: TitleFeature.State(config: config)) {
+  @State static var store = Store(initialState: TitleFeature.State(
+    displayName: param.displayName,
+    formatter: config.valueFormatter,
+    showValueDuration: config.controlShowValueDuration
+  )) {
     TitleFeature()
   }
 

@@ -11,13 +11,15 @@ public struct EditorFeature {
 
   @ObservableState
   public struct State: Equatable {
-    let config: KnobConfig
+    let displayName: String
+    let formatter: NumberFormatter
     var value: String
     var focus: Field?
     var hasFocus: Bool { focus != nil }
 
-    public init(config: KnobConfig) {
-      self.config = config
+    public init(displayName: String, formatter: NumberFormatter) {
+      self.displayName = displayName
+      self.formatter = formatter
       self.value = ""
       self.focus = nil
     }
@@ -44,7 +46,7 @@ public struct EditorFeature {
       switch action {
       case .acceptButtonTapped: state.focus = nil
       case .beginEditing(let value):
-        state.value = state.config.format(value: value)
+        state.value = state.formatter.format(value: value)
         state.focus = .value
       case .binding: break
       case .cancelButtonTapped: state.focus = nil
@@ -60,7 +62,6 @@ struct EditorView: View {
   @Bindable private var store: StoreOf<EditorFeature>
   @FocusState private var focus: EditorFeature.State.Field?
   @Environment(\.auv3ControlsTheme) private var theme
-  private var config: KnobConfig { store.config }
 
   init(store: StoreOf<EditorFeature>) {
     self.store = store
@@ -69,7 +70,7 @@ struct EditorView: View {
   var body: some View {
     VStack(alignment: .center, spacing: 12) {
       HStack(spacing: 12) {
-        Text(config.title)
+        Text(store.displayName)
           .lineLimit(1, reservesSpace: false)
         ZStack(alignment: .trailing) {
 #if os(iOS)
@@ -128,7 +129,10 @@ struct EditorViewPreview: PreviewProvider {
                                                      min: 0.0, max: 100.0, unit: .generic, unitName: nil,
                                                      valueStrings: nil, dependentParameters: nil)
   static let config = KnobConfig(parameter: param)
-  @State static var store = Store(initialState: EditorFeature.State(config: config)) {
+  @State static var store = Store(initialState: EditorFeature.State(
+    displayName: "Release",
+    formatter: config.valueFormatter
+  )) {
     EditorFeature()
   }
 

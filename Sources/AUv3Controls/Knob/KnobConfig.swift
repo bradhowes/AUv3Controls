@@ -8,29 +8,23 @@ import SwiftUI
  */
 public struct KnobConfig: Equatable {
 
-  /// The AUParameter being displayed
-  public let parameter: AUParameter
-
   /// Holds `true` if the parameter uses the logarithmic scale
   public let logScale: Bool
 
   /// The height of the control (knob + title)
   public let controlHeight: CGFloat
 
-  /// The unique ID to identify the SwiftUI view -- this is the same as the AUParamete `address` attribute
-  public var id: UInt64 { parameter.address }
-
   /// The title to show in the control when the value is not changing.
-  public var title: String { self.parameter.displayName }
+  public let displayName: String
+
+  /// The minimum value of the AUParameter
+  public let minimumValue: Double
+
+  /// The maximum value of the AUParameter
+  public let maximumValue: Double
 
   /// The range of the values over which the control can move
   public var range: ClosedRange<Double> { minimumValue...maximumValue }
-
-  /// The minimum value of the AUParameter
-  public var minimumValue: Double { Double(parameter.minValue) }
-
-  /// The maximum value of the AUParameter
-  public var maximumValue: Double { Double(parameter.maxValue) }
 
   /// The diameter (width and height) of the knob
   public var controlDiameter: CGFloat { didSet { updateDragScaling() } }
@@ -83,9 +77,37 @@ public struct KnobConfig: Equatable {
     touchSensitivity: CGFloat = 2.0,
     valueFormatter: NumberFormatter? = nil
   ) {
-    self.parameter = parameter
+    self.displayName = parameter.displayName
+    self.minimumValue = Double(parameter.minValue)
+    self.maximumValue = Double(parameter.maxValue)
+
     self.controlDiameter = controlDiameter
     self.logScale = parameter.flags.contains(.flag_DisplayLogarithmic)
+
+    self.controlHeight = controlHeight
+    self.touchSensitivity = touchSensitivity
+    self.dragScaling = 1.0 / (controlDiameter * touchSensitivity)
+    self.maxChangeRegionWidthHalf = max(8, controlDiameter * maxChangeRegionWidthPercentage) / 2
+    self.valueFormatter = valueFormatter ?? Self.defaultFormatter
+  }
+
+  public init(
+    value: Double,
+    displayName: String,
+    minimumValue: Double,
+    maximumValue: Double,
+    logarithmic: Bool = false,
+    controlDiameter: CGFloat = 100.0,
+    controlHeight: CGFloat = 120.0,
+    touchSensitivity: CGFloat = 2.0,
+    valueFormatter: NumberFormatter? = nil
+  ) {
+    self.displayName = displayName
+    self.minimumValue = minimumValue
+    self.maximumValue = maximumValue
+
+    self.controlDiameter = controlDiameter
+    self.logScale = logarithmic
 
     self.controlHeight = controlHeight
     self.touchSensitivity = touchSensitivity
@@ -119,34 +141,25 @@ extension KnobConfig {
   public func normToTrim(_ norm: Double) -> Double {
     (logScale ? (pow(10, norm) - 1.0) / 9.0 : norm) * (maxTrim - minTrim) + minTrim
   }
-
-  public func normToValue(_ norm: Double) -> Double {
-    (logScale ? (pow(10, norm) - 1.0) / 9.0 : norm) * (maximumValue - minimumValue) + minimumValue
-  }
-
-  public func valueToNorm(_ value: Double) -> Double {
-    let norm = (value.clamped(to: minimumValue...maximumValue) - minimumValue) / (maximumValue - minimumValue)
-    return logScale ? log(1.0 + norm * 9.0) / 10.0 : norm
-  }
 }
 
 extension KnobConfig {
 
-  /**
-   Obtain a text representation of the given value.
-
-   - parameter value the numeric value to format
-   - returns the formatted value
-   */
-  public func format(value: Double) -> String { valueFormatter.string(from: NSNumber(value: value)) ?? "NaN" }
-
-  /**
-   Obtain a text representation of the given value.
-
-   - parameter value the numeric value to format
-   - returns the formatted value
-   */
-  public func format(value: Float) -> String { format(value: Double(value)) }
+//  /**
+//   Obtain a text representation of the given value.
+//
+//   - parameter value the numeric value to format
+//   - returns the formatted value
+//   */
+//  public func format(value: Double) -> String { valueFormatter.string(from: NSNumber(value: value)) ?? "NaN" }
+//
+//  /**
+//   Obtain a text representation of the given value.
+//
+//   - parameter value the numeric value to format
+//   - returns the formatted value
+//   */
+//  public func format(value: Float) -> String { format(value: Double(value)) }
 
   public func dragChangeValue(last: CGPoint, position: CGPoint) -> CGFloat {
     let dY = last.y - position.y
@@ -166,5 +179,37 @@ extension KnobConfig {
     formatter.maximumFractionDigits = 3
     formatter.minimumIntegerDigits = 1
     return formatter
+  }
+}
+
+extension NumberFormatter {
+  public func format(value: Double) -> String { self.string(from: NSNumber(value: value)) ?? "NaN" }
+  public func format(value: Float) -> String { format(value: Double(value)) }
+}
+
+public struct NormValueTransform: Equatable {
+  private let minimumValue: Double
+  private let maximumValue: Double
+  private let logScale: Bool
+
+  public init(parameter: AUParameter) {
+    self.minimumValue = Double(parameter.minValue)
+    self.maximumValue = Double(parameter.maxValue)
+    self.logScale = parameter.flags.contains(.flag_DisplayLogarithmic)
+  }
+
+  public init(minimumValue: Double, maximumValue: Double, logScale: Bool) {
+    self.minimumValue = minimumValue
+    self.maximumValue = maximumValue
+    self.logScale = logScale
+  }
+
+  public func normToValue(_ norm: Double) -> Double {
+    (logScale ? (pow(10, norm) - 1.0) / 9.0 : norm) * (maximumValue - minimumValue) + minimumValue
+  }
+
+  public func valueToNorm(_ value: Double) -> Double {
+    let norm = (value.clamped(to: minimumValue...maximumValue) - minimumValue) / (maximumValue - minimumValue)
+    return logScale ? log(1.0 + norm * 9.0) / 10.0 : norm
   }
 }

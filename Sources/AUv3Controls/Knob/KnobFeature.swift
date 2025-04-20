@@ -19,18 +19,51 @@ public struct KnobFeature {
 
   @ObservableState
   public struct State: Equatable {
+    let id: UInt64
     let config: KnobConfig
-    let valueObservationCancelId: String
+    let parameter: AUParameter?
+    let normValueTransform: NormValueTransform
     var control: ControlFeature.State
     var editor: EditorFeature.State
-    var observerToken: AUParameterObserverToken?
     var scrollToDestination: UInt64?
+    let valueObservationCancelId: String?
+    var observerToken: AUParameterObserverToken?
 
-    public init(config: KnobConfig) {
+    public init(parameter: AUParameter, config: KnobConfig) {
+      let normValueTransform: NormValueTransform = .init(parameter: parameter)
+      self.id = parameter.address
       self.config = config
-      self.valueObservationCancelId = "valueObservationCancelId[AUParameter: \(config.id)])"
-      self.control = .init(config: config, value: Double(config.parameter.value))
-      self.editor = .init(config: config)
+      self.parameter = parameter
+      self.normValueTransform = normValueTransform
+      self.valueObservationCancelId = "valueObservationCancelId[AUParameter: \(id)])"
+      self.control = .init(
+        value: Double(parameter.value),
+        normValueTransform: normValueTransform,
+        config: config
+      )
+      self.editor = .init(displayName: parameter.displayName, formatter: config.valueFormatter)
+    }
+
+    public init(
+      value: Double,
+      displayName: String,
+      minimumValue: Double,
+      maximumValue: Double,
+      logarithmic: Bool,
+      config: KnobConfig
+    ) {
+      let normValueTransform: NormValueTransform = .init(
+        minimumValue: minimumValue,
+        maximumValue: maximumValue,
+        logScale: logarithmic
+      )
+      self.id = UInt64(UUID().hashValue)
+      self.config = config
+      self.parameter = nil
+      self.normValueTransform = normValueTransform
+      self.valueObservationCancelId = "valueObservationCancelId[\(UUID().uuidString)])"
+      self.control = .init(value: value, normValueTransform: normValueTransform, config: config)
+      self.editor = .init(displayName: config.displayName, formatter: config.valueFormatter)
     }
   }
 
@@ -63,12 +96,12 @@ public struct KnobFeature {
 
           // Update the associated AUParameter when the track changes value
         case .track(let trackAction):
-          let value = state.config.normToValue(state.control.track.norm)
+          let value = state.normValueTransform.normToValue(state.control.track.norm)
           return setParameterEffect(state: state, value: value, cause: trackAction.cause)
 
           // Show the value editor when the title is tapped
         case .title(let titleAction) where titleAction == .titleTapped:
-          let value = state.config.normToValue(state.control.track.norm)
+          let value = state.normValueTransform.normToValue(state.control.track.norm)
           return reduce(into: &state, action: .editor(.beginEditing(value)))
 
         default:
@@ -79,7 +112,7 @@ public struct KnobFeature {
       case .editor(let editorAction):
         guard editorAction == .acceptButtonTapped else { return .none }
         guard let editorValue = Double(state.editor.value) else { return .none }
-        let value = state.config.normToValue(state.config.valueToNorm(editorValue))
+        let value = state.normValueTransform.normToValue(state.normValueTransform.valueToNorm(editorValue))
         return .merge(
           setParameterEffect(state: state, value: value, cause: .value),
           reduce(into: &state, action: .control(.valueChanged(Double(value))))
@@ -91,7 +124,7 @@ public struct KnobFeature {
 
       case .stopValueObservation:
         if let token = state.observerToken {
-          state.config.parameter.removeParameterObserver(token)
+          state.parameter?.removeParameterObserver(token)
           state.observerToken = nil
         }
         return .merge(
@@ -100,9 +133,10 @@ public struct KnobFeature {
         )
 
       case .task:
+        guard let parameter = state.parameter else { return .none }
         let duration = state.config.debounceDuration
         let stream: AsyncStream<AUValue>
-        (state.observerToken, stream) = state.config.parameter.startObserving()
+        (state.observerToken, stream) = parameter.startObserving()
         return .run { send in
           for await value in stream.debounce(for: duration) {
             await send(.observedValueChanged(value))
@@ -119,8 +153,11 @@ public struct KnobFeature {
 private extension KnobFeature {
 
   func setParameterEffect(state: State, value: Double, cause: AUParameterAutomationEventType?) -> Effect<Action> {
-    guard let cause else { return .none }
-    let parameter = state.config.parameter
+    guard let cause,
+          let parameter = state.parameter
+    else {
+      return .none
+    }
     let newValue = AUValue(value)
     if parameter.value != newValue {
       parameter.setValue(newValue, originator: state.observerToken, atHostTime: 0, eventType: cause)
@@ -158,14 +195,14 @@ public struct KnobView: View {
       EditorView(store: store.scope(state: \.editor, action: \.editor))
         .visible(when: store.editor.hasFocus)
     }
-    .id(config.id)
+    .id(store.id)
     .frame(maxWidth: config.controlWidthIf(store.editor.focus), maxHeight: config.controlHeight)
     .frame(width: config.controlWidthIf(store.editor.focus), height: config.controlHeight)
     .task { await store.send(.task).finish() }
     .onDisappear { store.send(.stopValueObservation) }
     .onChange(of: store.editor.hasFocus) { _, newValue in
       if newValue && proxy != nil {
-        store.send(.performScrollTo(config.id))
+        store.send(.performScrollTo(store.id))
       }
     }
     .onChange(of: store.scrollToDestination) { _, newValue in
@@ -206,7 +243,7 @@ struct KnobViewPreview: PreviewProvider {
     dependentParameters: nil
   )
   static let config = KnobConfig(parameter: param)
-  static var store = Store(initialState: KnobFeature.State(config: config)) {
+  static var store = Store(initialState: KnobFeature.State(parameter: param, config: config)) {
     KnobFeature()
   }
 

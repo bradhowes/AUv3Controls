@@ -13,14 +13,18 @@ public struct ControlFeature {
 
   @ObservableState
   public struct State: Equatable {
-    let config: KnobConfig
+    let normValueTransform: NormValueTransform
     var title: TitleFeature.State
     var track: TrackFeature.State
 
-    public init(config: KnobConfig, value: Double) {
-      self.config = config
-      self.title = .init(config: config)
-      self.track = .init(config: config, norm: config.valueToNorm(value))
+    public init(value: Double, normValueTransform: NormValueTransform, config: KnobConfig) {
+      self.normValueTransform = normValueTransform
+      self.title = .init(
+        displayName: config.displayName,
+        formatter: config.valueFormatter,
+        showValueDuration: config.controlShowValueDuration
+      )
+      self.track = .init(norm: normValueTransform.valueToNorm(value), normValueTransform: normValueTransform, config: config)
     }
   }
 
@@ -43,7 +47,7 @@ public struct ControlFeature {
         return .none
 
       case .track:
-        let value = state.config.normToValue(state.track.norm)
+        let value = state.normValueTransform.normToValue(state.track.norm)
         return reduce(into: &state, action: .title(.valueChanged(value)))
 
       case let .valueChanged(value):
@@ -58,7 +62,6 @@ public struct ControlFeature {
 
 struct ControlView: View {
   private let store: StoreOf<ControlFeature>
-  private var config: KnobConfig { store.config }
   @Environment(\.auv3ControlsTheme) private var theme
 
   init(store: StoreOf<ControlFeature>) {
@@ -86,7 +89,11 @@ struct ControlViewPreview: PreviewProvider {
     dependentParameters: nil
   )
   static let config = KnobConfig(parameter: param)
-  static var store = Store( initialState: ControlFeature.State(config: config, value: Double(param.value))) {
+  static var store = Store( initialState: ControlFeature.State(
+    value: Double(param.value),
+    normValueTransform: .init(parameter: param),
+    config: config
+  )) {
     ControlFeature()
   }
 
