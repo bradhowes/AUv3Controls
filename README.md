@@ -21,8 +21,19 @@ And below shows rendering on macOS:
 
 ## Controls
 
-There is a circular knob that acts like a vertical slider. It normally shows the setting's name, but when being 
-manipulated it shows the current value.
+There is a circular knob -- [KnobFeature](Sources/Knob/KnobFeature.swift) -- that acts like a vertical slider.
+It normally shows the setting's name, but when being 
+manipulated it shows the current value. Additionally, tapping/clicking on the name will bring up an editor in which
+one can edit the value.
+
+The other control is a toggle -- [ToggleFeature](Sources/Toggle/ToggleFeature.swift). It simply offers a boolean on/off
+setting.
+
+Both controls support a way to configure their display via a [Theme](Sources/Theme.swift) definition. To apply it one
+must supply a custom theme via the View `.auv3ControlsTheme` modifier.
+
+The `KnobFeature` offers a large number of configuration parameters in the [KnobConfig](Sources/Knob/KnobConfig.swift).
+A custom value can be provided in the constructor of the `KnobFeature`.
 
 ![](demo.gif?raw=true)
 
@@ -39,6 +50,10 @@ Here is a combination of several knobs into two distinct groups. The groups are 
 operate under narrow device width constrains:
 
 ![](envelopes.gif?raw=true)
+
+# Configuration and Theme
+
+The KnobFeature 
 
 # Demo App
 
