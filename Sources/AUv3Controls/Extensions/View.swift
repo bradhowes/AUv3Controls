@@ -68,3 +68,23 @@ extension View {
 #endif
   }
 }
+
+extension EnvironmentValues {
+  @Entry public var scrollViewProxy: ScrollViewProxy?
+}
+
+extension View {
+  public func scrollViewProxy(_ value: ScrollViewProxy?) -> some View {
+    environment(\.scrollViewProxy, value)
+  }
+}
+
+extension EnvironmentValues {
+  @Entry public var auv3ControlsTheme: Theme = Theme()
+}
+
+extension View {
+  public func auv3ControlsTheme(_ value: Theme) -> some View {
+    environment(\.auv3ControlsTheme, value)
+  }
+}

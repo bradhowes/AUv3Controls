@@ -44,7 +44,7 @@ public struct EditorFeature {
       switch action {
       case .acceptButtonTapped: state.focus = nil
       case .beginEditing(let value):
-        state.value = state.config.formattedValue(value)
+        state.value = state.config.format(value: value)
         state.focus = .value
       case .binding: break
       case .cancelButtonTapped: state.focus = nil
@@ -59,6 +59,7 @@ public struct EditorFeature {
 struct EditorView: View {
   @Bindable private var store: StoreOf<EditorFeature>
   @FocusState private var focus: EditorFeature.State.Field?
+  @Environment(\.auv3ControlsTheme) private var theme
   private var config: KnobConfig { store.config }
 
   init(store: StoreOf<EditorFeature>) {
@@ -97,14 +98,14 @@ struct EditorView: View {
           Text("Accept", comment: "Name of button that accepts an edited value")
         }
         .buttonStyle(.bordered)
-        .foregroundColor(config.theme.textColor)
+        .foregroundColor(theme.textColor)
         Button {
           sendCancelButtonTapped()
         } label: {
           Text("Cancel", comment: "Name of button that cancels editing")
         }
         .buttonStyle(.borderless)
-        .foregroundColor(config.theme.textColor)
+        .foregroundColor(theme.textColor)
       }
     }
     .padding()
@@ -126,7 +127,7 @@ struct EditorViewPreview: PreviewProvider {
   static let param = AUParameterTree.createParameter(withIdentifier: "RELEASE", name: "Release", address: 1,
                                                      min: 0.0, max: 100.0, unit: .generic, unitName: nil,
                                                      valueStrings: nil, dependentParameters: nil)
-  static let config = KnobConfig(parameter: param, theme: Theme())
+  static let config = KnobConfig(parameter: param)
   @State static var store = Store(initialState: EditorFeature.State(config: config)) {
     EditorFeature()
   }

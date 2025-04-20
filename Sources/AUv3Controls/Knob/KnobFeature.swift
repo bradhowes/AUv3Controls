@@ -43,7 +43,12 @@ public struct KnobFeature {
     case task
   }
 
-  public init() {}
+  // Only used for unit tests
+  private let parameterValueChanged: ((AUParameterAddress) -> Void)?
+
+  public init(parameterValueChanged: ((AUParameterAddress) -> Void)? = nil) {
+    self.parameterValueChanged = parameterValueChanged
+  }
 
   public var body: some Reducer<State, Action> {
     Scope(state: \.control, action: \.control) { ControlFeature() }
@@ -119,19 +124,9 @@ private extension KnobFeature {
     let newValue = AUValue(value)
     if parameter.value != newValue {
       parameter.setValue(newValue, originator: state.observerToken, atHostTime: 0, eventType: cause)
-      state.config.theme.parameterValueChanged?(parameter.address)
+      parameterValueChanged?(parameter.address)
     }
     return .none
-  }
-}
-
-extension EnvironmentValues {
-  @Entry public var scrollViewProxy: ScrollViewProxy?
-}
-
-extension View {
-  public func scrollViewProxy(_ value: ScrollViewProxy?) -> some View {
-    environment(\.scrollViewProxy, value)
   }
 }
 
@@ -210,7 +205,7 @@ struct KnobViewPreview: PreviewProvider {
     valueStrings: nil,
     dependentParameters: nil
   )
-  static let config = KnobConfig(parameter: param, theme: Theme())
+  static let config = KnobConfig(parameter: param)
   static var store = Store(initialState: KnobFeature.State(config: config)) {
     KnobFeature()
   }

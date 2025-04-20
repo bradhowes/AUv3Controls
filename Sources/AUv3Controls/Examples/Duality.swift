@@ -30,8 +30,8 @@ class MockAUv3 {
     let param4 = AUParameterTree.createFloat(withIdentifier: "Pan", name: "Pan", address: 4, range: -50...50)
     self.param4 = param4
 
-    self.config3 = KnobConfig(parameter: param3, theme: theme)
-    self.config4 = KnobConfig(parameter: param4, theme: theme)
+    self.config3 = KnobConfig(parameter: param3)
+    self.config4 = KnobConfig(parameter: param4)
 
     self.paramTree = AUParameterTree.createTree(withChildren: [param1, param2, param3, param4])
 
@@ -104,8 +104,8 @@ struct DualityView: View {
   init() {
     let mockAUv3 = MockAUv3()
     self.mockAUv3 = mockAUv3
-    self.store1 = .init(initialState: ToggleFeature.State(parameter: mockAUv3.param1, theme: mockAUv3.theme)) { ToggleFeature() }
-    self.store2 = .init(initialState: ToggleFeature.State(parameter: mockAUv3.param2, theme: mockAUv3.theme)) { ToggleFeature() }
+    self.store1 = .init(initialState: ToggleFeature.State(parameter: mockAUv3.param1)) { ToggleFeature() }
+    self.store2 = .init(initialState: ToggleFeature.State(parameter: mockAUv3.param2)) { ToggleFeature() }
 
     self.store3 = .init(initialState: KnobFeature.State(config: mockAUv3.config3)) {
       KnobFeature() }
@@ -127,7 +127,7 @@ struct DualityView: View {
               ToggleView(store: store2)
             }
           }
-        }
+        }.auv3ControlsTheme(mockAUv3.theme)
         GroupBox(label: Label("Mock MIDI", systemImage: "pianokeys")) {
           Slider(value: mockAUv3.binding(to: param3.address, with: $slider3), in: config3.range)
           HStack {

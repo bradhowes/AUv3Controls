@@ -14,7 +14,7 @@ struct EnvelopeView: View {
     let delayParam = AUParameterTree.createParameter(withIdentifier: "DELAY", name: "Delay", address: 1, min: 0.0,
                                                      max: 100.0, unit: .generic, unitName: nil, flags: [],
                                                      valueStrings: nil, dependentParameters: nil)
-    let delayConfig = KnobConfig(parameter: delayParam, theme: theme)
+    let delayConfig = KnobConfig(parameter: delayParam)
     let delayStore = Store(initialState: KnobFeature.State(config: delayConfig)) {
       KnobFeature()
     }
@@ -22,7 +22,7 @@ struct EnvelopeView: View {
     let attackParam = AUParameterTree.createParameter(withIdentifier: "ATTACK", name: "Attack", address: 2, min: 0.0,
                                                       max: 100.0, unit: .generic, unitName: nil, flags: [],
                                                       valueStrings: nil, dependentParameters: nil)
-    let attackConfig = KnobConfig(parameter: attackParam, theme: theme)
+    let attackConfig = KnobConfig(parameter: attackParam)
     let attackStore = Store(initialState: KnobFeature.State(config: attackConfig)) {
       KnobFeature()
     }
@@ -30,7 +30,7 @@ struct EnvelopeView: View {
     let holdParam = AUParameterTree.createParameter(withIdentifier: "HOLD", name: "Hold", address: 3, min: 0.0,
                                                     max: 100.0, unit: .generic, unitName: nil, flags: [],
                                                     valueStrings: nil, dependentParameters: nil)
-    let holdConfig = KnobConfig(parameter: holdParam, theme: theme)
+    let holdConfig = KnobConfig(parameter: holdParam)
     let holdStore = Store(initialState: KnobFeature.State(config: holdConfig)) {
       KnobFeature()
     }
@@ -38,7 +38,7 @@ struct EnvelopeView: View {
     let decayParam = AUParameterTree.createParameter(withIdentifier: "DECAY", name: "Decay", address: 4, min: 0.0,
                                                      max: 100.0, unit: .generic, unitName: nil, flags: [],
                                                      valueStrings: nil, dependentParameters: nil)
-    let decayConfig = KnobConfig(parameter: decayParam, theme: theme)
+    let decayConfig = KnobConfig(parameter: decayParam)
     let decayStore = Store(initialState: KnobFeature.State(config: decayConfig)) {
       KnobFeature()
     }
@@ -46,7 +46,7 @@ struct EnvelopeView: View {
     let sustainParam = AUParameterTree.createParameter(withIdentifier: "SUSTAIN", name: "Sustain", address: 5, min: 0.0,
                                                        max: 100.0, unit: .generic, unitName: nil, flags: [],
                                                        valueStrings: nil, dependentParameters: nil)
-    let sustainConfig = KnobConfig(parameter: sustainParam, theme: theme)
+    let sustainConfig = KnobConfig(parameter: sustainParam)
     let sustainStore = Store(initialState: KnobFeature.State(config: sustainConfig)) {
       KnobFeature()
     }
@@ -54,7 +54,7 @@ struct EnvelopeView: View {
     let releaseParam = AUParameterTree.createParameter(withIdentifier: "RELEASE", name: "Release", address: 6, min: 0.0,
                                                        max: 100.0, unit: .generic, unitName: nil, flags: [],
                                                        valueStrings: nil, dependentParameters: nil)
-    let releaseConfig = KnobConfig(parameter: releaseParam, theme: theme)
+    let releaseConfig = KnobConfig(parameter: releaseParam)
     let releaseStore = Store(initialState: KnobFeature.State(config: releaseConfig)) {
       KnobFeature()
     }

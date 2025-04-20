@@ -11,9 +11,6 @@ public struct KnobConfig: Equatable {
   /// The AUParameter being displayed
   public let parameter: AUParameter
 
-  /// The common themeable settings to use
-  public let theme: Theme
-
   /// Holds `true` if the parameter uses the logarithmic scale
   public let logScale: Bool
 
@@ -44,6 +41,12 @@ public struct KnobConfig: Equatable {
   /// The width of the standard knob value editor
   public var controlEditorWidth: CGFloat = 200
 
+  /// How long to show the value in the knob's label
+  public var controlShowValueDuration = 1.25
+
+  /// Duration of the animation when changing between value and title in control label
+  public var controlChangeAnimationDuration: TimeInterval = 0.35
+
   /**
    How much travel is need to change the knob from `minimumValue` to `maximumValue`.
    By default this is 2x the `controlSize` value. Setting it to 4 will require 4x the `controlSize` distance
@@ -58,6 +61,9 @@ public struct KnobConfig: Equatable {
    window of time.
    */
   public var debounceDuration: Duration = .milliseconds(10)
+
+  /// The formatter to use when creating textual representations of a control's numeric value
+  public var valueFormatter: NumberFormatter
 
   /**
    Percentage of `controlDiameter` where a touch/mouse event will perform maximum value change. This defines a
@@ -75,7 +81,7 @@ public struct KnobConfig: Equatable {
     controlDiameter: CGFloat = 100.0,
     controlHeight: CGFloat = 120.0,
     touchSensitivity: CGFloat = 2.0,
-    theme: Theme
+    valueFormatter: NumberFormatter? = nil
   ) {
     self.parameter = parameter
     self.controlDiameter = controlDiameter
@@ -85,7 +91,7 @@ public struct KnobConfig: Equatable {
     self.touchSensitivity = touchSensitivity
     self.dragScaling = 1.0 / (controlDiameter * touchSensitivity)
     self.maxChangeRegionWidthHalf = max(8, controlDiameter * maxChangeRegionWidthPercentage) / 2
-    self.theme = theme
+    self.valueFormatter = valueFormatter ?? Self.defaultFormatter
   }
 }
 
@@ -126,9 +132,21 @@ extension KnobConfig {
 
 extension KnobConfig {
 
-  public func formattedValue(_ value: Double) -> String { theme.format(value: value) }
+  /**
+   Obtain a text representation of the given value.
 
-  public func formattedValue(_ value: Float) -> String { formattedValue(Double(value)) }
+   - parameter value the numeric value to format
+   - returns the formatted value
+   */
+  public func format(value: Double) -> String { valueFormatter.string(from: NSNumber(value: value)) ?? "NaN" }
+
+  /**
+   Obtain a text representation of the given value.
+
+   - parameter value the numeric value to format
+   - returns the formatted value
+   */
+  public func format(value: Float) -> String { format(value: Double(value)) }
 
   public func dragChangeValue(last: CGPoint, position: CGPoint) -> CGFloat {
     let dY = last.y - position.y
@@ -142,7 +160,7 @@ extension KnobConfig {
     return dY * dragScaling * scrubberScaling
   }
 
-  static private var formatter: NumberFormatter {
+  static var defaultFormatter: NumberFormatter {
     let formatter = NumberFormatter()
     formatter.minimumFractionDigits = 0
     formatter.maximumFractionDigits = 3

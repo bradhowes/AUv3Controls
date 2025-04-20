@@ -55,7 +55,7 @@ public struct TrackFeature {
         let normValue = state.config.valueToNorm(value)
         return .run { send in
           await send(.normChanged(normValue))
-        }.animation(.easeInOut(duration: state.config.theme.controlChangeAnimationDuration))
+        }.animation(.easeInOut(duration: state.config.controlChangeAnimationDuration))
 
       case let .normChanged(value):
         state.norm = value
@@ -81,6 +81,7 @@ private extension TrackFeature {
 public struct TrackView: View {
   private let store: StoreOf<TrackFeature>
   private var config: KnobConfig { store.config }
+  @Environment(\.auv3ControlsTheme) private var theme
 
   public init(store: StoreOf<TrackFeature>) {
     self.store = store
@@ -92,11 +93,11 @@ public struct TrackView: View {
       .frame(width: config.controlDiameter, height: config.controlDiameter)
       .overlay {
         rotatedCircle
-          .trackStroke(config: config)
+          .trackStroke(config: config, theme: theme)
         rotatedCircle
-          .progressStroke(config: config, norm: store.norm)
+          .progressStroke(config: config, theme: theme, norm: store.norm)
         rotatedIndicator
-          .stroke(config.theme.controlForegroundColor, style: config.theme.controlValueStrokeStyle)
+          .stroke(theme.controlForegroundColor, style: theme.controlValueStrokeStyle)
       }
       .gesture(DragGesture(minimumDistance: 0.0, coordinateSpace: .local)
         .onChanged {
@@ -112,13 +113,13 @@ public struct TrackView: View {
   var rotatedCircle: some Shape {
     Circle()
       .rotation(.degrees(-270))
-      .inset(by: config.theme.controlValueStrokeStyle.lineWidth / 2)
+      .inset(by: theme.controlValueStrokeStyle.lineWidth / 2)
   }
 
   var indicator: some Shape {
     var path = Path()
-    path.move(to: .init(x: config.theme.controlValueStrokeStyle.lineWidth, y: config.controlRadius))
-    path.addLine(to: .init(x: config.theme.controlIndicatorLength, y: config.controlRadius))
+    path.move(to: .init(x: theme.controlValueStrokeStyle.lineWidth, y: config.controlRadius))
+    path.addLine(to: .init(x: theme.controlIndicatorLength, y: config.controlRadius))
     return path
   }
 
@@ -130,21 +131,21 @@ public struct TrackView: View {
 
 private extension Shape {
 
-  func trackStroke(config: KnobConfig) -> some View {
+  func trackStroke(config: KnobConfig, theme: Theme) -> some View {
     self.trim(
-      from: config.theme.controlIndicatorStartAngle.normalized,
-      to: config.theme.controlIndicatorEndAngle.normalized
+      from: theme.controlIndicatorStartAngle.normalized,
+      to: theme.controlIndicatorEndAngle.normalized
     )
-    .stroke(config.theme.controlBackgroundColor, style: config.theme.controlTrackStrokeStyle)
+    .stroke(theme.controlBackgroundColor, style: theme.controlTrackStrokeStyle)
     .frame(width: config.controlDiameter, height: config.controlDiameter, alignment: .center)
   }
 
-  func progressStroke(config: KnobConfig, norm: Double) -> some View {
+  func progressStroke(config: KnobConfig, theme: Theme, norm: Double) -> some View {
     self.trim(
-      from: config.theme.controlIndicatorStartAngle.normalized,
+      from: theme.controlIndicatorStartAngle.normalized,
       to: config.normToTrim(norm)
     )
-    .stroke(config.theme.controlForegroundColor, style: config.theme.controlValueStrokeStyle)
+    .stroke(theme.controlForegroundColor, style: theme.controlValueStrokeStyle)
     .frame(width: config.controlDiameter, height: config.controlDiameter, alignment: .center)
   }
 }
@@ -161,7 +162,7 @@ struct TrackViewPreview: PreviewProvider {
     valueStrings: nil,
     dependentParameters: nil
   )
-  static let config = KnobConfig(parameter: param, theme: Theme())
+  static let config = KnobConfig(parameter: param)
   @State static var store = Store(initialState: TrackFeature.State(config: config, norm: 0.5)) {
     TrackFeature()
   }

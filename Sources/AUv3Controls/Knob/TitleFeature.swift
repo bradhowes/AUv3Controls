@@ -52,8 +52,8 @@ private extension TitleFeature {
   }
 
   func showValueEffect(state: inout State, value: Double) -> Effect<Action> {
-    state.formattedValue = state.config.formattedValue(value)
-    let duration: Duration = .seconds(state.config.theme.controlShowValueDuration)
+    state.formattedValue = state.config.format(value: value)
+    let duration: Duration = .seconds(state.config.controlShowValueDuration)
     let clock = self.clock
     let cancelId = state.showValueCancelId
     return .run { send in
@@ -73,6 +73,7 @@ private extension TitleFeature {
 public struct TitleView: View {
   private let store: StoreOf<TitleFeature>
   private var config: KnobConfig { store.config }
+  @Environment(\.auv3ControlsTheme) private var theme
 
   public init(store: StoreOf<TitleFeature>) {
     self.store = store
@@ -89,8 +90,8 @@ public struct TitleView: View {
           .fadeOut(when: store.showingValue)
       }
     }
-    .font(config.theme.font)
-    .foregroundColor(config.theme.textColor)
+    .font(theme.font)
+    .foregroundColor(theme.textColor)
     .onTapGesture(count: 1) {
       withAnimation {
         _ = store.send(.titleTapped)
@@ -103,7 +104,7 @@ struct TitleViewPreview: PreviewProvider {
   static let param = AUParameterTree.createParameter(withIdentifier: "RELEASE", name: "Release", address: 1,
                                                      min: 0.0, max: 100.0, unit: .generic, unitName: nil,
                                                      valueStrings: nil, dependentParameters: nil)
-  static let config = KnobConfig(parameter: param, theme: Theme())
+  static let config = KnobConfig(parameter: param)
   @State static var store = Store(initialState: TitleFeature.State(config: config)) {
     TitleFeature()
   }

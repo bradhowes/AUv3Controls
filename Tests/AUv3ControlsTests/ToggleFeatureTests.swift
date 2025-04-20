@@ -13,7 +13,7 @@ private final class Context {
   lazy var tree = AUParameterTree.createTree(withChildren: [param])
 
   func makeStore() -> TestStoreOf<ToggleFeature> {
-    TestStore(initialState: ToggleFeature.State(parameter: tree.parameter(withAddress: 10)!, theme: Theme())) {
+    TestStore(initialState: ToggleFeature.State(parameter: tree.parameter(withAddress: 10)!)) {
       ToggleFeature()
     }
   }
@@ -92,7 +92,7 @@ final class ToggleFeatureTests: XCTestCase {
       }
     }
 
-    let view = MyView(store: Store(initialState: .init(parameter: ctx.param, theme: Theme(), isOn: false)) {
+    let view = MyView(store: Store(initialState: .init(parameter: ctx.param, isOn: false)) {
       ToggleFeature()
     })
 
@@ -115,7 +115,7 @@ final class ToggleFeatureTests: XCTestCase {
       }
     }
 
-    let view = MyView(store: Store(initialState: .init(parameter: ctx.param, theme: Theme(), isOn: true)) {
+    let view = MyView(store: Store(initialState: .init(parameter: ctx.param, isOn: true)) {
       ToggleFeature()
     })
 

@@ -20,7 +20,7 @@ private final class Context {
     dependentParameters: nil
   )
 
-  lazy var config = KnobConfig(parameter: param, theme: Theme())
+  lazy var config = KnobConfig(parameter: param)
   var store: TestStore<TrackFeature.State, TrackFeature.Action>!
 
   func makeStore() {
@@ -162,15 +162,16 @@ final class TrackFeatureTests: XCTestCase {
   @MainActor
   func testIndicatorStrokeWidth() async throws {
     let ctx = Context()
-    let theme = Theme(controlValueStrokeStyle: .init(lineWidth: 4.0, lineCap: .round))
-    let config = KnobConfig(parameter: ctx.param, theme: theme)
+    let config = KnobConfig(parameter: ctx.param)
 
     struct MyView: SwiftUI.View {
       let config: KnobConfig
+      let theme = Theme(controlValueStrokeStyle: .init(lineWidth: 4.0, lineCap: .round))
       @State var store: StoreOf<TrackFeature>
       
       var body: some SwiftUI.View {
         TrackView(store: store)
+          .auv3ControlsTheme(theme)
       }
     }
 

@@ -12,7 +12,7 @@ private final class Context {
   let param = AUParameterTree.createParameter(withIdentifier: "RELEASE", name: "Release", address: 1,
                                               min: 0.0, max: 100.0, unit: .generic, unitName: nil,
                                               valueStrings: nil, dependentParameters: nil)
-  lazy var config = KnobConfig(parameter: param, theme: Theme())
+  lazy var config = KnobConfig(parameter: param)
 
   func makeStore() -> TestStore<ControlFeature.State, ControlFeature.Action> {
     .init(initialState: .init(config: config, value: 0)) {

@@ -2,7 +2,7 @@ import AudioUnit
 import SwiftUI
 
 /// Shared attributes for controls that represents some theme of an app/view.
-public class Theme: Equatable {
+public class Theme: Equatable, @unchecked Sendable {
 
   public static func == (lhs: Theme, rhs: Theme) -> Bool {
     lhs.controlBackgroundColor == rhs.controlBackgroundColor &&
@@ -16,9 +16,7 @@ public class Theme: Equatable {
     lhs.controlTitleGap == rhs.controlTitleGap &&
     lhs.controlIndicatorLength == rhs.controlIndicatorLength &&
     lhs.controlIndicatorStartAngle == rhs.controlIndicatorStartAngle &&
-    lhs.controlIndicatorEndAngle == rhs.controlIndicatorEndAngle &&
-    lhs.controlShowValueDuration == rhs.controlShowValueDuration &&
-    lhs.controlChangeAnimationDuration == rhs.controlChangeAnimationDuration
+    lhs.controlIndicatorEndAngle == rhs.controlIndicatorEndAngle
   }
 
   /// The background color to use when drawing the control
@@ -33,8 +31,6 @@ public class Theme: Equatable {
   public var toggleOnIndicatorSystemName: String = "circle.inset.filled"
   /// The indicator to use for a toggle control when the value is `false`
   public var toggleOffIndicatorSystemName: String = "circle"
-  /// The formatter to use when creating textual representations of a control's numeric value
-  public var formatter: NumberFormatter
   /// Stroke style to use when drawing the control track (backgound)
   public var controlTrackStrokeStyle: StrokeStyle
   /// Stroke style to use when drawiing the control value indicator (foreground)
@@ -48,12 +44,6 @@ public class Theme: Equatable {
   public var controlIndicatorStartAngle = Angle(degrees: 40)
   /// Ending angle for a Knob track
   public var controlIndicatorEndAngle = Angle(degrees: 320)
-  /// How long to show the value in the knob's label
-  public var controlShowValueDuration = 1.25
-  /// Duration of the animation when changing between value and title in control label
-  public var controlChangeAnimationDuration: TimeInterval = 0.35
-  /// Notifier to invoke when a parameter changes value due to user manipulation.
-  public var parameterValueChanged: ((AUParameterAddress) -> Void)?
 
   /**
    Initialize instance.
@@ -68,7 +58,6 @@ public class Theme: Equatable {
     controlValueStrokeStyle: StrokeStyle = .init(lineWidth: 10.0, lineCap: .round),
     controlIndicatorLength: CGFloat = 16.0,
     controlTitleGap: CGFloat = 0.0,
-    valueFormatter: NumberFormatter? = nil,
     font: Font = .callout,
     parameterValueChanged: ((AUParameterAddress) -> Void)? = nil
   ) {
@@ -81,18 +70,8 @@ public class Theme: Equatable {
     self.controlValueStrokeStyle = controlValueStrokeStyle
     self.controlIndicatorLength = controlIndicatorLength
     self.controlTitleGap = controlTitleGap
-    self.formatter = valueFormatter ?? Self.defaultFormatter
     self.font = font
-    self.parameterValueChanged = parameterValueChanged
   }
-
-  /**
-   Obtain a text representation of the given value. Uses the existing `formatter` to do the generation.
-
-   - parameter value the numeric value to format
-   - returns the formatted value
-   */
-  public func format(value: Double) -> String { formatter.string(from: NSNumber(value: value)) ?? "NaN" }
 }
 
 private extension Theme {
@@ -105,13 +84,5 @@ private extension Theme {
 
   static func color(_ tag: ColorTag, from bundle: Bundle?, default: Color) -> Color {
     bundle != nil ? Color(tag.rawValue, bundle: bundle) : `default`
-  }
-
-  static var defaultFormatter: NumberFormatter {
-    let formatter = NumberFormatter()
-    formatter.minimumFractionDigits = 0
-    formatter.maximumFractionDigits = 3
-    formatter.minimumIntegerDigits = 1
-    return formatter
   }
 }

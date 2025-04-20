@@ -13,9 +13,12 @@ private final class Context {
   let param = AUParameterTree.createParameter(withIdentifier: "RELEASE", name: "Release", address: 1,
                                               min: 0.0, max: 100.0, unit: .generic, unitName: nil,
                                               valueStrings: nil, dependentParameters: nil)
-  lazy var config = KnobConfig(parameter: param, theme: theme)
+  lazy var config = KnobConfig(parameter: param)
   lazy var store = TestStore(initialState: .init(config: config)) {
-    KnobFeature()
+    KnobFeature { [weak self] address in
+      guard let self else { return }
+      changed[address] = changed[address]! + 1
+    }
   } withDependencies: { $0.continuousClock = ImmediateClock() }
 
   var changed: [AUParameterAddress:Int] = [:]
@@ -23,10 +26,6 @@ private final class Context {
   init() {
     changed[1] = 0
     changed[2] = 0
-    self.theme.parameterValueChanged = { [weak self] address in
-      guard let self else { return }
-      changed[address] = changed[address]! + 1
-    }
   }
 }
 

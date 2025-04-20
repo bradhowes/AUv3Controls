@@ -10,14 +10,15 @@ public struct ToggleFeature {
   public struct State: Equatable {
     let parameter: AUParameter
     let valueObservationCancelId: String
-    let theme: Theme
     var isOn: Bool
     var observerToken: AUParameterObserverToken?
 
-    public init(parameter: AUParameter, theme: Theme, isOn: Bool = false) {
+    public init(
+      parameter: AUParameter,
+      isOn: Bool = false
+    ) {
       self.valueObservationCancelId = "valueObservationCancelId[AUParameter: \(parameter.address)])"
       self.parameter = parameter
-      self.theme = theme
       self.isOn = isOn
       self.parameter.setValue(isOn.asValue, originator: nil)
     }
@@ -31,7 +32,12 @@ public struct ToggleFeature {
     case toggleTapped
   }
 
-  public init() {}
+  // Only used for unit tests
+  private let parameterValueChanged: ((AUParameterAddress) -> Void)?
+
+  public init(parameterValueChanged: ((AUParameterAddress) -> Void)? = nil) {
+    self.parameterValueChanged = parameterValueChanged
+  }
 
   public var body: some Reducer<State, Action> {
     Reduce { state, action in
@@ -71,14 +77,15 @@ public struct ToggleFeature {
     let newValue = state.isOn.asValue
     if parameter.value != newValue {
       parameter.setValue(newValue, originator: state.observerToken, atHostTime: 0, eventType: .value)
-      state.theme.parameterValueChanged?(parameter.address)
+      parameterValueChanged?(parameter.address)
     }
     return .none
   }
 }
 
 public struct ToggleView: View {
-  let store: StoreOf<ToggleFeature>
+  private let store: StoreOf<ToggleFeature>
+  @Environment(\.auv3ControlsTheme) private var theme
 
   public init(store: StoreOf<ToggleFeature>) {
     self.store = store
@@ -87,7 +94,7 @@ public struct ToggleView: View {
   public var body: some View {
     WithViewStore(self.store, observe: { $0 }, content: { viewStore in
       Toggle(isOn: viewStore.binding(get: \.isOn, send: .toggleTapped)) { Text(viewStore.parameter.displayName) }
-        .toggleStyle(.checked(theme: store.theme))
+        .toggleStyle(.checked(theme: theme))
         .task { await viewStore.send(.task).finish() }
         .onDisappear { viewStore.send(.stopValueObservation) }
     })
@@ -98,11 +105,11 @@ struct ToggleViewPreview: PreviewProvider {
   static let param1 = AUParameterTree.createBoolean(withIdentifier: "Retrigger", name: "Retrigger", address: 1)
   static let param2 = AUParameterTree.createBoolean(withIdentifier: "Monophonic", name: "Monophonic", address: 2)
 
-  @State static var store1 = Store(initialState: ToggleFeature.State(parameter: param1, theme: Theme())) {
+  @State static var store1 = Store(initialState: ToggleFeature.State(parameter: param1)) {
     ToggleFeature()
   }
 
-  @State static var store2 = Store(initialState: ToggleFeature.State(parameter: param2, theme: Theme(), isOn: true)) {
+  @State static var store2 = Store(initialState: ToggleFeature.State(parameter: param2, isOn: true)) {
     ToggleFeature()
   }
 
@@ -120,6 +127,6 @@ struct ToggleViewPreview: PreviewProvider {
       } label: {
         Text("Toggle Parameter 2")
       }
-    }
+    }.auv3ControlsTheme(.init())
   }
 }

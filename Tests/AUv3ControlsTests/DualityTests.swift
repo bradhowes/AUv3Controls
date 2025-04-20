@@ -18,14 +18,16 @@ private final class Context {
 
   lazy var paramTree = AUParameterTree.createTree(withChildren: [boolParam, floatParam])
 
-  lazy var boolStore = TestStore(initialState: ToggleFeature.State(
-    parameter: paramTree.parameter(withAddress: 1)!, theme: Theme())) {
-    ToggleFeature()
+  lazy var boolStore = TestStore(initialState: ToggleFeature.State(parameter: paramTree.parameter(withAddress: 1)!)) {
+    ToggleFeature { [weak self] address in
+      guard let self else { return }
+      changed[address] = changed[address]! + 1
+    }
   } withDependencies: {
     $0.continuousClock = clock
   }
 
-  lazy var config = KnobConfig(parameter: paramTree.parameter(withAddress: 2)!, theme: Theme())
+  lazy var config = KnobConfig(parameter: paramTree.parameter(withAddress: 2)!)
   lazy var floatStore = TestStore(initialState: KnobFeature.State(config: config)) {
     KnobFeature()
   } withDependencies: {
@@ -37,10 +39,6 @@ private final class Context {
   init() {
     changed[1] = 0
     changed[2] = 0
-    theme.parameterValueChanged = { [weak self] address in
-      guard let self else { return }
-      changed[address] = changed[address]! + 1
-    }
   }
 }
 
