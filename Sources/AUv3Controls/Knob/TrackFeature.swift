@@ -112,11 +112,12 @@ public struct TrackView: View {
   var rotatedCircle: some Shape {
     Circle()
       .rotation(.degrees(-270))
+      .inset(by: config.theme.controlValueStrokeStyle.lineWidth / 2)
   }
 
   var indicator: some Shape {
     var path = Path()
-    path.move(to: .init(x: 0.0, y: config.controlRadius))
+    path.move(to: .init(x: config.theme.controlValueStrokeStyle.lineWidth, y: config.controlRadius))
     path.addLine(to: .init(x: config.theme.controlIndicatorLength, y: config.controlRadius))
     return path
   }

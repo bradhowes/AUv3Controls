@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		BD03E6132DB4D3E000778C39 /* AUv3Controls in Frameworks */ = {isa = PBXBuildFile; productRef = BD03E6122DB4D3E000778C39 /* AUv3Controls */; };
+		BD03E6162DB4D4B400778C39 /* AUv3Controls in Frameworks */ = {isa = PBXBuildFile; productRef = BD03E6152DB4D4B400778C39 /* AUv3Controls */; };
 		BD2F12BA2B0175C300E5D0CE /* AUv3Controls_DemoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD2F12B92B0175C300E5D0CE /* AUv3Controls_DemoApp.swift */; };
 		BD2F12BE2B0175C400E5D0CE /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BD2F12BD2B0175C400E5D0CE /* Assets.xcassets */; };
 		BD2F12C22B0175C400E5D0CE /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BD2F12C12B0175C400E5D0CE /* Preview Assets.xcassets */; };
@@ -60,6 +62,8 @@
 				BD2F12E62B0175ED00E5D0CE /* AUv3Controls in Frameworks */,
 				BD7A93512CFA03C300B848BB /* AUv3Controls in Frameworks */,
 				BD2F12E92B0176F800E5D0CE /* AUv3Controls in Frameworks */,
+				BD03E6132DB4D3E000778C39 /* AUv3Controls in Frameworks */,
+				BD03E6162DB4D4B400778C39 /* AUv3Controls in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -158,6 +162,8 @@
 				BD2F12E52B0175ED00E5D0CE /* AUv3Controls */,
 				BD2F12E82B0176F800E5D0CE /* AUv3Controls */,
 				BD7A93502CFA03C300B848BB /* AUv3Controls */,
+				BD03E6122DB4D3E000778C39 /* AUv3Controls */,
+				BD03E6152DB4D4B400778C39 /* AUv3Controls */,
 			);
 			productName = "AUv3Controls Demo";
 			productReference = BD2F12B62B0175C300E5D0CE /* AUv3Controls Demo.app */;
@@ -232,7 +238,7 @@
 			);
 			mainGroup = BD2F12AD2B0175C300E5D0CE;
 			packageReferences = (
-				BD7A934F2CFA03C300B848BB /* XCLocalSwiftPackageReference "../../AUv3Controls" */,
+				BD03E6142DB4D4B400778C39 /* XCLocalSwiftPackageReference "../../AUv3Controls" */,
 			);
 			productRefGroup = BD2F12B72B0175C300E5D0CE /* Products */;
 			projectDirPath = "";
@@ -653,13 +659,21 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		BD7A934F2CFA03C300B848BB /* XCLocalSwiftPackageReference "../../AUv3Controls" */ = {
+		BD03E6142DB4D4B400778C39 /* XCLocalSwiftPackageReference "../../AUv3Controls" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../../AUv3Controls;
 		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		BD03E6122DB4D3E000778C39 /* AUv3Controls */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = AUv3Controls;
+		};
+		BD03E6152DB4D4B400778C39 /* AUv3Controls */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = AUv3Controls;
+		};
 		BD2F12E52B0175ED00E5D0CE /* AUv3Controls */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = AUv3Controls;

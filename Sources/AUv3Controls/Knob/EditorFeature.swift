@@ -61,7 +61,7 @@ struct EditorView: View {
   @FocusState private var focus: EditorFeature.State.Field?
   private var config: KnobConfig { store.config }
 
-  init(store: StoreOf<EditorFeature>, config: KnobConfig) {
+  init(store: StoreOf<EditorFeature>) {
     self.store = store
   }
 
@@ -132,6 +132,6 @@ struct EditorViewPreview: PreviewProvider {
   }
 
   static var previews: some View {
-    EditorView(store: store, config: config)
+    EditorView(store: store)
   }
 }

@@ -66,23 +66,23 @@ struct DualityView: View {
   @State var slider4: Double = 0.0
 
   init() {
-    store1 = Store(initialState: ToggleFeature.State(parameter: param1)) { ToggleFeature() }
-    store2 = Store(initialState: ToggleFeature.State(parameter: param2)) { ToggleFeature() }
-    store3 = Store(initialState: KnobFeature.State(config: config3)) { KnobFeature(config: config3) }
-    store4 = Store(initialState: KnobFeature.State(config: config4)) { KnobFeature(config: config4) }
+    store1 = Store(initialState: ToggleFeature.State(parameter: param1, theme: Theme())) { ToggleFeature() }
+    store2 = Store(initialState: ToggleFeature.State(parameter: param2, theme: Theme())) { ToggleFeature() }
+    store3 = Store(initialState: KnobFeature.State(config: config3)) { KnobFeature() }
+    store4 = Store(initialState: KnobFeature.State(config: config4)) { KnobFeature() }
     self.mockAUv3 = MockAUv3()
   }
 
   var body: some View {
     VStack {
       GroupBox(label: Label("AUv3Controls", systemImage: "waveform")) {
-        HStack {
-          KnobView(store: store3, config: config3)
-          KnobView(store: store4, config: config4)
+        HStack(spacing: 24) {
+          KnobView(store: store3)
+          KnobView(store: store4)
         }
         VStack(alignment: .leading, spacing: 12) {
-          ToggleView(store: store1, theme: theme)
-          ToggleView(store: store2, theme: theme)
+          ToggleView(store: store1)
+          ToggleView(store: store2)
         }
       }
       .padding()

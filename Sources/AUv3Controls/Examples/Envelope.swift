@@ -63,17 +63,17 @@ struct EnvelopeView: View {
       ScrollView(.horizontal) {
         GroupBox(label: label) {
           HStack(spacing: 12) {
-            KnobView(store: delayStore, proxy: proxy)
-            KnobView(store: attackStore, proxy: proxy)
-            KnobView(store: holdStore, proxy: proxy)
-            KnobView(store: decayStore, proxy: proxy)
-            KnobView(store: sustainStore, proxy: proxy)
-            KnobView(store: releaseStore, proxy: proxy)
+            KnobView(store: delayStore)
+            KnobView(store: attackStore)
+            KnobView(store: holdStore)
+            KnobView(store: decayStore)
+            KnobView(store: sustainStore)
+            KnobView(store: releaseStore)
           }
           .padding(.bottom)
         }
         .border(theme.controlBackgroundColor, width: 1)
-      }
+      }.scrollViewProxy(proxy)
     }
   }
 }

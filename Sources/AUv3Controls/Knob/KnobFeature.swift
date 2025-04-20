@@ -125,17 +125,29 @@ private extension KnobFeature {
   }
 }
 
+public extension EnvironmentValues {
+  @Entry public var scrollViewProxy: ScrollViewProxy?
+}
+
+
+extension View {
+  public func scrollViewProxy(_ value: ScrollViewProxy?) -> some View {
+    environment(\.scrollViewProxy, value)
+  }
+}
+
 public struct KnobView: View {
   private let store: StoreOf<KnobFeature>
-  private let proxy: ScrollViewProxy?
   private var config: KnobConfig { store.config }
+
+  @Environment(\.scrollViewProxy) var proxy: ScrollViewProxy?
+
 #if os(macOS)
   private let showBinding: Binding<Bool>
 #endif
 
-  public init(store: StoreOf<KnobFeature>, proxy: ScrollViewProxy? = nil) {
+  public init(store: StoreOf<KnobFeature>) {
     self.store = store
-    self.proxy = proxy
 #if os(macOS)
     self.showBinding = Binding<Bool>(
       get: { store.editor.hasFocus },
@@ -147,9 +159,9 @@ public struct KnobView: View {
 #if os(iOS)
   public var body: some View {
     ZStack {
-      ControlView(store: store.scope(state: \.control, action: \.control), config: config)
+      ControlView(store: store.scope(state: \.control, action: \.control))
         .visible(when: !store.editor.hasFocus)
-      EditorView(store: store.scope(state: \.editor, action: \.editor), config: config)
+      EditorView(store: store.scope(state: \.editor, action: \.editor))
         .visible(when: store.editor.hasFocus)
     }
     .id(config.id)
@@ -206,7 +218,7 @@ struct KnobViewPreview: PreviewProvider {
 
   static var previews: some View {
     VStack {
-      KnobView(store: store, proxy: nil)
+      KnobView(store: store)
       Button {
         store.send(.observedValueChanged(0.0))
       } label: {

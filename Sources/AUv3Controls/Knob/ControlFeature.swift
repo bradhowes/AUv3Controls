@@ -11,6 +11,7 @@ import SwiftUI
 @Reducer
 public struct ControlFeature {
 
+  @ObservableState
   public struct State: Equatable {
     let config: KnobConfig
     var title: TitleFeature.State
@@ -57,11 +58,10 @@ public struct ControlFeature {
 
 struct ControlView: View {
   private let store: StoreOf<ControlFeature>
-  private let config: KnobConfig
+  private var config: KnobConfig { store.config }
 
-  init(store: StoreOf<ControlFeature>, config: KnobConfig) {
+  init(store: StoreOf<ControlFeature>) {
     self.store = store
-    self.config = config
   }
 
   var body: some View {
@@ -91,7 +91,7 @@ struct ControlViewPreview: PreviewProvider {
 
   static var previews: some View {
     VStack {
-      ControlView(store: store, config: config)
+      ControlView(store: store)
       Button {
         store.send(.valueChanged(0))
       } label: {
