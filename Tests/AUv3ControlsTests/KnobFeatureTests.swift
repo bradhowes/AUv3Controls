@@ -155,7 +155,7 @@ final class KnobFeatureTests: XCTestCase {
       @State var store: StoreOf<KnobFeature>
 
       var body: some SwiftUI.View {
-        KnobView(store: store, proxy: nil)
+        KnobView(store: store)
       }
     }
 

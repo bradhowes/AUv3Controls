@@ -80,7 +80,7 @@ final class EditorFeatureTests: XCTestCase {
       @State var store: StoreOf<EditorFeature>
 
       var body: some SwiftUI.View {
-        EditorView(store: store, config: config)
+        EditorView(store: store)
       }
     }
 

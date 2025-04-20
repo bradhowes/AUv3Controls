@@ -75,7 +75,7 @@ final class ControlFeatureTests: XCTestCase {
       let config: KnobConfig
       @State var store: StoreOf<ControlFeature>
       var body: some View {
-        ControlView(store: store, config: config)
+        ControlView(store: store)
       }
     }
 

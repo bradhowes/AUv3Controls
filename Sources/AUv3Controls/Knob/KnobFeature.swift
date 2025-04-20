@@ -125,10 +125,9 @@ private extension KnobFeature {
   }
 }
 
-public extension EnvironmentValues {
+extension EnvironmentValues {
   @Entry public var scrollViewProxy: ScrollViewProxy?
 }
-
 
 extension View {
   public func scrollViewProxy(_ value: ScrollViewProxy?) -> some View {
