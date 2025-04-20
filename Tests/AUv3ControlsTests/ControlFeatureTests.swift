@@ -32,7 +32,7 @@ final class ControlFeatureTests: XCTestCase {
   }
   
   @MainActor
-  func __testDragChanged() async {
+  func testDragChanged() async {
     let ctx = Context()
     let store = ctx.makeStore()
     await store.send(.track(.dragChanged(start: .init(x: 40, y: 0.0), position: .init(x: 40, y: -40)))) { state in
