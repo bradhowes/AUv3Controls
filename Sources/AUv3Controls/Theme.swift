@@ -2,22 +2,7 @@ import AudioUnit
 import SwiftUI
 
 /// Shared attributes for controls that represents some theme of an app/view.
-public class Theme: Equatable, @unchecked Sendable {
-
-  public static func == (lhs: Theme, rhs: Theme) -> Bool {
-    lhs.controlBackgroundColor == rhs.controlBackgroundColor &&
-    lhs.controlForegroundColor == rhs.controlForegroundColor &&
-    lhs.textColor == rhs.textColor &&
-    lhs.font == rhs.font &&
-    lhs.toggleOnIndicatorSystemName == rhs.toggleOnIndicatorSystemName &&
-    lhs.toggleOffIndicatorSystemName == rhs.toggleOffIndicatorSystemName &&
-    lhs.controlTrackStrokeStyle == rhs.controlTrackStrokeStyle &&
-    lhs.controlValueStrokeStyle == rhs.controlValueStrokeStyle &&
-    lhs.controlTitleGap == rhs.controlTitleGap &&
-    lhs.controlIndicatorLength == rhs.controlIndicatorLength &&
-    lhs.controlIndicatorStartAngle == rhs.controlIndicatorStartAngle &&
-    lhs.controlIndicatorEndAngle == rhs.controlIndicatorEndAngle
-  }
+public class Theme: @unchecked Sendable {
 
   /// The background color to use when drawing the control
   public var controlBackgroundColor: Color
@@ -84,5 +69,22 @@ private extension Theme {
 
   static func color(_ tag: ColorTag, from bundle: Bundle?, default: Color) -> Color {
     bundle != nil ? Color(tag.rawValue, bundle: bundle) : `default`
+  }
+}
+
+extension Theme: Equatable {
+  public static func == (lhs: Theme, rhs: Theme) -> Bool {
+    lhs.controlBackgroundColor == rhs.controlBackgroundColor &&
+    lhs.controlForegroundColor == rhs.controlForegroundColor &&
+    lhs.textColor == rhs.textColor &&
+    lhs.font == rhs.font &&
+    lhs.toggleOnIndicatorSystemName == rhs.toggleOnIndicatorSystemName &&
+    lhs.toggleOffIndicatorSystemName == rhs.toggleOffIndicatorSystemName &&
+    lhs.controlTrackStrokeStyle == rhs.controlTrackStrokeStyle &&
+    lhs.controlValueStrokeStyle == rhs.controlValueStrokeStyle &&
+    lhs.controlTitleGap == rhs.controlTitleGap &&
+    lhs.controlIndicatorLength == rhs.controlIndicatorLength &&
+    lhs.controlIndicatorStartAngle == rhs.controlIndicatorStartAngle &&
+    lhs.controlIndicatorEndAngle == rhs.controlIndicatorEndAngle
   }
 }
