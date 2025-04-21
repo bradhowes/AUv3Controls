@@ -76,8 +76,8 @@ public struct KnobFeature {
   public enum Action: Equatable, Sendable {
     case control(ControlFeature.Action)
     case editor(EditorFeature.Action)
-    case performScrollTo(UInt64?)
     case observedValueChanged(AUValue)
+    case performScrollTo(UInt64?)
     case stopValueObservation
     case task
   }
@@ -94,47 +94,29 @@ public struct KnobFeature {
     Scope(state: \.editor, action: \.editor) { EditorFeature() }
 
     Reduce { state, action in
-
       switch action {
-
-      case .control(let controlAction):
-        switch controlAction {
-
-          // Update the associated AUParameter when the track changes value
-        case .track(let trackAction):
-          let value = state.normValueTransform.normToValue(state.control.track.norm)
-          return setParameterEffect(state: state, value: value, cause: trackAction.cause)
-
-          // Show the value editor when the title is tapped
-        case .title(let titleAction) where titleAction == .titleTapped:
-          let value = state.normValueTransform.normToValue(state.control.track.norm)
-          return reduce(into: &state, action: .editor(.beginEditing(value)))
-
-        default:
-          break
-        }
-        return .none
-
+      case .control(let controlAction): return controlChanged(&state, action: controlAction)
       case .editor(let editorAction): return editValue(&state, action: editorAction)
-
-      case .performScrollTo(let id):
-        state.scrollToDestination = id
-        return .none
-
+      case .observedValueChanged(let value): return reduce(into: &state, action: .control(.valueChanged(Double(value))))
+      case .performScrollTo(let id): return scrollTo(&state, id: id)
       case .stopValueObservation: return stopObserving(&state)
-
       case .task: return startObserving(&state)
-
-      case .observedValueChanged(let value):
-        return reduce(into: &state, action: .control(.valueChanged(Double(value))))
       }
     }
   }
 }
 
-extension KnobFeature {
+private extension KnobFeature {
 
-  private func editValue(_ state: inout State, action: EditorFeature.Action) -> Effect<Action> {
+  func controlChanged(_ state: inout State, action: ControlFeature.Action) -> Effect<Action> {
+    switch action {
+    case .track(let trackAction): return trackChanged(&state, action: trackAction)
+    case .title(let titleAction) where titleAction == .titleTapped: return showEditor(&state)
+    default: return .none
+    }
+  }
+
+  func editValue(_ state: inout State, action: EditorFeature.Action) -> Effect<Action> {
     guard
       action == .acceptButtonTapped,
       let editorValue = Double(state.editor.value)
@@ -147,7 +129,18 @@ extension KnobFeature {
       reduce(into: &state, action: .control(.valueChanged(Double(value))))
     )
   }
-  private func startObserving(_ state: inout State) -> Effect<Action> {
+
+  func scrollTo(_ state: inout State, id: UInt64?) -> Effect<Action> {
+    state.scrollToDestination = id
+    return .none
+  }
+
+  func showEditor(_ state: inout State) -> Effect<Action> {
+    let value = state.normValueTransform.normToValue(state.control.track.norm)
+    return reduce(into: &state, action: .editor(.beginEditing(value)))
+  }
+
+  func startObserving(_ state: inout State) -> Effect<Action> {
     guard
       let parameter = state.parameter,
       let valueObservationCancelId = state.valueObservationCancelId
@@ -166,7 +159,7 @@ extension KnobFeature {
     }.cancellable(id: valueObservationCancelId, cancelInFlight: true)
   }
 
-  private func stopObserving(_ state: inout State) -> Effect<Action> {
+  func stopObserving(_ state: inout State) -> Effect<Action> {
     guard
       let token = state.observerToken,
       let parameter = state.parameter,
@@ -183,7 +176,7 @@ extension KnobFeature {
     )
   }
 
-  private func setParameterEffect(
+  func setParameterEffect(
     state: State,
     value: Double,
     cause: AUParameterAutomationEventType?
@@ -199,6 +192,11 @@ extension KnobFeature {
       parameterValueChanged?(parameter.address)
     }
     return .none
+  }
+
+  func trackChanged(_ state: inout State, action: TrackFeature.Action) -> Effect<Action> {
+    let value = state.normValueTransform.normToValue(state.control.track.norm)
+    return setParameterEffect(state: state, value: value, cause: action.cause)
   }
 }
 
