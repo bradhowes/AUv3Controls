@@ -58,7 +58,7 @@ public struct KnobFeature {
         maximumValue: maximumValue,
         logScale: logarithmic
       )
-      self.id = UInt64(UUID().hashValue)
+      self.id = UUID().asUInt64
       self.config = config
       self.parameter = nil
       self.normValueTransform = normValueTransform

@@ -7,7 +7,7 @@ extension ClosedRange {
    - returns: the bounded value
    */
   @inlinable
-  func clamp(_ value: Bound) -> Bound {
+  public func clamp(_ value: Bound) -> Bound {
     lowerBound > value ? lowerBound : (upperBound < value ? upperBound : value)
   }
 }

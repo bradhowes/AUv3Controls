@@ -2,7 +2,7 @@ import SwiftUI
 
 // Source: https://stackoverflow.com/a/56874327/629836
 
-public extension Color {
+extension Color {
 
   /**
    Create new Color instance with color components taken from hex color specification. Supports
@@ -13,7 +13,7 @@ public extension Color {
 
    - parameter hex: the color specification to decode
    */
-  init?(hex: String) {
+  public init?(hex: String) {
     self.init(hex: Substring(hex))
   }
 
@@ -26,7 +26,7 @@ public extension Color {
 
    - parameter hex: the color specification to decode
    */
-  init?(hex: Substring) {
+  public init?(hex: Substring) {
 
     func dropPrefix(_ hex: Substring) -> Substring {
       var hex = hex
@@ -62,14 +62,14 @@ public extension Color {
   }
 }
 
-public extension String {
+extension String {
 
   /**
    Attempt to parse string contents as a color specification
 
    - returns: Color instance if contents is a valid color specification
    */
-  var color: Color? { Color(hex: self) }
+  public var color: Color? { Color(hex: self) }
 }
 
 private extension UInt8 {

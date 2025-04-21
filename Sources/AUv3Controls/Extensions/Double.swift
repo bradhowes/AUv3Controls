@@ -8,7 +8,7 @@ extension BinaryFloatingPoint {
    - returns: the clamped value
    */
   @inlinable
-  static func clamp(_ value: Self, to range: ClosedRange<Self>) -> Self { range.clamp(value) }
+  public static func clamp(_ value: Self, to range: ClosedRange<Self>) -> Self { range.clamp(value) }
 
   /**
    Convert a value into one that is clamped to a given closed range
@@ -17,5 +17,5 @@ extension BinaryFloatingPoint {
    - returns: the clamped value
    */
   @inlinable
-  func clamped(to range: ClosedRange<Self>) -> Self { Self.clamp(self, to: range) }
+  public func clamped(to range: ClosedRange<Self>) -> Self { Self.clamp(self, to: range) }
 }
