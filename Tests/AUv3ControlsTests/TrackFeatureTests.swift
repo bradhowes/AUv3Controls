@@ -20,10 +20,11 @@ private final class Context {
     dependentParameters: nil
   )
 
-  lazy var config = KnobConfig(parameter: param)
-  var store: TestStore<TrackFeature.State, TrackFeature.Action>!
+  let config: KnobConfig
+  let store: TestStore<TrackFeature.State, TrackFeature.Action>!
 
-  func makeStore() {
+  init(touchSensitivity: Double = KnobConfig.default.touchSensitivity) {
+    self.config = KnobConfig(touchSensitivity: touchSensitivity)
     store = TestStore(initialState: TrackFeature.State(
       norm: 0.0,
       normValueTransform: .init(parameter: param),
@@ -31,10 +32,6 @@ private final class Context {
     )) {
       TrackFeature()
     }
-  }
-
-  init() {
-    makeStore()
   }
 }
 
@@ -49,34 +46,28 @@ final class TrackFeatureTests: XCTestCase {
   
   @MainActor
   func testDragChangedAffectedBySensitivity() async {
-    let ctx = Context()
-    ctx.config.touchSensitivity = 1.0
-
+    var ctx = Context(touchSensitivity: 1.0)
     await ctx.store.send(.dragChanged(start: .init(x: ctx.config.controlRadius, y: 0.0),
                                       position: .init(x: ctx.config.controlRadius,
                                                       y: -ctx.config.controlDiameter * 0.4))) { store in
-      store.norm = 0.20
+      store.norm = 0.40
       store.lastDrag = CGPoint(x: 50, y: -40)
     }
     
-    ctx.config.touchSensitivity = 2.0
-    ctx.makeStore()
-
+    ctx = Context(touchSensitivity: 1.0)
     await ctx.store.send(.dragChanged(start: .init(x: ctx.config.controlRadius, y: 0.0),
                                   position: .init(x: ctx.config.controlRadius,
                                                   y: -ctx.config.controlDiameter * 0.8))) { store in
-      store.norm = 0.40
+      store.norm = 0.80
       store.lastDrag = CGPoint(x: 50, y: -80)
     }
   }
   
   @MainActor
   func testDragChangedAffectedByHorizontalOffset() async {
-    let ctx = Context()
-    ctx.config.touchSensitivity = 1.0
-    
+    let ctx = Context(touchSensitivity: 1.0)
+
     for offset in [-10.0, 10.0] {
-      ctx.makeStore()
       _ = await ctx.store.withExhaustivity(.off) {
         await ctx.store.send(.dragChanged(start: .init(x: ctx.config.controlRadius, y: 0.0),
                                           position: .init(x: ctx.config.controlRadius + offset,
@@ -178,7 +169,7 @@ final class TrackFeatureTests: XCTestCase {
   @MainActor
   func testIndicatorStrokeWidth() async throws {
     let ctx = Context()
-    let config = KnobConfig(parameter: ctx.param)
+    let config = KnobConfig()
 
     struct MyView: SwiftUI.View {
       let config: KnobConfig

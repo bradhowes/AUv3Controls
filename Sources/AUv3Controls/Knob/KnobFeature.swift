@@ -29,14 +29,15 @@ public struct KnobFeature {
     let valueObservationCancelId: String?
     var observerToken: AUParameterObserverToken?
 
-    public init(parameter: AUParameter, config: KnobConfig) {
+    public init(parameter: AUParameter, config: KnobConfig = .default) {
       let normValueTransform: NormValueTransform = .init(parameter: parameter)
       self.id = parameter.address
       self.config = config
       self.parameter = parameter
       self.normValueTransform = normValueTransform
-      self.valueObservationCancelId = "valueObservationCancelId[AUParameter: \(id)])"
+      self.valueObservationCancelId = "valueObservationCancelId[AUParameter: \(parameter.address)])"
       self.control = .init(
+        displayName: parameter.displayName,
         value: Double(parameter.value),
         normValueTransform: normValueTransform,
         config: config
@@ -50,7 +51,7 @@ public struct KnobFeature {
       minimumValue: Double,
       maximumValue: Double,
       logarithmic: Bool,
-      config: KnobConfig
+      config: KnobConfig = .default
     ) {
       let normValueTransform: NormValueTransform = .init(
         minimumValue: minimumValue,
@@ -61,9 +62,14 @@ public struct KnobFeature {
       self.config = config
       self.parameter = nil
       self.normValueTransform = normValueTransform
-      self.valueObservationCancelId = "valueObservationCancelId[\(UUID().uuidString)])"
-      self.control = .init(value: value, normValueTransform: normValueTransform, config: config)
-      self.editor = .init(displayName: config.displayName, formatter: config.valueFormatter)
+      self.valueObservationCancelId = nil
+      self.control = .init(
+        displayName: displayName,
+        value: value,
+        normValueTransform: normValueTransform,
+        config: config
+      )
+      self.editor = .init(displayName: displayName, formatter: config.valueFormatter)
     }
   }
 
@@ -109,39 +115,15 @@ public struct KnobFeature {
         }
         return .none
 
-      case .editor(let editorAction):
-        guard editorAction == .acceptButtonTapped else { return .none }
-        guard let editorValue = Double(state.editor.value) else { return .none }
-        let value = state.normValueTransform.normToValue(state.normValueTransform.valueToNorm(editorValue))
-        return .merge(
-          setParameterEffect(state: state, value: value, cause: .value),
-          reduce(into: &state, action: .control(.valueChanged(Double(value))))
-        )
+      case .editor(let editorAction): return editValue(&state, action: editorAction)
 
       case .performScrollTo(let id):
         state.scrollToDestination = id
         return .none
 
-      case .stopValueObservation:
-        if let token = state.observerToken {
-          state.parameter?.removeParameterObserver(token)
-          state.observerToken = nil
-        }
-        return .merge(
-          .cancel(id: state.valueObservationCancelId),
-          reduce(into: &state, action: .control(.title(.cancelValueDisplayTimer)))
-        )
+      case .stopValueObservation: return stopObserving(&state)
 
-      case .task:
-        guard let parameter = state.parameter else { return .none }
-        let duration = state.config.debounceDuration
-        let stream: AsyncStream<AUValue>
-        (state.observerToken, stream) = parameter.startObserving()
-        return .run { send in
-          for await value in stream.debounce(for: duration) {
-            await send(.observedValueChanged(value))
-          }
-        }.cancellable(id: state.valueObservationCancelId, cancelInFlight: true)
+      case .task: return startObserving(&state)
 
       case .observedValueChanged(let value):
         return reduce(into: &state, action: .control(.valueChanged(Double(value))))
@@ -150,9 +132,62 @@ public struct KnobFeature {
   }
 }
 
-private extension KnobFeature {
+extension KnobFeature {
 
-  func setParameterEffect(state: State, value: Double, cause: AUParameterAutomationEventType?) -> Effect<Action> {
+  private func editValue(_ state: inout State, action: EditorFeature.Action) -> Effect<Action> {
+    guard
+      action == .acceptButtonTapped,
+      let editorValue = Double(state.editor.value)
+    else {
+      return .none
+    }
+    let value = state.normValueTransform.normToValue(state.normValueTransform.valueToNorm(editorValue))
+    return .merge(
+      setParameterEffect(state: state, value: value, cause: .value),
+      reduce(into: &state, action: .control(.valueChanged(Double(value))))
+    )
+  }
+  private func startObserving(_ state: inout State) -> Effect<Action> {
+    guard
+      let parameter = state.parameter,
+      let valueObservationCancelId = state.valueObservationCancelId
+    else {
+      return .none
+    }
+    let duration = state.config.debounceDuration
+    let stream: AsyncStream<AUValue>
+    (state.observerToken, stream) = parameter.startObserving()
+    return .run { send in
+      print("running")
+      for await value in stream.debounce(for: duration) {
+        print("got value")
+        await send(.observedValueChanged(value))
+      }
+    }.cancellable(id: valueObservationCancelId, cancelInFlight: true)
+  }
+
+  private func stopObserving(_ state: inout State) -> Effect<Action> {
+    guard
+      let token = state.observerToken,
+      let parameter = state.parameter,
+      let valueObservationCancelId = state.valueObservationCancelId
+    else {
+      return .none
+    }
+
+    parameter.removeParameterObserver(token)
+    state.observerToken = nil
+    return .merge(
+      .cancel(id: valueObservationCancelId),
+      reduce(into: &state, action: .control(.title(.cancelValueDisplayTimer)))
+    )
+  }
+
+  private func setParameterEffect(
+    state: State,
+    value: Double,
+    cause: AUParameterAutomationEventType?
+  ) -> Effect<Action> {
     guard let cause,
           let parameter = state.parameter
     else {
@@ -242,7 +277,7 @@ struct KnobViewPreview: PreviewProvider {
     valueStrings: nil,
     dependentParameters: nil
   )
-  static let config = KnobConfig(parameter: param)
+  static let config = KnobConfig()
   static var store = Store(initialState: KnobFeature.State(parameter: param, config: config)) {
     KnobFeature()
   }

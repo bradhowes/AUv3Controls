@@ -27,7 +27,7 @@ extension AUParameter {
 
 public extension AUParameter {
   /// - returns: a `ClosedRange` made up of the `AUParameter` min and max values
-  var range: ClosedRange<AUValue> { self.minValue...self.maxValue }
+  var range: ClosedRange<Double> { Double(self.minValue)...Double(self.maxValue) }
 }
 
 public extension Bool {

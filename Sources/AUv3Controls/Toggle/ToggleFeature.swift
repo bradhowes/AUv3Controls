@@ -60,7 +60,7 @@ public struct ToggleFeature {
 
       case .stopValueObservation: return stopObserving(&state)
 
-      case .task: return task(&state)
+      case .task: return startObserving(&state)
 
       case .toggleTapped: return setParameterEffect(&state)
       }
@@ -82,23 +82,35 @@ extension ToggleFeature {
     return .none
   }
 
-  private func stopObserving(_ state: inout State) -> Effect<Action> {
-    if let token = state.observerToken {
-      state.parameter?.removeParameterObserver(token)
-      state.observerToken = nil
+  private func startObserving(_ state: inout State) -> Effect<Action> {
+    guard
+      let parameter = state.parameter,
+      let valueObservationCancelId = state.valueObservationCancelId
+    else {
+      return .none
     }
-    return .cancel(id: state.valueObservationCancelId)
-  }
-
-  private func task(_ state: inout State) -> Effect<Action> {
-    guard let parameter = state.parameter else { return .none }
     let stream: AsyncStream<AUValue>
     (state.observerToken, stream) = parameter.startObserving()
     return .run { send in
+      print("running \(valueObservationCancelId)")
       for await value in stream {
         await send(.observedValueChanged(value))
       }
-    }.cancellable(id: state.valueObservationCancelId, cancelInFlight: true)
+    }.cancellable(id: valueObservationCancelId, cancelInFlight: true)
+  }
+
+  private func stopObserving(_ state: inout State) -> Effect<Action> {
+    guard
+      let token = state.observerToken,
+      let parameter = state.parameter,
+      let valueObservationCancelId = state.valueObservationCancelId
+    else {
+      return .none
+    }
+    parameter.removeParameterObserver(token)
+    state.observerToken = nil
+    print("stopping \(valueObservationCancelId)")
+    return .cancel(id: valueObservationCancelId)
   }
 }
 

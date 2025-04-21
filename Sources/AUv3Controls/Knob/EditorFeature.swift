@@ -128,7 +128,7 @@ struct EditorViewPreview: PreviewProvider {
   static let param = AUParameterTree.createParameter(withIdentifier: "RELEASE", name: "Release", address: 1,
                                                      min: 0.0, max: 100.0, unit: .generic, unitName: nil,
                                                      valueStrings: nil, dependentParameters: nil)
-  static let config = KnobConfig(parameter: param)
+  static let config = KnobConfig()
   @State static var store = Store(initialState: EditorFeature.State(
     displayName: "Release",
     formatter: config.valueFormatter

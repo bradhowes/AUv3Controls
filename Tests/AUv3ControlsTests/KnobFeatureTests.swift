@@ -13,7 +13,7 @@ private final class Context {
   let param = AUParameterTree.createParameter(withIdentifier: "RELEASE", name: "Release", address: 1,
                                               min: 0.0, max: 100.0, unit: .generic, unitName: nil,
                                               valueStrings: nil, dependentParameters: nil)
-  lazy var config = KnobConfig(parameter: param)
+  let config = KnobConfig()
   lazy var store = TestStore(initialState: .init(parameter: param, config: config)) {
     KnobFeature { [weak self] address in
       guard let self else { return }

@@ -9,13 +9,18 @@ import XCTest
 
 @MainActor
 private final class Context {
+  let config = KnobConfig()
   let param = AUParameterTree.createParameter(withIdentifier: "RELEASE", name: "Release", address: 1,
                                               min: 0.0, max: 100.0, unit: .generic, unitName: nil,
                                               valueStrings: nil, dependentParameters: nil)
-  lazy var config = KnobConfig(parameter: param)
 
   func makeStore() -> TestStore<ControlFeature.State, ControlFeature.Action> {
-    .init(initialState: .init(value: 0, normValueTransform: .init(parameter: param), config: config)) {
+    .init(initialState: .init(
+      displayName: param.displayName,
+      value: 0,
+      normValueTransform: .init(parameter: param),
+      config: config
+    )) {
       ControlFeature()
     } withDependencies: {
       $0.continuousClock = ImmediateClock()
@@ -80,6 +85,7 @@ final class ControlFeatureTests: XCTestCase {
     }
 
     let view = MyView(config: ctx.config, store: Store(initialState: .init(
+      displayName: ctx.param.displayName,
       value: 0.0,
       normValueTransform: .init(parameter: ctx.param),
       config: ctx.config

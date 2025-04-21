@@ -17,10 +17,10 @@ public struct ControlFeature {
     var title: TitleFeature.State
     var track: TrackFeature.State
 
-    public init(value: Double, normValueTransform: NormValueTransform, config: KnobConfig) {
+    public init(displayName: String, value: Double, normValueTransform: NormValueTransform, config: KnobConfig) {
       self.normValueTransform = normValueTransform
       self.title = .init(
-        displayName: config.displayName,
+        displayName: displayName,
         formatter: config.valueFormatter,
         showValueDuration: config.controlShowValueDuration
       )
@@ -88,8 +88,9 @@ struct ControlViewPreview: PreviewProvider {
     valueStrings: nil,
     dependentParameters: nil
   )
-  static let config = KnobConfig(parameter: param)
+  static let config = KnobConfig()
   static var store = Store( initialState: ControlFeature.State(
+    displayName: param.displayName,
     value: Double(param.value),
     normValueTransform: .init(parameter: param),
     config: config

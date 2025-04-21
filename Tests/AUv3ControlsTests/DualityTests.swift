@@ -11,10 +11,19 @@ import XCTest
 private final class Context {
   let clock = TestClock()
   let theme = Theme()
+  let config = KnobConfig()
   let boolParam = AUParameterTree.createBoolean(withIdentifier: "Retrigger", name: "Retrigger", address: 1)
-  let floatParam = AUParameterTree.createParameter(withIdentifier: "RELEASE", name: "Release", address: 2,
-                                                   min: 0.0, max: 100.0, unit: .generic, unitName: nil,
-                                                   valueStrings: nil, dependentParameters: nil)
+  let floatParam = AUParameterTree.createParameter(
+    withIdentifier: "RELEASE",
+    name: "Release",
+    address: 2,
+    min: 0.0,
+    max: 100.0,
+    unit: .generic,
+    unitName: nil,
+    valueStrings: nil,
+    dependentParameters: nil
+  )
 
   lazy var paramTree = AUParameterTree.createTree(withChildren: [boolParam, floatParam])
 
@@ -27,8 +36,7 @@ private final class Context {
     $0.continuousClock = clock
   }
 
-  lazy var config = KnobConfig(parameter: paramTree.parameter(withAddress: 2)!)
-  lazy var floatStore = TestStore(initialState: KnobFeature.State(parameter: floatParam, config: config)) {
+  lazy var floatStore = TestStore(initialState: KnobFeature.State(parameter: paramTree.parameter(withAddress: 2)!)) {
     KnobFeature()
   } withDependencies: {
     $0.continuousClock = clock
@@ -47,6 +55,7 @@ final class DualityTests: XCTestCase {
   @MainActor
   func testRemoteBoolValueChanged() async {
     let ctx = Context()
+
     _ = await ctx.boolStore.withExhaustivity(.off) {
       await ctx.boolStore.send(.task)
     }
@@ -60,6 +69,7 @@ final class DualityTests: XCTestCase {
     await ctx.boolStore.receive(.animatedObservedValueChanged(false)) { $0.isOn = false }
 
     await ctx.boolStore.send(.stopValueObservation) { $0.observerToken = nil }
+    await ctx.boolStore.finish()
 
     XCTAssertEqual(ctx.changed[1], 0)
     XCTAssertEqual(ctx.changed[2], 0)
@@ -70,25 +80,39 @@ final class DualityTests: XCTestCase {
     let ctx = Context()
     _ = await ctx.floatStore.withExhaustivity(.off) {
       await ctx.floatStore.send(.task)
-      ctx.floatParam.setValue(1.0, originator: nil)
-      await ctx.floatStore.receive(.observedValueChanged(1.0)) {
-        $0.control.track.norm = 0.0
-      }
-
-      ctx.floatParam.setValue(12.5, originator: nil)
-      await ctx.floatStore.receive(.observedValueChanged(12.5)) {
-        $0.control.track.norm = 0.01
-      }
-      
-      ctx.floatParam.setValue(100.0, originator: nil)
-      await ctx.floatStore.receive(.observedValueChanged(100.0)) {
-        $0.control.track.norm = 0.125
-      }
-      
-      await ctx.floatStore.send(.stopValueObservation) { $0.observerToken = nil }
-
-      XCTAssertEqual(ctx.changed[1], 0)
-      XCTAssertEqual(ctx.changed[2], 0)
     }
+
+    ctx.floatParam.setValue(0.0, originator: nil)
+    ctx.floatParam.setValue(0.5, originator: nil)
+    ctx.floatParam.setValue(1.0, originator: nil)
+    // await ctx.clock.advance()
+
+    // await ctx.floatStore.receive(.control(.track(.normChanged(0.01))))
+    await ctx.floatStore.receive(.observedValueChanged(1.0)) {
+      $0.control.title.formattedValue = "0"
+      $0.control.track.norm = 0.0
+    }
+
+    ctx.floatParam.setValue(12.5, originator: nil)
+    await ctx.floatStore.receive(.control(.track(.normChanged(0.01)))) {
+      $0.control.title.formattedValue = "1"
+      $0.control.track.norm = 0.01
+    }
+
+    await ctx.floatStore.receive(.observedValueChanged(12.5))
+
+    ctx.floatParam.setValue(100.0, originator: nil)
+    await ctx.floatStore.receive(.control(.track(.normChanged(0.125)))) {
+      $0.control.title.formattedValue = "12.5"
+      $0.control.track.norm = 0.125
+    }
+      
+    await ctx.floatStore.send(.stopValueObservation) {
+      $0.observerToken = nil
+      $0.control.title.formattedValue = nil
+    }
+
+    XCTAssertEqual(ctx.changed[1], 0)
+    XCTAssertEqual(ctx.changed[2], 0)
   }
 }

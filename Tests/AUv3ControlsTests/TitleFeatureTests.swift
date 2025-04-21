@@ -13,9 +13,9 @@ private final class Context {
                                               min: 0.0, max: 100.0, unit: .generic, unitName: nil,
                                               valueStrings: nil, dependentParameters: nil)
   let clock = TestClock()
-  lazy var config = KnobConfig(parameter: param)
+  let config = KnobConfig()
   lazy var store = TestStore(initialState: .init(
-    displayName: config.displayName,
+    displayName: param.displayName,
     formatter: config.valueFormatter,
     showValueDuration: config.controlShowValueDuration
   )) {
@@ -89,7 +89,7 @@ final class TitleFeatureTests: XCTestCase {
     }
     
     let view = MyView(config: ctx.config, store: Store(initialState: .init(
-      displayName: ctx.config.displayName,
+      displayName: ctx.param.displayName,
       formatter: ctx.config.valueFormatter,
       showValueDuration: ctx.config.controlShowValueDuration)) {
       TitleFeature()
@@ -115,7 +115,7 @@ final class TitleFeatureTests: XCTestCase {
     }
     
     let view = MyView(config: ctx.config, store: Store(initialState: .init(
-      displayName: ctx.config.displayName,
+      displayName: ctx.param.displayName,
       formatter: ctx.config.valueFormatter,
       showValueDuration: ctx.config.controlShowValueDuration
     )) {

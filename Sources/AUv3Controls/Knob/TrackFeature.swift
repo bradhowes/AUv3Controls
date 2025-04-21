@@ -169,7 +169,7 @@ struct TrackViewPreview: PreviewProvider {
     valueStrings: nil,
     dependentParameters: nil
   )
-  static let config = KnobConfig(parameter: param)
+  static let config = KnobConfig()
   @State static var store = Store(initialState: TrackFeature.State(
     norm: 0.5,
     normValueTransform: .init(parameter: param),

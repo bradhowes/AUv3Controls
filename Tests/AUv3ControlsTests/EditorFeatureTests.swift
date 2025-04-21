@@ -12,8 +12,8 @@ private final class Context {
   let param = AUParameterTree.createParameter(withIdentifier: "RELEASE", name: "Release", address: 1,
                                               min: 0.0, max: 100.0, unit: .generic, unitName: nil,
                                               valueStrings: nil, dependentParameters: nil)
-  lazy var config = KnobConfig(parameter: param)
-  lazy var store = TestStore(initialState: .init(displayName: config.displayName, formatter: config.valueFormatter)) {
+  let config = KnobConfig()
+  lazy var store = TestStore(initialState: .init(displayName: param.displayName, formatter: config.valueFormatter)) {
     EditorFeature()
   } withDependencies: { $0.continuousClock = ImmediateClock() }
 
@@ -85,7 +85,7 @@ final class EditorFeatureTests: XCTestCase {
     }
 
     let view = MyView(config: ctx.config, store: Store(initialState: .init(
-      displayName: ctx.config.displayName,
+      displayName: ctx.param.displayName,
       formatter: ctx.config.valueFormatter
     )) {
       EditorFeature()
