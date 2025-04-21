@@ -16,7 +16,7 @@ private final class Context {
   let config = KnobConfig()
   lazy var store = TestStore(initialState: .init(
     displayName: param.displayName,
-    formatter: config.valueFormatter,
+    formatter: .general(1...4),
     showValueDuration: config.controlShowValueDuration
   )) {
     TitleFeature()
@@ -90,7 +90,7 @@ final class TitleFeatureTests: XCTestCase {
     
     let view = MyView(config: ctx.config, store: Store(initialState: .init(
       displayName: ctx.param.displayName,
-      formatter: ctx.config.valueFormatter,
+      formatter: .general(1...2),
       showValueDuration: ctx.config.controlShowValueDuration)) {
       TitleFeature()
     })
@@ -116,7 +116,7 @@ final class TitleFeatureTests: XCTestCase {
     
     let view = MyView(config: ctx.config, store: Store(initialState: .init(
       displayName: ctx.param.displayName,
-      formatter: ctx.config.valueFormatter,
+      formatter: .general(1...2),
       showValueDuration: ctx.config.controlShowValueDuration
     )) {
       TitleFeature()

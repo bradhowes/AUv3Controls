@@ -46,12 +46,6 @@ import AUv3Controls
   #expect(Color(hex: "0xFF807F")?.resolve(in: .init()).blue == 0.49803925)
 }
 
-@Test func numberFormatter() {
-  let formatter = KnobConfig.default.valueFormatter
-  #expect(formatter.format(value: 1.23456789) == "1.235")
-  #expect(formatter.format(value: Float(-1.23456789)) == "-1.235")
-}
-
 @Test func uuid_asUInt64() {
   let uuid = UUID(123)
   #expect(uuid.asUInt64 == 8863084066665136128)

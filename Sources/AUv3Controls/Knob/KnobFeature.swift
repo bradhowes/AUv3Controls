@@ -29,7 +29,10 @@ public struct KnobFeature {
     let valueObservationCancelId: String?
     var observerToken: AUParameterObserverToken?
 
-    public init(parameter: AUParameter, config: KnobConfig = .default) {
+    public init(parameter: AUParameter,
+                formatter: KnobValueFormatter = .general(),
+                config: KnobConfig = .default
+    ) {
       let normValueTransform: NormValueTransform = .init(parameter: parameter)
       self.id = parameter.address
       self.config = config
@@ -40,9 +43,10 @@ public struct KnobFeature {
         displayName: parameter.displayName,
         value: Double(parameter.value),
         normValueTransform: normValueTransform,
+        formatter: formatter,
         config: config
       )
-      self.editor = .init(displayName: parameter.displayName, formatter: config.valueFormatter)
+      self.editor = .init(displayName: parameter.displayName, formatter: formatter)
     }
 
     public init(
@@ -51,6 +55,7 @@ public struct KnobFeature {
       minimumValue: Double,
       maximumValue: Double,
       logarithmic: Bool,
+      formatter: KnobValueFormatter = .general(1...4),
       config: KnobConfig = .default
     ) {
       let normValueTransform: NormValueTransform = .init(
@@ -67,9 +72,10 @@ public struct KnobFeature {
         displayName: displayName,
         value: value,
         normValueTransform: normValueTransform,
+        formatter: formatter,
         config: config
       )
-      self.editor = .init(displayName: displayName, formatter: config.valueFormatter)
+      self.editor = .init(displayName: displayName, formatter: formatter)
     }
   }
 
@@ -270,8 +276,8 @@ struct KnobViewPreview: PreviewProvider {
     address: 1,
     min: 0.0,
     max: 100.0,
-    unit: .generic,
-    unitName: nil,
+    unit: .percent,
+    unitName: "%",
     valueStrings: nil,
     dependentParameters: nil
   )

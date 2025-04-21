@@ -13,13 +13,13 @@ public struct TitleFeature {
   @ObservableState
   public struct State: Equatable {
     let displayName: String
-    let formatter: NumberFormatter
+    let formatter: KnobValueFormatter
     let showValueDuration: Double
     let showValueCancelId: String
     var formattedValue: String?
     var showingValue: Bool { formattedValue != nil }
 
-    public init(displayName: String, formatter: NumberFormatter, showValueDuration: Double) {
+    public init(displayName: String, formatter: KnobValueFormatter, showValueDuration: Double) {
       self.displayName = displayName
       self.formatter = formatter
       self.showValueDuration = showValueDuration
@@ -56,7 +56,7 @@ private extension TitleFeature {
   }
 
   func showValueEffect(state: inout State, value: Double) -> Effect<Action> {
-    state.formattedValue = state.formatter.format(value: value)
+    state.formattedValue = state.formatter.forDisplay(value)
     let duration: Duration = .seconds(state.showValueDuration)
     let clock = self.clock
     let cancelId = state.showValueCancelId
@@ -110,7 +110,7 @@ struct TitleViewPreview: PreviewProvider {
   static let config = KnobConfig()
   @State static var store = Store(initialState: TitleFeature.State(
     displayName: param.displayName,
-    formatter: config.valueFormatter,
+    formatter:  .duration(2...2),
     showValueDuration: config.controlShowValueDuration
   )) {
     TitleFeature()

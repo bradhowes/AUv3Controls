@@ -17,14 +17,24 @@ public struct ControlFeature {
     var title: TitleFeature.State
     var track: TrackFeature.State
 
-    public init(displayName: String, value: Double, normValueTransform: NormValueTransform, config: KnobConfig) {
+    public init(
+      displayName: String,
+      value: Double,
+      normValueTransform: NormValueTransform,
+      formatter: KnobValueFormatter,
+      config: KnobConfig
+    ) {
       self.normValueTransform = normValueTransform
       self.title = .init(
         displayName: displayName,
-        formatter: config.valueFormatter,
+        formatter: formatter,
         showValueDuration: config.controlShowValueDuration
       )
-      self.track = .init(norm: normValueTransform.valueToNorm(value), normValueTransform: normValueTransform, config: config)
+      self.track = .init(
+        norm: normValueTransform.valueToNorm(value),
+        normValueTransform: normValueTransform,
+        config: config
+      )
     }
   }
 
@@ -93,6 +103,7 @@ struct ControlViewPreview: PreviewProvider {
     displayName: param.displayName,
     value: Double(param.value),
     normValueTransform: .init(parameter: param),
+    formatter: .duration(),
     config: config
   )) {
     ControlFeature()

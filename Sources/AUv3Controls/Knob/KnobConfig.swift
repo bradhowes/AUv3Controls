@@ -34,8 +34,6 @@ public struct KnobConfig: Equatable, Sendable {
    window of time.
    */
   public let debounceDuration: Duration
-  /// The formatter to use when creating textual representations of a control's numeric value
-  public let valueFormatter: NumberFormatter
 
   public func controlWidthIf(_ value: Bool) -> CGFloat { value ? controlEditorWidth : controlDiameter }
 
@@ -54,7 +52,6 @@ public struct KnobConfig: Equatable, Sendable {
     self.debounceDuration = debounceDuration
     self.dragScaling = 1.0 / (controlDiameter * touchSensitivity)
     self.maxChangeRegionWidthHalf = max(8, controlDiameter * maxChangeRegionWidthPercentage) / 2
-    self.valueFormatter = valueFormatter ?? Self.defaultFormatter
   }
 
   /**
@@ -81,13 +78,5 @@ extension KnobConfig {
                            : (1.0 - (dX - maxChangeRegionWidthHalf) / controlRadius))
     // Finally, calculate change to `norm` value
     return dY * dragScaling * scrubberScaling
-  }
-
-  static var defaultFormatter: NumberFormatter {
-    let formatter = NumberFormatter()
-    formatter.minimumFractionDigits = 0
-    formatter.maximumFractionDigits = 3
-    formatter.minimumIntegerDigits = 1
-    return formatter
   }
 }
