@@ -240,18 +240,15 @@ public struct KnobView: View {
     .task { await store.send(.task).finish() }
     .onDisappear { store.send(.stopValueObservation) }
     .onChange(of: store.editor.hasFocus) { _, newValue in
-      if newValue && proxy != nil {
-        store.send(.performScrollTo(store.id))
-      }
+      guard newValue, let proxy else { return }
+      store.send(.performScrollTo(store.id))
     }
     .onChange(of: store.scrollToDestination) { _, newValue in
-      if let newValue,
-         let proxy = proxy {
-        withAnimation {
-          proxy.scrollTo(newValue)
-        }
-        store.send(.performScrollTo(nil))
+      guard let newValue, let proxy = proxy else { return }
+      withAnimation {
+        proxy.scrollTo(newValue)
       }
+      store.send(.performScrollTo(nil))
     }
   }
 #elseif os(macOS)

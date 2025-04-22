@@ -12,51 +12,70 @@ struct EnvelopeView: View {
       .foregroundStyle(theme.controlForegroundColor)
       .font(.title2.smallCaps())
 
+    let config = KnobConfig()
     let delayParam = AUParameterTree.createParameter(withIdentifier: "DELAY", name: "Delay", address: 1, min: 0.0,
                                                      max: 100.0, unit: .generic, unitName: nil, flags: [],
                                                      valueStrings: nil, dependentParameters: nil)
-    let delayConfig = KnobConfig(parameter: delayParam, theme: theme)
-    let delayStore = Store(initialState: KnobFeature.State(config: delayConfig)) {
+    let delayStore = Store(initialState: KnobFeature.State(
+      parameter: delayParam,
+      formatter: .duration(1...3),
+      config: config
+    )) {
       KnobFeature()
     }
 
     let attackParam = AUParameterTree.createParameter(withIdentifier: "ATTACK", name: "Attack", address: 2, min: 0.0,
                                                       max: 100.0, unit: .generic, unitName: nil, flags: [],
                                                       valueStrings: nil, dependentParameters: nil)
-    let attackConfig = KnobConfig(parameter: attackParam, theme: theme)
-    let attackStore = Store(initialState: KnobFeature.State(config: attackConfig)) {
+    let attackStore = Store(initialState: KnobFeature.State(
+      parameter: attackParam,
+      formatter: .duration(1...3),
+      config: config
+    )) {
       KnobFeature()
     }
 
     let holdParam = AUParameterTree.createParameter(withIdentifier: "HOLD", name: "Hold", address: 3, min: 0.0,
                                                     max: 100.0, unit: .generic, unitName: nil, flags: [],
                                                     valueStrings: nil, dependentParameters: nil)
-    let holdConfig = KnobConfig(parameter: holdParam, theme: theme)
-    let holdStore = Store(initialState: KnobFeature.State(config: holdConfig)) {
+    let holdStore = Store(initialState: KnobFeature.State(
+      parameter: holdParam,
+      formatter: .percentage(1...3),
+      config: config
+    )) {
       KnobFeature()
     }
 
     let decayParam = AUParameterTree.createParameter(withIdentifier: "DECAY", name: "Decay", address: 4, min: 0.0,
                                                      max: 100.0, unit: .generic, unitName: nil, flags: [],
                                                      valueStrings: nil, dependentParameters: nil)
-    let decayConfig = KnobConfig(parameter: decayParam, theme: theme)
-    let decayStore = Store(initialState: KnobFeature.State(config: decayConfig)) {
+    let decayStore = Store(initialState: KnobFeature.State(
+      parameter: decayParam,
+      formatter: .duration(1...3),
+      config: config
+    )) {
       KnobFeature()
     }
 
     let sustainParam = AUParameterTree.createParameter(withIdentifier: "SUSTAIN", name: "Sustain", address: 5, min: 0.0,
                                                        max: 100.0, unit: .generic, unitName: nil, flags: [],
                                                        valueStrings: nil, dependentParameters: nil)
-    let sustainConfig = KnobConfig(parameter: sustainParam, theme: theme)
-    let sustainStore = Store(initialState: KnobFeature.State(config: sustainConfig)) {
+    let sustainStore = Store(initialState: KnobFeature.State(
+      parameter: sustainParam,
+      formatter: .percentage(1...3),
+      config: config
+    )) {
       KnobFeature()
     }
 
     let releaseParam = AUParameterTree.createParameter(withIdentifier: "RELEASE", name: "Release", address: 6, min: 0.0,
                                                        max: 100.0, unit: .generic, unitName: nil, flags: [],
                                                        valueStrings: nil, dependentParameters: nil)
-    let releaseConfig = KnobConfig(parameter: releaseParam, theme: theme)
-    let releaseStore = Store(initialState: KnobFeature.State(config: releaseConfig)) {
+    let releaseStore = Store(initialState: KnobFeature.State(
+      parameter: releaseParam,
+      formatter: .duration(1...3),
+      config: config
+    )) {
       KnobFeature()
     }
 

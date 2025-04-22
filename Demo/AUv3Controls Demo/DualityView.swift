@@ -9,9 +9,7 @@ private let param3 = AUParameterTree.createFloat(withIdentifier: "Volume", name:
 private let param4 = AUParameterTree.createFloat(withIdentifier: "Pan", name: "Pan", address: 4, range: -50...50)
 
 let theme = Theme()
-
-private let config3 = KnobConfig(parameter: param3, theme: theme)
-private let config4 = KnobConfig(parameter: param4, theme: theme)
+let config = KnobConfig()
 
 private class MockAUv3 {
   private let paramTree: AUParameterTree
@@ -66,10 +64,18 @@ struct DualityView: View {
   @State var slider4: Double = 0.0
 
   init() {
-    store1 = Store(initialState: ToggleFeature.State(parameter: param1, theme: Theme())) { ToggleFeature() }
-    store2 = Store(initialState: ToggleFeature.State(parameter: param2, theme: Theme())) { ToggleFeature() }
-    store3 = Store(initialState: KnobFeature.State(config: config3)) { KnobFeature() }
-    store4 = Store(initialState: KnobFeature.State(config: config4)) { KnobFeature() }
+    store1 = Store(initialState: ToggleFeature.State(parameter: param1)) { ToggleFeature() }
+    store2 = Store(initialState: ToggleFeature.State(parameter: param2)) { ToggleFeature() }
+    store3 = Store(initialState: KnobFeature.State(
+      parameter: param3,
+      formatter: .percentage(1...3),
+      config: config
+    )) { KnobFeature() }
+    store4 = Store(initialState: KnobFeature.State(
+      parameter: param4,
+      formatter: .general(1...3),
+      config: config
+    )) { KnobFeature() }
     self.mockAUv3 = MockAUv3()
   }
 
@@ -87,7 +93,9 @@ struct DualityView: View {
       }
       .padding()
       GroupBox(label: Label("MIDI Controls", systemImage: "pianokeys")) {
-        Slider(value: self.mockAUv3.binding(to: param3.address, with: $slider3), in: config3.range)
+        let param3Range = ClosedRange<Double>(uncheckedBounds: (Double(param3.range.lowerBound), Double(param3.range.upperBound)))
+        let param4Range = ClosedRange<Double>(uncheckedBounds: (Double(param4.range.lowerBound), Double(param4.range.upperBound)))
+        Slider(value: self.mockAUv3.binding(to: param3.address, with: $slider3), in: param3Range)
         HStack {
           Button {
             param3.setValue(0.0, originator: nil)
@@ -101,7 +109,7 @@ struct DualityView: View {
             Text("Max")
           }
         }
-        Slider(value: self.mockAUv3.binding(to: param4.address, with: $slider4), in: config4.range)
+        Slider(value: self.mockAUv3.binding(to: param4.address, with: $slider4), in: param4Range)
         HStack {
           Button {
             param4.setValue(-50.0, originator: nil)
