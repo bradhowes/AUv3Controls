@@ -58,11 +58,7 @@ public struct TrackFeature {
         return updateFromDragEffect(state: &state, start: state.lastDrag ?? start, position: position,
                                     atEnd: true)
 
-      case let .valueChanged(value):
-        let normValue = state.normValueTransform.valueToNorm(value)
-        return .run { send in
-          await send(.normChanged(normValue))
-        }.animation(.easeInOut(duration: state.config.controlChangeAnimationDuration))
+      case let .valueChanged(value): return sendNormChanged(state, norm: state.normValueTransform.valueToNorm(value))
 
       case let .normChanged(value):
         state.norm = value
@@ -74,10 +70,16 @@ public struct TrackFeature {
 
 private extension TrackFeature {
 
+  func sendNormChanged(_ state: State, norm: CGFloat) -> Effect<Action> {
+    return .run { send in
+      await send(.normChanged(norm))
+    }.animation(.easeInOut(duration: state.config.controlChangeAnimationDuration))
+  }
+
   func updateFromDragEffect(state: inout State, start: CGPoint, position: CGPoint, atEnd: Bool) -> Effect<Action> {
-    state.norm = (state.norm + state.config.dragChangeValue(last: start, position: position)).clamped(to: 0.0...1.0)
+    let norm = (state.norm + state.config.dragChangeValue(last: start, position: position)).clamped(to: 0.0...1.0)
     state.lastDrag = atEnd ? nil : position
-    return .none
+    return sendNormChanged(state, norm: norm)
   }
 }
 
@@ -96,13 +98,14 @@ public struct TrackView: View {
 
   public var body: some View {
     Rectangle()
-      .fill(.background)
+      .fill(.clear)
       .frame(width: config.controlDiameter, height: config.controlDiameter)
+      .contentShape(.interaction, Circle())
       .overlay {
         rotatedCircle
           .trackStroke(config: config, theme: theme)
         rotatedCircle
-          .progressStroke(normValueTransform: store.normValueTransform, config: config, theme: theme, norm: store.norm)
+          .progressStroke(config: config, theme: theme, norm: store.norm)
         rotatedIndicator
           .stroke(theme.controlForegroundColor, style: theme.controlValueStrokeStyle)
       }
@@ -120,37 +123,39 @@ public struct TrackView: View {
   var rotatedCircle: some Shape {
     Circle()
       .rotation(.degrees(-270))
-      .inset(by: theme.controlValueStrokeStyle.lineWidth / 2)
+      .inset(by: theme.controlValueStrokeLineWidthHalf)
   }
 
   var indicator: some Shape {
     var path = Path()
-    path.move(to: .init(x: theme.controlValueStrokeStyle.lineWidth, y: config.controlRadius))
-    path.addLine(to: .init(x: theme.controlIndicatorLength, y: config.controlRadius))
+    // Starting point at the end of the progress track (once rotated)
+    path.move(to: .init(x: theme.controlValueStrokeLineWidthHalf, y: config.controlRadius))
+    // Ending point that is towards the center
+    path.addLine(to: .init(x: min(theme.controlIndicatorLength, config.controlRadius), y: config.controlRadius))
     return path
   }
 
   var rotatedIndicator: some Shape {
     indicator
-      .rotation(.degrees(-50 + store.norm * 280))
+      .rotation(.degrees(-50 + Double(store.norm) * 280))
   }
 }
 
 private extension Shape {
 
   func trackStroke(config: KnobConfig, theme: Theme) -> some View {
-    self.trim(
-      from: theme.controlIndicatorStartAngle.normalized,
-      to: theme.controlIndicatorEndAngle.normalized
+    trim(
+      from: theme.controlIndicatorStartAngleNormalized,
+      to: theme.controlIndicatorEndAngleNormalized
     )
     .stroke(theme.controlBackgroundColor, style: theme.controlTrackStrokeStyle)
     .frame(width: config.controlDiameter, height: config.controlDiameter, alignment: .center)
   }
 
-  func progressStroke(normValueTransform: NormValueTransform, config: KnobConfig, theme: Theme, norm: Double) -> some View {
-    self.trim(
-      from: theme.controlIndicatorStartAngle.normalized,
-      to: normValueTransform.normToTrim(norm)
+  func progressStroke(config: KnobConfig, theme: Theme, norm: Double) -> some View {
+    trim(
+      from: theme.controlIndicatorStartAngleNormalized,
+      to: theme.endTrim(for: norm)
     )
     .stroke(theme.controlForegroundColor, style: theme.controlValueStrokeStyle)
     .frame(width: config.controlDiameter, height: config.controlDiameter, alignment: .center)

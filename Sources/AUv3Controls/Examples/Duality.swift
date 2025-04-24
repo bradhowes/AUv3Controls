@@ -24,7 +24,8 @@ class MockAUv3 {
     self.param1 = param1
     let param2 = AUParameterTree.createBoolean(withIdentifier: "Monophonic", name: "Monophonic", address: 2)
     self.param2 = param2
-    let param3 = AUParameterTree.createFloat(withIdentifier: "Volume", name: "Volume", address: 3, range: 0...100)
+    let param3 = AUParameterTree.createFloat(withIdentifier: "Frequency", name: "Frequency", address: 3,
+                                             range: 10...20_000, logScale: true)
     self.param3 = param3
     let param4 = AUParameterTree.createFloat(withIdentifier: "Pan", name: "Pan", address: 4, range: -50...50)
     self.param4 = param4
@@ -94,7 +95,10 @@ struct DualityView: View {
     self.store1 = .init(initialState: ToggleFeature.State(parameter: mockAUv3.param1)) { ToggleFeature() }
     self.store2 = .init(initialState: ToggleFeature.State(parameter: mockAUv3.param2)) { ToggleFeature() }
 
-    self.store3 = .init(initialState: KnobFeature.State(parameter: mockAUv3.param3, config: mockAUv3.config)) {
+    self.store3 = .init(initialState: KnobFeature.State(
+      parameter: mockAUv3.param3,
+      formatter: .frequency(),
+      config: mockAUv3.config)) {
       KnobFeature() }
     self.store4 = .init(initialState: KnobFeature.State(parameter: mockAUv3.param4, config: mockAUv3.config)) {
       KnobFeature() }
@@ -119,7 +123,7 @@ struct DualityView: View {
           Slider(value: mockAUv3.binding(to: mockAUv3.param3.address, with: $slider3), in: mockAUv3.param3.range)
           HStack {
             Button {
-              mockAUv3.param3.setValue(0.0, originator: nil)
+              mockAUv3.param3.setValue(10.0, originator: nil)
             } label: {
               Text("Min")
             }
@@ -127,7 +131,7 @@ struct DualityView: View {
             Text("Volume: \(String(format: "%6.2f", slider3))")
             Spacer()
             Button {
-              mockAUv3.param3.setValue(100.0, originator: nil)
+              mockAUv3.param3.setValue(20_000.0, originator: nil)
             } label: {
               Text("Max")
             }

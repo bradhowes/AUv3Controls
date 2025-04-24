@@ -19,16 +19,49 @@ public class Theme: @unchecked Sendable {
   /// Stroke style to use when drawing the control track (backgound)
   public var controlTrackStrokeStyle: StrokeStyle
   /// Stroke style to use when drawiing the control value indicator (foreground)
-  public var controlValueStrokeStyle: StrokeStyle
+  public var controlValueStrokeStyle: StrokeStyle {
+    didSet {
+      controlValueStrokeLineWidth = controlValueStrokeStyle.lineWidth
+    }
+  }
+  /// The line width of the value stroke style
+  private(set) public lazy var controlValueStrokeLineWidth: CGFloat = self.controlValueStrokeStyle.lineWidth {
+    didSet {
+      controlValueStrokeLineWidthHalf = controlValueStrokeLineWidth / 2
+      controlIndicatorLength = max(controlIndicatorLength, controlValueStrokeLineWidthHalf)
+    }
+  }
+  /// Half of the line width of the value stroke style
+  private(set) public lazy var controlValueStrokeLineWidthHalf: CGFloat = controlValueStrokeLineWidth / 2
   /// The spacing to put between the knob control and the title below it
   public var controlTitleGap: CGFloat
   /// The length of the indicator at the end of the progress track. Positive value points toward the center of the
   /// track, negative values will point away from the center.
-  public var controlIndicatorLength: CGFloat
-  /// Starting angle for a Knob track
-  public var controlIndicatorStartAngle = Angle(degrees: 40)
-  /// Ending angle for a Knob track
-  public var controlIndicatorEndAngle = Angle(degrees: 320)
+  public var controlIndicatorLength: CGFloat {
+    didSet {
+      controlIndicatorLength = max(controlIndicatorLength, controlValueStrokeLineWidthHalf)
+    }
+  }
+  /// Starting angle for the Knob track0
+  public var controlIndicatorStartAngle = Angle(degrees: 40) {
+    didSet {
+      controlIndicatorStartAngleNormalized = controlIndicatorStartAngle.normalized
+    }
+  }
+  /// Normalized starting angle value for the knob track
+  private(set) public lazy var controlIndicatorStartAngleNormalized: CGFloat = controlIndicatorStartAngle.normalized
+  /// Ending angle for the Knob track
+  public var controlIndicatorEndAngle = Angle(degrees: 320) {
+    didSet {
+      self.controlIndicatorEndAngleNormalized = controlIndicatorEndAngle.normalized
+    }
+  }
+  /// Normalized ending angle for the knob track
+  private(set) public lazy var controlIndicatorEndAngleNormalized: CGFloat = controlIndicatorEndAngle.normalized
+
+  private(set) public lazy var controlIndicatorStartEndSpanRadians: CGFloat = (
+    controlIndicatorEndAngle.radians - controlIndicatorStartAngle.radians
+  )
 
   /**
    Initialize instance.
@@ -53,7 +86,7 @@ public class Theme: @unchecked Sendable {
     self.textColor = Self.color(.textColor, from: bundle, default: .init(hex: "C08000") ?? .orange)
     self.controlTrackStrokeStyle = controlTrackStrokeStyle
     self.controlValueStrokeStyle = controlValueStrokeStyle
-    self.controlIndicatorLength = controlIndicatorLength
+    self.controlIndicatorLength = max(controlValueStrokeStyle.lineWidth / 2, controlIndicatorLength)
     self.controlTitleGap = controlTitleGap
     self.font = font
   }
@@ -69,6 +102,12 @@ private extension Theme {
 
   static func color(_ tag: ColorTag, from bundle: Bundle?, default: Color) -> Color {
     bundle != nil ? Color(tag.rawValue, bundle: bundle) : `default`
+  }
+}
+
+extension Theme {
+  public func endTrim(for norm: Double) -> Double {
+    Angle(radians: norm * controlIndicatorStartEndSpanRadians + controlIndicatorStartAngle.radians).normalized
   }
 }
 

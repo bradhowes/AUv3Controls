@@ -29,10 +29,17 @@ public extension AUParameterTree {
    - parameter unit: the value unit of the parameter
    - returns: new `AUParameter`
    */
-  static func createFloat(withIdentifier identifier: String, name: String, address: AUParameterAddress,
-                          range: ClosedRange<AUValue>, unit: AudioUnitParameterUnit = .generic) -> AUParameter {
-    createParameter(withIdentifier: identifier, name: name, address: address,
-                    min: range.lowerBound, max: range.upperBound, unit: unit, unitName: nil, valueStrings: nil,
-                    dependentParameters: nil)
+  static func createFloat(
+    withIdentifier identifier: String,
+    name: String,
+    address: AUParameterAddress,
+    range: ClosedRange<AUValue>,
+    unit: AudioUnitParameterUnit = .generic,
+    logScale: Bool = false
+  ) -> AUParameter {
+    let flags: AudioUnitParameterOptions = logScale ? [.flag_DisplayLogarithmic, .flag_CanRamp] : [.flag_CanRamp]
+    return createParameter(withIdentifier: identifier, name: name, address: address,
+                           min: range.lowerBound, max: range.upperBound, unit: unit, unitName: nil,
+                           flags: flags, valueStrings: nil, dependentParameters: nil)
   }
 }

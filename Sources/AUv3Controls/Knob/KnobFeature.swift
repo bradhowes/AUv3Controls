@@ -130,6 +130,7 @@ private extension KnobFeature {
       return .none
     }
     let value = state.normValueTransform.normToValue(state.normValueTransform.valueToNorm(editorValue))
+    print("editValue:", editorValue, value)
     return .merge(
       setParameterEffect(state: state, value: value, cause: .value),
       reduce(into: &state, action: .control(.valueChanged(Double(value))))
@@ -157,9 +158,7 @@ private extension KnobFeature {
     let stream: AsyncStream<AUValue>
     (state.observerToken, stream) = parameter.startObserving()
     return .run { send in
-      print("running")
       for await value in stream.debounce(for: duration) {
-        print("got value")
         await send(.observedValueChanged(value))
       }
     }.cancellable(id: valueObservationCancelId, cancelInFlight: true)
@@ -234,7 +233,6 @@ public struct KnobView: View {
       EditorView(store: store.scope(state: \.editor, action: \.editor))
         .visible(when: store.editor.hasFocus)
     }
-    .id(store.id)
     .frame(maxWidth: config.controlWidthIf(store.editor.focus), maxHeight: config.controlHeight)
     .frame(width: config.controlWidthIf(store.editor.focus), height: config.controlHeight)
     .task { await store.send(.task).finish() }
@@ -250,6 +248,7 @@ public struct KnobView: View {
       }
       store.send(.performScrollTo(nil))
     }
+    .id(store.id)
   }
 #elseif os(macOS)
   public var body: some View {
