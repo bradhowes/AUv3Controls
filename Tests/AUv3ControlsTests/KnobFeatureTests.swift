@@ -135,6 +135,7 @@ final class KnobFeatureTests: XCTestCase {
     await ctx.store.send(.control(.title(.titleTapped))) { state in
       state.editor.focus = .value
       state.editor.value = "36"
+      state.showingEditor = true
     }
     await ctx.store.send(.editor(.clearButtonTapped)) { state in
       state.editor.value = ""
@@ -164,6 +165,7 @@ final class KnobFeatureTests: XCTestCase {
     await ctx.store.send(.control(.title(.titleTapped))) { state in
       state.editor.focus = .value
       state.editor.value = "36"
+      state.showingEditor = true
     }
     await ctx.store.send(.editor(.valueChanged("32.124"))) { state in
       state.editor.value = "32.124"
