@@ -4,6 +4,11 @@ import SwiftUI
 /// Shared attributes for controls that represents some theme of an app/view.
 public class Theme: @unchecked Sendable {
 
+  public enum EditorStyle: Sendable {
+    case original
+    case grouped
+  }
+
   /// The background color to use when drawing the control
   public var controlBackgroundColor: Color
   /// The foreground color to use when drawing the control
@@ -63,6 +68,8 @@ public class Theme: @unchecked Sendable {
     controlIndicatorEndAngle.radians - controlIndicatorStartAngle.radians
   )
 
+  public let editorStyle: EditorStyle
+
   /**
    Initialize instance.
 
@@ -77,7 +84,8 @@ public class Theme: @unchecked Sendable {
     controlIndicatorLength: CGFloat = 16.0,
     controlTitleGap: CGFloat = 0.0,
     font: Font = .callout,
-    parameterValueChanged: ((AUParameterAddress) -> Void)? = nil
+    parameterValueChanged: ((AUParameterAddress) -> Void)? = nil,
+    editorStyle: EditorStyle = .original
   ) {
     self.controlBackgroundColor = Self.color(.controlBackgroundColor, from: bundle,
                                              default: .init(hex: "333333") ?? .gray)
@@ -89,6 +97,7 @@ public class Theme: @unchecked Sendable {
     self.controlIndicatorLength = max(controlValueStrokeStyle.lineWidth / 2, controlIndicatorLength)
     self.controlTitleGap = controlTitleGap
     self.font = font
+    self.editorStyle = editorStyle
   }
 }
 

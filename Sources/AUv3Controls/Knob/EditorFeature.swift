@@ -67,52 +67,86 @@ struct EditorView: View {
     self.store = store
   }
 
-  var body: some View {
+  var body: some View  {
+    if theme.editorStyle == .grouped {
+      grouped
+    } else {
+      original
+    }
+  }
+
+  private var original: some View {
     VStack(alignment: .center, spacing: 12) {
       HStack(spacing: 12) {
         Text(store.displayName)
           .lineLimit(1, reservesSpace: false)
-        ZStack(alignment: .trailing) {
-#if os(iOS)
-          TextField(store.value, text: $store.value)
-            .keyboardType(.numbersAndPunctuation)
-            .focused($focus, equals: .value)
-            .submitLabel(.go)
-            .onSubmit { sendAcceptButtonTapped() }
-            .disableAutocorrection(true)
-            .textFieldStyle(.roundedBorder)
-#elseif os(macOS)
-          TextField(store.value, text: $store.value)
-            .onSubmit { sendAcceptButtonTapped() }
-            .textFieldStyle(.roundedBorder)
-#endif
-          Image(systemName: "xmark.circle.fill")
-            .foregroundColor(.secondary)
-            .onTapGesture(count: 1) { store.send(.clearButtonTapped, animation: .linear) }
-            .padding(.trailing, 4)
-        }
+        valueEditor
       }
-      HStack(spacing: 24) {
-        Button {
-          sendAcceptButtonTapped()
-        } label: {
-          Text("Accept", comment: "Name of button that accepts an edited value")
-        }
-        .buttonStyle(.bordered)
-        .foregroundColor(theme.textColor)
-        Button {
-          sendCancelButtonTapped()
-        } label: {
-          Text("Cancel", comment: "Name of button that cancels editing")
-        }
-        .buttonStyle(.borderless)
-        .foregroundColor(theme.textColor)
-      }
+      buttons
     }
     .padding()
     .background(.quaternary)
     .clipShape(RoundedRectangle(cornerRadius: 12))
     .bind($store.focus, to: $focus)
+  }
+
+  private var grouped: some View {
+    GroupBox(label: groupTitle) {
+      VStack(spacing: 12) {
+        valueEditor
+        buttons
+      }
+    }
+    .background(.quaternary)
+    .clipShape(RoundedRectangle(cornerRadius: 12))
+    .bind($store.focus, to: $focus)
+  }
+
+  private var groupTitle: some View {
+    Text(store.displayName)
+      .foregroundStyle(Color.gray.opacity(0.6))
+      .font(.footnote)
+  }
+
+  private var valueEditor: some View {
+    ZStack(alignment: .trailing) {
+#if os(iOS)
+      TextField(store.value, text: $store.value)
+        .keyboardType(.numbersAndPunctuation)
+        .focused($focus, equals: .value)
+        .submitLabel(.go)
+        .onSubmit { sendAcceptButtonTapped() }
+        .disableAutocorrection(true)
+        .textFieldStyle(.roundedBorder)
+#elseif os(macOS)
+      TextField(store.value, text: $store.value)
+        .onSubmit { sendAcceptButtonTapped() }
+        .textFieldStyle(.roundedBorder)
+#endif
+      Image(systemName: "xmark.circle.fill")
+        .foregroundColor(.secondary)
+        .onTapGesture(count: 1) { store.send(.clearButtonTapped, animation: .linear) }
+        .padding(.trailing, 4)
+    }
+  }
+
+  private var buttons: some View {
+    HStack(spacing: 24) {
+      Button {
+        sendAcceptButtonTapped()
+      } label: {
+        Text("Accept", comment: "Name of button that accepts an edited value")
+      }
+      .buttonStyle(.bordered)
+      .foregroundColor(theme.textColor)
+      Button {
+        sendCancelButtonTapped()
+      } label: {
+        Text("Cancel", comment: "Name of button that cancels editing")
+      }
+      .buttonStyle(.borderless)
+      .foregroundColor(theme.textColor)
+    }
   }
 
   func sendAcceptButtonTapped() {
@@ -125,7 +159,9 @@ struct EditorView: View {
 }
 
 struct EditorViewPreview: PreviewProvider {
-  static let param = AUParameterTree.createParameter(withIdentifier: "RELEASE", name: "Release", address: 1,
+  static let theme1 = Theme(editorStyle: .original)
+  static let theme2 = Theme(editorStyle: .grouped)
+  static let param = AUParameterTree.createParameter(withIdentifier: "FEEDBACK", name: "Feedback", address: 1,
                                                      min: 0.0, max: 100.0, unit: .generic, unitName: nil,
                                                      valueStrings: nil, dependentParameters: nil)
   static let config = KnobConfig()
@@ -137,6 +173,12 @@ struct EditorViewPreview: PreviewProvider {
   }
 
   static var previews: some View {
-    EditorView(store: store)
+    VStack {
+      EditorView(store: store)
+        .auv3ControlsTheme(theme1)
+      EditorView(store: store)
+        .auv3ControlsTheme(theme2)
+    }
+    .frame(width: 240)
   }
 }

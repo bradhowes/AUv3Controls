@@ -26,6 +26,7 @@ public struct KnobFeature {
     var control: ControlFeature.State
     var editor: EditorFeature.State
     var scrollToDestination: UInt64?
+    var showingEditor: Bool = false
     let valueObservationCancelId: String?
     var observerToken: AUParameterObserverToken?
 
@@ -130,11 +131,11 @@ private extension KnobFeature {
       return .none
     }
     let value = state.normValueTransform.normToValue(state.normValueTransform.valueToNorm(editorValue))
-    print("editValue:", editorValue, value)
+    state.showingEditor = false
     return .merge(
       setParameterEffect(state: state, value: value, cause: .value),
       reduce(into: &state, action: .control(.valueChanged(Double(value))))
-    )
+    ).animation(.smooth)
   }
 
   func scrollTo(_ state: inout State, id: UInt64?) -> Effect<Action> {
@@ -143,8 +144,9 @@ private extension KnobFeature {
   }
 
   func showEditor(_ state: inout State) -> Effect<Action> {
+    state.showingEditor = true
     let value = state.normValueTransform.normToValue(state.control.track.norm)
-    return reduce(into: &state, action: .editor(.beginEditing(value)))
+    return reduce(into: &state, action: .editor(.beginEditing(value))).animation(.smooth)
   }
 
   func startObserving(_ state: inout State) -> Effect<Action> {
@@ -228,17 +230,16 @@ public struct KnobView: View {
 #if os(iOS)
   public var body: some View {
     ZStack {
-      ControlView(store: store.scope(state: \.control, action: \.control))
-        .visible(when: !store.editor.hasFocus)
       EditorView(store: store.scope(state: \.editor, action: \.editor))
-        .visible(when: store.editor.hasFocus)
+        .opacity(store.showingEditor ? 1 : 0)
+      ControlView(store: store.scope(state: \.control, action: \.control))
+        .opacity(store.showingEditor ? 0 : 1)
     }
-    .frame(maxWidth: config.controlWidthIf(store.editor.focus), maxHeight: config.controlHeight)
-    .frame(width: config.controlWidthIf(store.editor.focus), height: config.controlHeight)
+    .frame(maxWidth: config.controlWidthIf(store.showingEditor), maxHeight: config.controlHeight)
+    .frame(width: config.controlWidthIf(store.showingEditor), height: config.controlHeight)
     .task { await store.send(.task).finish() }
     .onDisappear { store.send(.stopValueObservation) }
-    .onChange(of: store.editor.hasFocus) { _, newValue in
-      guard newValue, let proxy else { return }
+    .onChange(of: store.showingEditor) { _, newValue in
       store.send(.performScrollTo(store.id))
     }
     .onChange(of: store.scrollToDestination) { _, newValue in

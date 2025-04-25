@@ -4,12 +4,12 @@ import SwiftUI
 
 struct EnvelopeView: View {
   let title: String
-  let theme = Theme()
+  @Environment(\.auv3ControlsTheme) var theme
 
   var body: some View {
     let label = Text(title)
       .foregroundStyle(theme.controlForegroundColor)
-      .font(.title2.smallCaps())
+      .font(.footnote.smallCaps())
 
     let config = KnobConfig()
     let delayParam = AUParameterTree.createParameter(withIdentifier: "DELAY", name: "Delay", address: 1, min: 0.0,
@@ -81,7 +81,7 @@ struct EnvelopeView: View {
     ScrollViewReader { proxy in
       ScrollView(.horizontal) {
         GroupBox(label: label) {
-          HStack(spacing: 12) {
+          HStack(spacing: 8) {
             KnobView(store: delayStore)
             KnobView(store: attackStore)
             KnobView(store: holdStore)
@@ -89,7 +89,6 @@ struct EnvelopeView: View {
             KnobView(store: sustainStore)
             KnobView(store: releaseStore)
           }
-          .padding(.bottom)
         }
         .border(theme.controlBackgroundColor, width: 1)
       }.scrollViewProxy(proxy)
@@ -99,9 +98,13 @@ struct EnvelopeView: View {
 
 struct EnvelopeViewPreview: PreviewProvider {
   static var previews: some View {
-    VStack {
+    let volumeTheme = Theme()
+    let modTheme = Theme(editorStyle: .grouped)
+    return VStack {
       EnvelopeView(title: "Volume")
+        .environment(\.auv3ControlsTheme, volumeTheme)
       EnvelopeView(title: "Modulation")
+        .environment(\.auv3ControlsTheme, modTheme)
     }
   }
 }

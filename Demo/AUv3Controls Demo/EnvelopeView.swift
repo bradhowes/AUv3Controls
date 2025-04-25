@@ -79,8 +79,8 @@ struct EnvelopeView: View {
       KnobFeature()
     }
 
-    ScrollViewReader { proxy in
-      ScrollView(.horizontal) {
+    ScrollView(.horizontal) {
+      ScrollViewReader { proxy in
         GroupBox(label: label) {
           HStack {
             KnobView(store: delayStore)
@@ -91,9 +91,11 @@ struct EnvelopeView: View {
             KnobView(store: releaseStore)
           }
           .padding(.bottom)
+          .scrollViewProxy(proxy)
         }
+        .background(Color.black.opacity(0.2))
         .border(theme.controlBackgroundColor, width: 1)
-      }.scrollViewProxy(proxy)
+      }
     }
   }
 }
