@@ -54,21 +54,25 @@ public struct ControlFeature {
 
     Reduce { state, action in
       switch action {
-
-      case .title:
-        return .none
-
-      case .track:
-        let value = state.normValueTransform.normToValue(state.track.norm)
-        return reduce(into: &state, action: .title(.valueChanged(value)))
-
-      case let .valueChanged(value):
-        return .merge(
-          reduce(into: &state, action: .title(.valueChanged(value))),
-          reduce(into: &state, action: .track(.valueChanged(value)))
-        )
+      case .title: return .none
+      case .track(.dragStarted): return reduce(into: &state, action: .title(.dragActive(true)))
+      case .track(.dragEnded): return reduce(into: &state, action: .title(.dragActive(false)))
+      case .track: return trackChanged(&state)
+      case .valueChanged(let value): return valueChanged(&state, value: value)
       }
     }
+  }
+
+  private func trackChanged(_ state: inout State) -> Effect<Action> {
+    let value = state.normValueTransform.normToValue(state.track.norm)
+    return reduce(into: &state, action: .title(.valueChanged(value)))
+  }
+
+  private func valueChanged(_ state: inout State, value: Double) -> Effect<Action> {
+    return .merge(
+      reduce(into: &state, action: .title(.valueChanged(value))),
+      reduce(into: &state, action: .track(.valueChanged(value)))
+    )
   }
 }
 

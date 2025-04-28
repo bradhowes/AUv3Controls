@@ -112,6 +112,7 @@ public struct TrackView: View {
         rotatedIndicator
           .stroke(theme.controlForegroundColor, style: theme.controlValueStrokeStyle)
       }
+      .animation(.smooth, value: store.norm)
       .gesture(DragGesture(minimumDistance: 0.0, coordinateSpace: .local)
         .onChanged {
           let action: TrackFeature.Action = store.lastDrag == nil ?

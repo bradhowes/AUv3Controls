@@ -234,8 +234,10 @@ public struct KnobView: View {
     ZStack {
       EditorView(store: store.scope(state: \.editor, action: \.editor))
         .opacity(store.showingEditor ? 1 : 0)
+        .scaleEffect(store.showingEditor ? 1.0 : 0.0)
       ControlView(store: store.scope(state: \.control, action: \.control))
         .opacity(store.showingEditor ? 0 : 1)
+        .scaleEffect(store.showingEditor ? 0.0 : 1.0)
     }
     .frame(maxWidth: config.controlWidthIf(store.showingEditor), maxHeight: config.controlHeight)
     .frame(width: config.controlWidthIf(store.showingEditor), height: config.controlHeight)

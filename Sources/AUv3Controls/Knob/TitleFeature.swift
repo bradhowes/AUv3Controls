@@ -18,6 +18,7 @@ public struct TitleFeature {
     let formatter: KnobValueFormatter
     let showValueDuration: Double
     let showValueCancelId: String
+    var dragActive: Bool = false
     var formattedValue: String?
     var showingValue: Bool { formattedValue != nil }
 
@@ -31,6 +32,7 @@ public struct TitleFeature {
 
   public enum Action: Equatable, Sendable {
     case cancelValueDisplayTimer
+    case dragActive(Bool)
     case titleTapped
     case valueChanged(Double)
   }
@@ -43,6 +45,7 @@ public struct TitleFeature {
     Reduce { state, action in
       switch action {
       case .cancelValueDisplayTimer: return showTitleEffect(state: &state)
+      case let .dragActive(value): return dragActive(&state, value: value)
       case .titleTapped: return showTitleEffect(state: &state)
       case .valueChanged(let value): return showValueEffect(state: &state, value: value)
       }
@@ -52,6 +55,11 @@ public struct TitleFeature {
 
 private extension TitleFeature {
 
+  func dragActive(_ state: inout State, value: Bool) -> Effect<Action> {
+    state.dragActive = value
+    return value ? .none : startTitleTimerEffect(&state)
+  }
+
   func showTitleEffect(state: inout State) -> Effect<Action> {
     state.formattedValue = nil
     return .cancel(id: state.showValueCancelId)
@@ -59,6 +67,10 @@ private extension TitleFeature {
 
   func showValueEffect(state: inout State, value: Double) -> Effect<Action> {
     state.formattedValue = state.formatter.forDisplay(value)
+    return state.dragActive ? .none : startTitleTimerEffect(&state)
+  }
+
+  func startTitleTimerEffect(_ state: inout State) -> Effect<Action> {
     let duration: Duration = .seconds(state.showValueDuration)
     let clock = self.clock
     let cancelId = state.showValueCancelId
@@ -88,15 +100,18 @@ public struct TitleView: View {
     ZStack {
       if store.showingValue {
         Text(store.formattedValue ?? "")
-          .transition(.opacity)
-          .fadeIn(when: store.showingValue)
+          .transition(.move(edge: store.showingValue ? .top : .bottom))
       } else {
         Text(store.displayName)
-          .fadeOut(when: store.showingValue)
+          .transition(.move(edge: store.showingValue ? .top : .bottom))
       }
     }
     .font(theme.font)
+    .frame(width: 120, height: 20)
     .foregroundColor(theme.textColor)
+    .clipped(antialiased: true)
+    .animation(.smooth, value: store.showingValue)
+    .animation(.smooth, value: store.formattedValue)
     .onTapGesture(count: 1) {
       withAnimation {
         _ = store.send(.titleTapped)
