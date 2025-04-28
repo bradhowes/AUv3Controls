@@ -90,6 +90,7 @@ private extension TitleFeature {
  */
 public struct TitleView: View {
   private let store: StoreOf<TitleFeature>
+  @Environment(\.isEnabled) private var enabled
   @Environment(\.auv3ControlsTheme) private var theme
 
   public init(store: StoreOf<TitleFeature>) {
@@ -108,7 +109,7 @@ public struct TitleView: View {
     }
     .font(theme.font)
     .frame(width: 120, height: 20)
-    .foregroundColor(theme.textColor)
+    .foregroundColor(enabled ? theme.textColor : theme.textColor)
     .clipped(antialiased: true)
     .animation(.smooth, value: store.showingValue)
     .animation(.smooth, value: store.formattedValue)

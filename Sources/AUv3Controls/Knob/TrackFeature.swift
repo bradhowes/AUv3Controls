@@ -87,6 +87,7 @@ private extension TrackFeature {
 public struct TrackView: View {
   private let store: StoreOf<TrackFeature>
   private var config: KnobConfig { store.config }
+  @Environment(\.isEnabled) private var enabled
   @Environment(\.auv3ControlsTheme) private var theme
 
   public init(store: StoreOf<TrackFeature>) {
@@ -102,7 +103,7 @@ public struct TrackView: View {
         rotatedCircle
           .trackStroke(config: config, theme: theme)
         rotatedCircle
-          .progressStroke(config: config, theme: theme, norm: store.norm)
+          .progressStroke(enabled: enabled, config: config, theme: theme, norm: store.norm)
         rotatedIndicator
           .stroke(theme.controlForegroundColor, style: theme.controlValueStrokeStyle)
       }
@@ -161,12 +162,13 @@ private extension Shape {
     .frame(width: theme.controlDiameter, height: theme.controlDiameter, alignment: .center)
   }
 
-  func progressStroke(config: KnobConfig, theme: Theme, norm: Double) -> some View {
+  func progressStroke(enabled: Bool, config: KnobConfig, theme: Theme, norm: Double) -> some View {
     trim(
       from: theme.controlIndicatorStartAngleNormalized,
       to: theme.endTrim(for: norm)
     )
-    .stroke(theme.controlForegroundColor, style: theme.controlValueStrokeStyle)
+    .stroke(enabled ? theme.controlForegroundColor : theme.controlForegroundColor.opacity(0.5),
+            style: theme.controlValueStrokeStyle)
     .frame(width: theme.controlDiameter, height: theme.controlDiameter, alignment: .center)
   }
 }

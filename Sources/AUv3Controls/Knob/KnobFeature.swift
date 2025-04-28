@@ -212,6 +212,7 @@ private extension KnobFeature {
 public struct KnobView: View {
   private let store: StoreOf<KnobFeature>
   private var config: KnobConfig { store.config }
+  @Environment(\.isEnabled) var enabled
   @Environment(\.auv3ControlsTheme) var theme
   @Environment(\.scrollViewProxy) var proxy: ScrollViewProxy?
 
@@ -290,6 +291,25 @@ struct KnobViewPreview: PreviewProvider {
   static var previews: some View {
     VStack {
       KnobView(store: store)
+      Button {
+        store.send(.observedValueChanged(0.0))
+      } label: {
+        Text("Go to 0")
+      }
+      Button {
+        store.send(.observedValueChanged(50.0))
+      } label: {
+        Text("Go to 50")
+      }
+      Button {
+        store.send(.observedValueChanged(100.0))
+      } label: {
+        Text("Go to 100")
+      }
+    }
+    VStack {
+      KnobView(store: store)
+        .disabled(true)
       Button {
         store.send(.observedValueChanged(0.0))
       } label: {
