@@ -212,7 +212,7 @@ private extension KnobFeature {
 public struct KnobView: View {
   private let store: StoreOf<KnobFeature>
   private var config: KnobConfig { store.config }
-
+  @Environment(\.auv3ControlsTheme) var theme
   @Environment(\.scrollViewProxy) var proxy: ScrollViewProxy?
 
 #if os(macOS)
@@ -239,8 +239,8 @@ public struct KnobView: View {
         .opacity(store.showingEditor ? 0 : 1)
         .scaleEffect(store.showingEditor ? 0.0 : 1.0)
     }
-    .frame(maxWidth: config.controlWidthIf(store.showingEditor), maxHeight: config.controlHeight)
-    .frame(width: config.controlWidthIf(store.showingEditor), height: config.controlHeight)
+    .frame(maxWidth: theme.controlWidthIf(store.showingEditor), maxHeight: theme.controlHeight)
+    .frame(width: theme.controlWidthIf(store.showingEditor), height: theme.controlHeight)
     .task { await store.send(.task).finish() }
     .onDisappear { store.send(.stopValueObservation) }
     .onChange(of: store.showingEditor) { _, _ in

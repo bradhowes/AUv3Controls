@@ -30,9 +30,9 @@ public struct TrackFeature {
   }
 
   public enum Action: Equatable, Sendable {
-    case dragStarted(start: CGPoint, position: CGPoint)
-    case dragChanged(start: CGPoint, position: CGPoint)
-    case dragEnded(start: CGPoint, position: CGPoint)
+    case dragStarted(norm: Double, position: CGPoint)
+    case dragChanged(norm: Double, position: CGPoint)
+    case dragEnded(norm: Double)
     case valueChanged(Double)
     case viewTapped
     case normChanged(Double)
@@ -53,19 +53,18 @@ public struct TrackFeature {
     Reduce { state, action in
 
       switch action {
-      case let .dragStarted(start, position), let .dragChanged(start, position):
-        return updateFromDragEffect(state: &state, start: state.lastDrag ?? start, position: position,
-                                    atEnd: false)
-
-      case let .dragEnded(start, position):
-        return updateFromDragEffect(state: &state, start: state.lastDrag ?? start, position: position,
-                                    atEnd: true)
-
-      case let .valueChanged(value): return sendNormChanged(state, norm: state.normValueTransform.valueToNorm(value))
-
-      case let .normChanged(value):
-        state.norm = value
+      case let .dragStarted(norm, position), let .dragChanged(norm, position):
+        state.norm = norm
+        state.lastDrag = position
         return .none
+
+      case let .dragEnded(norm):
+        state.lastDrag = nil
+        state.norm = norm
+        return .none
+
+      case let .valueChanged(value): return normChanged(&state, norm: state.normValueTransform.valueToNorm(value))
+      case let .normChanged(value): return normChanged(&state, norm: value)
 
       case .viewTapped: return .none
       }
@@ -75,15 +74,7 @@ public struct TrackFeature {
 
 private extension TrackFeature {
 
-  func sendNormChanged(_ state: State, norm: CGFloat) -> Effect<Action> {
-    return .run { send in
-      await send(.normChanged(norm))
-    }.animation(.easeInOut(duration: state.config.controlChangeAnimationDuration))
-  }
-
-  func updateFromDragEffect(state: inout State, start: CGPoint, position: CGPoint, atEnd: Bool) -> Effect<Action> {
-    let norm = (state.norm + state.config.dragChangeValue(last: start, position: position)).clamped(to: 0.0...1.0)
-    state.lastDrag = atEnd ? nil : position
+  func normChanged(_ state: inout State, norm: Double) -> Effect<Action> {
     state.norm = norm
     return .none
   }
@@ -105,7 +96,7 @@ public struct TrackView: View {
   public var body: some View {
     Rectangle()
       .fill(.clear)
-      .frame(width: config.controlDiameter, height: config.controlDiameter)
+      .frame(width: theme.controlDiameter, height: theme.controlDiameter)
       .contentShape(.interaction, Circle())
       .overlay {
         rotatedCircle
@@ -119,15 +110,23 @@ public struct TrackView: View {
       .onTapGesture(count: 1) {
         store.send(.viewTapped)
       }
-      .gesture(DragGesture(minimumDistance: 5.0, coordinateSpace: .local)
+      .simultaneousGesture(DragGesture(minimumDistance: 0.0, coordinateSpace: .local)
         .onChanged {
+          let norm = calcNorm(startLocation: $0.startLocation, location: $0.location)
           let action: TrackFeature.Action = store.lastDrag == nil ?
-            .dragStarted(start: $0.startLocation, position: $0.location) :
-            .dragChanged(start: $0.startLocation, position: $0.location)
+            .dragStarted(norm: norm, position: $0.location) :
+            .dragChanged(norm: norm, position: $0.location)
           store.send(action)
         }
-        .onEnded { store.send(.dragEnded(start: $0.startLocation, position: $0.location)) }
+        .onEnded {
+          store.send(.dragEnded(norm: calcNorm(startLocation: $0.startLocation, location: $0.location)))
+        }
       )
+  }
+
+  func calcNorm(startLocation: CGPoint, location: CGPoint) -> Double {
+    (store.norm + theme.dragChangeValue(last: store.lastDrag ?? startLocation, position: location))
+      .clamped(to: 0.0...1.0)
   }
 
   var rotatedCircle: some Shape {
@@ -139,9 +138,9 @@ public struct TrackView: View {
   var indicator: some Shape {
     var path = Path()
     // Starting point at the end of the progress track (once rotated)
-    path.move(to: .init(x: theme.controlValueStrokeLineWidthHalf, y: config.controlRadius))
+    path.move(to: .init(x: theme.controlValueStrokeLineWidthHalf, y: theme.controlRadius))
     // Ending point that is towards the center
-    path.addLine(to: .init(x: min(theme.controlIndicatorLength, config.controlRadius), y: config.controlRadius))
+    path.addLine(to: .init(x: min(theme.controlIndicatorLength, theme.controlRadius), y: theme.controlRadius))
     return path
   }
 
@@ -159,7 +158,7 @@ private extension Shape {
       to: theme.controlIndicatorEndAngleNormalized
     )
     .stroke(theme.controlBackgroundColor, style: theme.controlTrackStrokeStyle)
-    .frame(width: config.controlDiameter, height: config.controlDiameter, alignment: .center)
+    .frame(width: theme.controlDiameter, height: theme.controlDiameter, alignment: .center)
   }
 
   func progressStroke(config: KnobConfig, theme: Theme, norm: Double) -> some View {
@@ -168,7 +167,7 @@ private extension Shape {
       to: theme.endTrim(for: norm)
     )
     .stroke(theme.controlForegroundColor, style: theme.controlValueStrokeStyle)
-    .frame(width: config.controlDiameter, height: config.controlDiameter, alignment: .center)
+    .frame(width: theme.controlDiameter, height: theme.controlDiameter, alignment: .center)
   }
 }
 

@@ -124,11 +124,11 @@ struct TitleViewPreview: PreviewProvider {
   static let param = AUParameterTree.createParameter(withIdentifier: "RELEASE", name: "Release", address: 1,
                                                      min: 0.0, max: 100.0, unit: .generic, unitName: nil,
                                                      valueStrings: nil, dependentParameters: nil)
-  static let config = KnobConfig()
+  static let theme = Theme()
   @State static var store = Store(initialState: TitleFeature.State(
     displayName: param.displayName,
     formatter: .duration(2...2),
-    showValueDuration: config.controlShowValueDuration
+    showValueDuration: theme.controlShowValueDuration
   )) {
     TitleFeature()
   }

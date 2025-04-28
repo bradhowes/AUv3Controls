@@ -11,6 +11,28 @@ public class Theme: @unchecked Sendable {
     case grouped
   }
 
+  /// The height of the control (knob + title)
+  public let controlHeight: Double
+  /// The diameter (width and height) of the knob
+  public let controlDiameter: Double
+  /// The radius of the knob
+  public var controlRadius: Double { controlDiameter / 2.0 }
+  /// The width of the standard knob value editor
+  public let controlEditorWidth: Double = 200
+  /// How long to show the value in the knob's label
+  public let controlShowValueDuration = 1.25
+  /// Duration of the animation when changing between value and title in control label
+  public let controlChangeAnimationDuration: TimeInterval = 0.35
+  /**
+   How much travel is need to change the knob from `minimumValue` to `maximumValue`.
+   By default this is 2x the `controlSize` value. Setting it to 4 will require 4x the `controlSize` distance
+   to go from `minimumValue` to `maximumValue`, thus making it more sensitive in general.
+   */
+  public let touchSensitivity: CGFloat
+
+  public func controlWidthIf(_ value: Bool) -> CGFloat { value ? controlEditorWidth : controlDiameter }
+  public func controlWidthIf<T>(_ value: T?) -> CGFloat { controlWidthIf(value != nil) }
+
   /// The background color to use when drawing the control
   public var controlBackgroundColor: Color
   /// The foreground color to use when drawing the control
@@ -81,14 +103,19 @@ public class Theme: @unchecked Sendable {
    */
   public init(
     bundle: Bundle? = nil,
+    controlDiameter: CGFloat = 100.0,
+    controlHeight: CGFloat = 120.0,
     controlTrackStrokeStyle: StrokeStyle = .init(lineWidth: 10.0, lineCap: .round),
     controlValueStrokeStyle: StrokeStyle = .init(lineWidth: 10.0, lineCap: .round),
     controlIndicatorLength: CGFloat = 16.0,
     controlTitleGap: CGFloat = 0.0,
     font: Font = .callout,
     parameterValueChanged: ((AUParameterAddress) -> Void)? = nil,
-    editorStyle: EditorStyle = .original
+    editorStyle: EditorStyle = .original,
+    touchSensitivity: CGFloat = 2.0,
   ) {
+    self.controlDiameter = controlDiameter
+    self.controlHeight = controlHeight
     self.controlBackgroundColor = Self.color(.controlBackgroundColor, from: bundle,
                                              default: .init(hex: "333333") ?? .gray)
     self.controlForegroundColor = Self.color(.controlForegroundColor, from: bundle,
@@ -100,7 +127,19 @@ public class Theme: @unchecked Sendable {
     self.controlTitleGap = controlTitleGap
     self.font = font
     self.editorStyle = editorStyle
+    self.touchSensitivity = touchSensitivity
+    self.dragScaling = 1.0 / (controlDiameter * touchSensitivity)
+    self.maxChangeRegionWidthHalf = max(8, controlDiameter * maxChangeRegionWidthPercentage) / 2
   }
+
+  /**
+   Percentage of `controlDiameter` where a touch/mouse event will perform maximum value change. This defines a
+   vertical region in the middle of the view. Events outside of this region will have finer sensitivity and control
+   over value changes.
+   */
+  private let maxChangeRegionWidthPercentage: CGFloat = 0.1
+  private let maxChangeRegionWidthHalf: CGFloat
+  private var dragScaling: CGFloat
 }
 
 private extension Theme {
@@ -113,6 +152,24 @@ private extension Theme {
 
   static func color(_ tag: ColorTag, from bundle: Bundle?, default: Color) -> Color {
     bundle != nil ? Color(tag.rawValue, bundle: bundle) : `default`
+  }
+}
+
+
+extension Theme {
+
+  public func dragChangeValue(last: CGPoint, position: CGPoint) -> CGFloat {
+    let dY = last.y - position.y
+    // Calculate dX for dY scaling effect -- max value must be < 1/2 of controlSize
+    let dX = min(abs(position.x - controlRadius), controlRadius - 1)
+    // Calculate "scrubber" scaling effect, where the change in dx gets smaller the further away from the center one
+    // moves the touch/pointer. No scaling if in +/- maxChangeRegionWidthHalf vertical path in the middle of the knob,
+    // otherwise the value gets smaller than 1.0 as the touch moves farther away outside of the maxChangeRegionWidthHalf
+    let scrubberScaling = (dX < maxChangeRegionWidthHalf
+                           ? 1.0
+                           : (1.0 - (dX - maxChangeRegionWidthHalf) / controlRadius))
+    // Finally, calculate change to `norm` value
+    return dY * dragScaling * scrubberScaling
   }
 }
 

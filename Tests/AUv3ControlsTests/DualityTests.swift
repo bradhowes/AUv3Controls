@@ -91,24 +91,24 @@ final class DualityTests: XCTestCase {
 
     // await ctx.floatStore.receive(.control(.track(.normChanged(0.01))))
     await ctx.floatStore.receive(.observedValueChanged(1.0)) {
-      $0.control.title.formattedValue = "0"
-      $0.control.track.norm = 0.0
-    }
-
-    ctx.floatParam.setValue(12.5, originator: nil)
-    await ctx.floatStore.receive(.control(.track(.normChanged(0.01)))) {
       $0.control.title.formattedValue = "1"
       $0.control.track.norm = 0.01
     }
 
-    await ctx.floatStore.receive(.observedValueChanged(12.5))
+    ctx.floatParam.setValue(12.5, originator: nil)
 
-    ctx.floatParam.setValue(100.0, originator: nil)
-    await ctx.floatStore.receive(.control(.track(.normChanged(0.125)))) {
+    await ctx.floatStore.receive(.observedValueChanged(12.5)) {
       $0.control.title.formattedValue = "12.5"
       $0.control.track.norm = 0.125
     }
-      
+
+    ctx.floatParam.setValue(100.0, originator: nil)
+
+    await ctx.floatStore.receive(.observedValueChanged(100.0)) {
+      $0.control.title.formattedValue = "100"
+      $0.control.track.norm = 1.0
+    }
+
     await ctx.floatStore.send(.stopValueObservation) {
       $0.observerToken = nil
       $0.control.title.formattedValue = nil

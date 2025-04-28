@@ -41,8 +41,8 @@ final class ControlFeatureTests: XCTestCase {
   func testDragChanged() async {
     let ctx = Context()
     let store = ctx.makeStore()
-    await store.send(.track(.dragChanged(start: .init(x: 40, y: 0.0), position: .init(x: 40, y: -40)))) { state in
-      state.track.norm = 0.18000000000000002
+    await store.send(.track(.dragChanged(norm: 0.18, position: .init(x: 40, y: -40)))) { state in
+      state.track.norm = 0.18
       state.title.formattedValue = "18"
       state.track.lastDrag = .init(x: 40, y: -40)
     }
@@ -56,16 +56,16 @@ final class ControlFeatureTests: XCTestCase {
   func testDragEnded() async {
     let ctx = Context()
     let store = ctx.makeStore()
-    await store.send(.track(.dragChanged(start: .init(x: 40, y: 0.0), position: .init(x: 40, y: -40)))) { state in
-      state.track.norm = 0.18000000000000002
+    await store.send(.track(.dragChanged(norm: 0.18, position: .init(x: 40, y: -40)))) { state in
+      state.track.norm = 0.180000000000000
       state.title.formattedValue = "18"
       state.track.lastDrag = .init(x: 40, y: -40)
     }
     await store.receive(.title(.cancelValueDisplayTimer)) {
       $0.title.formattedValue = nil
     }
-    await store.send(.track(.dragEnded(start: .init(x: 40, y: 0.0), position: .init(x: 40, y: -40)))) { state in
-      state.track.norm = 0.18000000000000002
+    await store.send(.track(.dragEnded(norm: 0.18))) { state in
+      state.track.norm = 0.1800000000000000
       state.track.lastDrag = nil
       state.title.formattedValue = nil
     }
@@ -96,7 +96,7 @@ final class ControlFeatureTests: XCTestCase {
       $0.continuousClock = ContinuousClock()
     })
 
-    await view.store.send(.track(.dragChanged(start: .init(x: 40, y: 0.0), position: .init(x: 40, y: -40)))).finish()
+    await view.store.send(.track(.dragChanged(norm: 0.18, position: .init(x: 40, y: -40)))).finish()
 
     try withSnapshotTesting(record: .failed) {
       try assertSnapshot(matching: view)
