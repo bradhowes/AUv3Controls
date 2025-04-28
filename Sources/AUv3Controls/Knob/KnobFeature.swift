@@ -1,3 +1,5 @@
+// Copyright © 2025 Brad Howes. All rights reserved.
+
 import AsyncAlgorithms
 import AVFoundation
 import ComposableArchitecture
@@ -239,7 +241,7 @@ public struct KnobView: View {
     .frame(width: config.controlWidthIf(store.showingEditor), height: config.controlHeight)
     .task { await store.send(.task).finish() }
     .onDisappear { store.send(.stopValueObservation) }
-    .onChange(of: store.showingEditor) { _, newValue in
+    .onChange(of: store.showingEditor) { _, _ in
       store.send(.performScrollTo(store.id))
     }
     .onChange(of: store.scrollToDestination) { _, newValue in

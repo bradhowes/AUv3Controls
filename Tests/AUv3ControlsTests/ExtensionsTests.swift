@@ -1,7 +1,8 @@
 import AudioToolbox
 import SwiftUI
 import Testing
-import AUv3Controls
+
+@testable import AUv3Controls
 
 @Test func normalizedAngle() {
   #expect(Angle(degrees: 0).normalized == 0)
@@ -32,10 +33,9 @@ import AUv3Controls
 
 @Test func clamp() {
   let p2 = AUParameterTree.createFloat(withIdentifier: "a", name: "a", address: 2, range: -20...34, unit: .cents)
-  #expect(p2.range.clamp(-99.0) == -20)
-  #expect(p2.range.clamp(0.0) == 0.0)
-  #expect(p2.range.clamp(35) == 34)
-
+  #expect(p2.range.clamp(value: -99.0) == -20)
+  #expect(p2.range.clamp(value: 0.0) == 0.0)
+  #expect(p2.range.clamp(value: 35) == 34)
   #expect(31.54.clamped(to: -20...34) == 31.54)
 }
 

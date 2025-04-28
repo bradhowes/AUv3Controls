@@ -1,3 +1,5 @@
+// Copyright © 2025 Brad Howes. All rights reserved.
+
 import AVFoundation
 import Clocks
 import ComposableArchitecture
@@ -110,7 +112,7 @@ struct TitleViewPreview: PreviewProvider {
   static let config = KnobConfig()
   @State static var store = Store(initialState: TitleFeature.State(
     displayName: param.displayName,
-    formatter:  .duration(2...2),
+    formatter: .duration(2...2),
     showValueDuration: config.controlShowValueDuration
   )) {
     TitleFeature()

@@ -1,5 +1,7 @@
-import ComposableArchitecture
+// Copyright © 2025 Brad Howes. All rights reserved.
+
 import AudioToolbox
+import ComposableArchitecture
 
 extension AUParameter {
 
@@ -47,4 +49,3 @@ extension AUParameter: @retroactive @unchecked Sendable {}
 extension AUParameterObserverToken: @unchecked Sendable {}
 extension AUParameter: @unchecked Sendable {}
 #endif
-

@@ -1,3 +1,5 @@
+// Copyright © 2025 Brad Howes. All rights reserved.
+
 import AVFoundation
 import ComposableArchitecture
 import SwiftUI
@@ -79,7 +81,8 @@ private extension TrackFeature {
   func updateFromDragEffect(state: inout State, start: CGPoint, position: CGPoint, atEnd: Bool) -> Effect<Action> {
     let norm = (state.norm + state.config.dragChangeValue(last: start, position: position)).clamped(to: 0.0...1.0)
     state.lastDrag = atEnd ? nil : position
-    return sendNormChanged(state, norm: norm)
+    state.norm = norm
+    return .none
   }
 }
 

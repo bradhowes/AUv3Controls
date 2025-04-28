@@ -1,3 +1,5 @@
+// Copyright © 2025 Brad Howes. All rights reserved.
+
 import SwiftUI
 
 // Source: https://stackoverflow.com/a/56874327/629836

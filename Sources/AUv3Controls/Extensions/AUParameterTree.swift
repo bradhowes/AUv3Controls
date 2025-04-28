@@ -1,5 +1,7 @@
-import ComposableArchitecture
+// Copyright © 2025 Brad Howes. All rights reserved.
+
 import AudioToolbox
+import ComposableArchitecture
 
 public extension AUParameterTree {
 

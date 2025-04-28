@@ -1,3 +1,5 @@
+// Copyright © 2025 Brad Howes. All rights reserved.
+
 import AVFoundation
 import ComposableArchitecture
 import SwiftUI
@@ -67,7 +69,7 @@ struct EditorView: View {
     self.store = store
   }
 
-  var body: some View  {
+  var body: some View {
     if theme.editorStyle == .grouped {
       grouped
     } else {

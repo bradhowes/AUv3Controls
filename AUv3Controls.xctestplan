@@ -1,0 +1,24 @@
+{
+  "configurations" : [
+    {
+      "id" : "F5A6AAA7-401C-417A-ADB4-0E27DF93370E",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "AUv3ControlsTests",
+        "name" : "AUv3ControlsTests"
+      }
+    }
+  ],
+  "version" : 1
+}

@@ -1,3 +1,5 @@
+// Copyright © 2025 Brad Howes. All rights reserved.
+
 import AVFoundation
 import ComposableArchitecture
 import SwiftUI

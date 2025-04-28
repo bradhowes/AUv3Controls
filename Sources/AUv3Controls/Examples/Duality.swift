@@ -1,3 +1,5 @@
+// Copyright © 2025 Brad Howes. All rights reserved.
+
 import AVFoundation
 import ComposableArchitecture
 import SwiftUI
@@ -11,7 +13,6 @@ class MockAUv3 {
   let param2: AUParameter // boolean parameter
   let param3: AUParameter // float parameter
   let param4: AUParameter // float parameter
-
 
   // Bindings to a state value but with a twist. We only ever use the 'setter' part of the binding when we see that
   // the AUParameter it belongs to has changed.
