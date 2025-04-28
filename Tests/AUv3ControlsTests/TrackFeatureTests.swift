@@ -50,62 +50,43 @@ final class TrackFeatureTests: XCTestCase {
     await ctx.store.send(.dragChanged(start: .init(x: ctx.config.controlRadius, y: 0.0),
                                       position: .init(x: ctx.config.controlRadius,
                                                       y: -ctx.config.controlDiameter * 0.4))) { store in
-      store.norm = 0.0
+      store.norm = 0.4
       store.lastDrag = CGPoint(x: 50, y: -40)
-    }
-
-    await ctx.store.receive(.normChanged(0.4)) {
-      $0.norm = 0.4
     }
 
     ctx = Context(touchSensitivity: 1.0)
     await ctx.store.send(.dragChanged(start: .init(x: ctx.config.controlRadius, y: 0.0),
                                   position: .init(x: ctx.config.controlRadius,
                                                   y: -ctx.config.controlDiameter * 0.8))) { store in
-      store.norm = 0.0
+      store.norm = 0.8
       store.lastDrag = CGPoint(x: 50, y: -80)
-    }
-
-    await ctx.store.receive(.normChanged(0.8)) {
-      $0.norm = 0.8
     }
   }
   
-//  @MainActor
-//  func testDragChangedAffectedByHorizontalOffset() async {
-//    let ctx = Context(touchSensitivity: 1.0)
-//
-//    _ = await ctx.store.withExhaustivity(.off) {
-//      await ctx.store.send(.dragChanged(start: .init(x: ctx.config.controlRadius, y: 0.0),
-//                                        position: .init(x: ctx.config.controlRadius - 10,
-//                                                        y: -ctx.config.controlDiameter * 0.7))) { store in
-//        store.norm = 0.0
-//      }
-//
-//      await ctx.store.receive(.normChanged(0.0))
-//
-////      await ctx.store.receive(.normChanged(0.4)) {
-////        $0.norm = 0.4
-////      }
-//
-//      await ctx.store.send(.dragChanged(start: .init(x: ctx.config.controlRadius, y: 0.0),
-//                                        position: .init(x: ctx.config.controlRadius + 10,
-//                                                        y: -ctx.config.controlDiameter * 0.7))) { store in
-//        store.norm = 0.6300000000000001
-//      }
-//
-////      await ctx.store.receive(.normChanged(0.4)) {
-////        $0.norm = 0.4
-////      }
-//    }
-//  }
+  @MainActor
+  func testDragChangedAffectedByHorizontalOffset() async {
+    let ctx = Context(touchSensitivity: 1.0)
+
+    _ = await ctx.store.withExhaustivity(.off) {
+      await ctx.store.send(.dragChanged(start: .init(x: ctx.config.controlRadius, y: 0.0),
+                                        position: .init(x: ctx.config.controlRadius - 10,
+                                                        y: -ctx.config.controlDiameter * 0.7))) { store in
+        store.norm = 0.6300000000000001
+      }
+
+      await ctx.store.send(.dragChanged(start: .init(x: ctx.config.controlRadius, y: 0.0),
+                                        position: .init(x: ctx.config.controlRadius + 10,
+                                                        y: -ctx.config.controlDiameter * 0.7))) { store in
+        store.norm = 0.6300000000000001
+      }
+    }
+  }
   
   @MainActor
   func testDragEnded() async {
     let ctx = Context()
     let pos: CGPoint = .init(x: ctx.config.controlRadius, y: -ctx.config.controlDiameter * 0.4)
-    await ctx.store.send(.dragEnded(start: .init(x: 0.0, y: 0.0), position: pos))
-    await ctx.store.receive(.normChanged(0.2)) {
+    await ctx.store.send(.dragEnded(start: .init(x: 0.0, y: 0.0), position: pos)) {
       $0.norm = 0.2
     }
   }
