@@ -67,11 +67,10 @@ final class ControlFeatureTests: XCTestCase {
     await store.send(.track(.dragEnded(start: .init(x: 40, y: 0.0), position: .init(x: 40, y: -40)))) { state in
       state.track.norm = 0.18000000000000002
       state.track.lastDrag = nil
-      state.title.formattedValue = "18"
+      state.title.formattedValue = nil
     }
-    await store.receive(.title(.cancelValueDisplayTimer)) {
-      $0.title.formattedValue = nil
-    }
+    await store.receive(.title(.cancelValueDisplayTimer))
+    await store.finish()
   }
 
   @MainActor

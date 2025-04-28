@@ -57,10 +57,16 @@ public struct ControlFeature {
       case .title: return .none
       case .track(.dragStarted): return reduce(into: &state, action: .title(.dragActive(true)))
       case .track(.dragEnded): return reduce(into: &state, action: .title(.dragActive(false)))
+      case .track(.viewTapped): return showValue(&state)
       case .track: return trackChanged(&state)
       case .valueChanged(let value): return valueChanged(&state, value: value)
       }
     }
+  }
+
+  private func showValue(_ state: inout State) -> Effect<Action> {
+    let value = state.normValueTransform.normToValue(state.track.norm)
+    return reduce(into: &state, action: .title(.valueChanged(value)))
   }
 
   private func trackChanged(_ state: inout State) -> Effect<Action> {

@@ -34,6 +34,7 @@ public struct TrackFeature {
     case dragChanged(start: CGPoint, position: CGPoint)
     case dragEnded(start: CGPoint, position: CGPoint)
     case valueChanged(Double)
+    case viewTapped
     case normChanged(Double)
 
     var cause: AUParameterAutomationEventType? {
@@ -65,6 +66,8 @@ public struct TrackFeature {
       case let .normChanged(value):
         state.norm = value
         return .none
+
+      case .viewTapped: return .none
       }
     }
   }
@@ -113,7 +116,10 @@ public struct TrackView: View {
           .stroke(theme.controlForegroundColor, style: theme.controlValueStrokeStyle)
       }
       .animation(.smooth, value: store.norm)
-      .gesture(DragGesture(minimumDistance: 0.0, coordinateSpace: .local)
+      .onTapGesture(count: 1) {
+        store.send(.viewTapped)
+      }
+      .gesture(DragGesture(minimumDistance: 5.0, coordinateSpace: .local)
         .onChanged {
           let action: TrackFeature.Action = store.lastDrag == nil ?
             .dragStarted(start: $0.startLocation, position: $0.location) :
