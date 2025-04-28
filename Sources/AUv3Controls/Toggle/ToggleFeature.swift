@@ -10,11 +10,11 @@ public struct ToggleFeature {
 
   @ObservableState
   public struct State: Equatable {
-    var isOn: Bool
-    let parameter: AUParameter?
-    let displayName: String
-    let valueObservationCancelId: String?
-    var observerToken: AUParameterObserverToken?
+    public var isOn: Bool
+    public let parameter: AUParameter?
+    public let displayName: String
+    public let valueObservationCancelId: String?
+    @ObservationStateIgnored internal var observerToken: AUParameterObserverToken?
 
     public init(parameter: AUParameter, isOn: Bool = false) {
       self.isOn = isOn
