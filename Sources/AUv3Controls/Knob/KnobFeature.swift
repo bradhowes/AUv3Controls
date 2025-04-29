@@ -307,24 +307,5 @@ struct KnobViewPreview: PreviewProvider {
         Text("Go to 100")
       }
     }
-    VStack {
-      KnobView(store: store)
-        .disabled(true)
-      Button {
-        store.send(.observedValueChanged(0.0))
-      } label: {
-        Text("Go to 0")
-      }
-      Button {
-        store.send(.observedValueChanged(50.0))
-      } label: {
-        Text("Go to 50")
-      }
-      Button {
-        store.send(.observedValueChanged(100.0))
-      } label: {
-        Text("Go to 100")
-      }
-    }
   }
 }
