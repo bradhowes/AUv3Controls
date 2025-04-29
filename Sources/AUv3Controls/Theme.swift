@@ -153,8 +153,31 @@ private extension Theme {
   static func color(_ tag: ColorTag, from bundle: Bundle?, default: Color) -> Color {
     bundle != nil ? Color(tag.rawValue, bundle: bundle) : `default`
   }
+
+  func color(tag: ColorTag) -> Color {
+    switch tag {
+    case .controlForegroundColor: return controlForegroundColor.disabled
+    case .controlBackgroundColor: return controlBackgroundColor.disabled
+    case .textColor: return textColor.disabled
+    }
+  }
+
+  func disabled(tag: ColorTag) -> Color {
+    color(tag: tag).disabled
+  }
 }
 
+extension Color {
+
+  var disabled: Color {
+    @Environment(\.colorScheme) var colorScheme
+    if #available(iOS 18.0, macOS 15.0, *) {
+      return self.mix(with: colorScheme == .dark ? .black : .white, by: 0.5)
+    } else {
+      return self.mix_shim(with: colorScheme == .dark ? .black : .white, by: 0.5)
+    }
+  }
+}
 
 extension Theme {
 

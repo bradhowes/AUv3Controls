@@ -109,7 +109,7 @@ public struct TitleView: View {
     }
     .font(theme.font)
     .frame(width: 120, height: 20)
-    .foregroundColor(enabled ? theme.textColor : theme.textColor)
+    .foregroundColor(theme.textColor)
     .clipped(antialiased: true)
     .animation(.smooth, value: store.showingValue)
     .animation(.smooth, value: store.formattedValue)
