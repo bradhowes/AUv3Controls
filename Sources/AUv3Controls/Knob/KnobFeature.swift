@@ -294,6 +294,7 @@ struct KnobViewPreview: PreviewProvider {
   static var previews: some View {
     VStack {
       KnobView(store: store)
+        .frame(width: 140, height: 140)
       Button {
         store.send(.observedValueChanged(0.0))
       } label: {

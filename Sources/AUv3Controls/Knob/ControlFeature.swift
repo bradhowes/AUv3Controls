@@ -124,6 +124,7 @@ struct ControlViewPreview: PreviewProvider {
   static var previews: some View {
     VStack {
       ControlView(store: store)
+        .frame(width: 140, height: 140)
       Button {
         store.send(.valueChanged(0))
       } label: {

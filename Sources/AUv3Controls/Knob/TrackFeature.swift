@@ -231,6 +231,7 @@ struct TrackViewPreview: PreviewProvider {
   static var previews: some View {
     VStack {
       TrackView(store: store)
+        .frame(width: 140, height: 140)
       Button {
         store.send(.valueChanged(0.0))
       } label: {

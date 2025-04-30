@@ -62,9 +62,8 @@ final class ControlFeatureTests: XCTestCase {
     await store.receive(.title(.cancelValueDisplayTimer)) {
       $0.title.formattedValue = nil
     }
-    await store.send(.track(.dragEnded(0.18))) { state in
-      state.track.norm = 0.1800000000000000
-      state.title.formattedValue = nil
+    await store.send(.track(.dragEnded(0.30))) { state in
+      state.track.norm = 0.3
     }
     await store.receive(.title(.cancelValueDisplayTimer))
     await store.finish()
