@@ -112,7 +112,7 @@ public class Theme: @unchecked Sendable {
     font: Font = .callout,
     parameterValueChanged: ((AUParameterAddress) -> Void)? = nil,
     editorStyle: EditorStyle = .original,
-    touchSensitivity: CGFloat = 2.0,
+    touchSensitivity: CGFloat = 2.0
   ) {
     self.controlDiameter = controlDiameter
     self.controlHeight = controlHeight
