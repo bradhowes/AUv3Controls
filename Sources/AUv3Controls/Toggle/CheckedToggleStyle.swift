@@ -2,6 +2,10 @@
 
 import SwiftUI
 
+/**
+ A custom toggle style that shows an image and the label. Pretty much taken from comment block for ToggleStyle but
+ with theme additions.
+ */
 public struct CheckedToggleStyle: ToggleStyle {
 
   public let theme: Theme
@@ -10,16 +14,16 @@ public struct CheckedToggleStyle: ToggleStyle {
     Button {
       configuration.isOn.toggle()
     } label: {
-      Label {
-        configuration.label
-      } icon: {
+      HStack(spacing: 4) {
         Image(systemName: configuration.isOn ? theme.toggleOnIndicatorSystemName : theme.toggleOffIndicatorSystemName)
           .foregroundColor(theme.controlForegroundColor)
           .accessibility(label: Text(configuration.isOn ? "Checked" : "Unchecked"))
-          .imageScale(.large)
+        configuration.label
+          .font(theme.font)
+          .foregroundStyle(theme.textColor)
       }
     }
-    .buttonStyle(.plain)
+    .buttonStyle(.borderless)
     .foregroundColor(theme.textColor)
   }
 }

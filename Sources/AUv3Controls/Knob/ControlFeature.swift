@@ -85,16 +85,16 @@ public struct ControlFeature {
 struct ControlView: View {
   private let store: StoreOf<ControlFeature>
   @Environment(\.auv3ControlsTheme) private var theme
-
+  
   init(store: StoreOf<ControlFeature>) {
     self.store = store
   }
-
+  
   var body: some View {
-    VStack(spacing: theme.controlTitleGap) {
-      TrackView(store: store.scope(state: \.track, action: \.track))
-      TitleView(store: store.scope(state: \.title, action: \.title))
-    }
+    TrackView(store: store.scope(state: \.track, action: \.track))
+      .overlay(alignment: .bottom) {
+        TitleView(store: store.scope(state: \.title, action: \.title))
+      }
   }
 }
 

@@ -20,7 +20,6 @@ public struct TrackFeature {
     let config: KnobConfig
     let normValueTransform: NormValueTransform
     var norm: Double
-    var lastDrag: CGPoint?
 
     public init(norm: Double, normValueTransform: NormValueTransform, config: KnobConfig) {
       self.config = config
@@ -30,9 +29,9 @@ public struct TrackFeature {
   }
 
   public enum Action: Equatable, Sendable {
-    case dragStarted(norm: Double, position: CGPoint)
-    case dragChanged(norm: Double, position: CGPoint)
-    case dragEnded(norm: Double)
+    case dragStarted(Double)
+    case dragChanged(Double)
+    case dragEnded(Double)
     case valueChanged(Double)
     case viewTapped
     case normChanged(Double)
@@ -53,19 +52,11 @@ public struct TrackFeature {
     Reduce { state, action in
 
       switch action {
-      case let .dragStarted(norm, position), let .dragChanged(norm, position):
-        state.norm = norm
-        state.lastDrag = position
-        return .none
-
-      case let .dragEnded(norm):
-        state.lastDrag = nil
-        state.norm = norm
-        return .none
-
-      case let .valueChanged(value): return normChanged(&state, norm: state.normValueTransform.valueToNorm(value))
+      case let .dragStarted(value): return normChanged(&state, norm: value)
+      case let .dragChanged(value): return normChanged(&state, norm: value)
+      case let .dragEnded(value): return normChanged(&state, norm: value)
       case let .normChanged(value): return normChanged(&state, norm: value)
-
+      case let .valueChanged(value): return normChanged(&state, norm: state.normValueTransform.valueToNorm(value))
       case .viewTapped: return .none
       }
     }
@@ -89,6 +80,28 @@ public struct TrackView: View {
   private var config: KnobConfig { store.config }
   @Environment(\.auv3ControlsTheme) private var theme
 
+  @State private var controlRadius: Double = .zero
+  @State private var dragScaling: Double = 1.0
+  @State private var maxDragChangeRegionWidthHalf = 8.0
+  @State private var lastDrag: CGPoint?
+
+  var foregroundGradient: RadialGradient {
+    .init(
+      gradient: Gradient(colors: [.white, theme.controlForegroundColor, .black]),
+      center: .center,
+      startRadius: 0, endRadius: 100
+    )
+  }
+
+  var backgroundGradient: RadialGradient {
+    .init(
+      gradient: Gradient(colors: [.white, theme.controlBackgroundColor, .black]),
+      center: .center,
+      startRadius: 0,
+      endRadius: 100
+    )
+  }
+
   public init(store: StoreOf<TrackFeature>) {
     self.store = store
   }
@@ -96,37 +109,62 @@ public struct TrackView: View {
   public var body: some View {
     Rectangle()
       .fill(.clear)
-      .frame(width: theme.controlDiameter, height: theme.controlDiameter)
+      .onGeometryChange(for: CGSize.self) { proxy in
+        proxy.size
+      } action: { newValue in
+        controlRadius = newValue.height / 2
+        dragScaling = 1.0 / (newValue.height * theme.touchSensitivity)
+        maxDragChangeRegionWidthHalf = max(8, newValue.height * theme.maxChangeRegionWidthPercentage) / 2
+      }
       .contentShape(.interaction, Circle())
+      .aspectRatio(1, contentMode: .fit)
       .overlay {
         rotatedCircle
-          .trackStroke(config: config, theme: theme)
+          .trackStroke(config: config, theme: theme, gradient: backgroundGradient)
         rotatedCircle
-          .progressStroke(config: config, theme: theme, norm: store.norm)
+          .progressStroke(config: config, theme: theme, gradient: foregroundGradient, norm: store.norm)
         rotatedIndicator
-          .stroke(theme.controlForegroundColor, style: theme.controlValueStrokeStyle)
+          .stroke(foregroundGradient, style: theme.controlValueStrokeStyle)
       }
+      .offset(y: -16)
       .animation(.smooth, value: store.norm)
       .onTapGesture(count: 1) {
         store.send(.viewTapped)
       }
-      .simultaneousGesture(DragGesture(minimumDistance: 0.0, coordinateSpace: .local)
+      .highPriorityGesture(DragGesture(minimumDistance: 0.0, coordinateSpace: .local)
         .onChanged {
           let norm = calcNorm(startLocation: $0.startLocation, location: $0.location)
-          let action: TrackFeature.Action = store.lastDrag == nil ?
-            .dragStarted(norm: norm, position: $0.location) :
-            .dragChanged(norm: norm, position: $0.location)
-          store.send(action)
+          if lastDrag == nil {
+            store.send(.dragStarted(norm))
+          } else {
+            store.send(.dragChanged(norm))
+          }
+          lastDrag = $0.location
         }
         .onEnded {
-          store.send(.dragEnded(norm: calcNorm(startLocation: $0.startLocation, location: $0.location)))
+          store.send(.dragEnded(calcNorm(startLocation: $0.startLocation, location: $0.location)))
+          lastDrag = nil
         }
       )
   }
 
   func calcNorm(startLocation: CGPoint, location: CGPoint) -> Double {
-    (store.norm + theme.dragChangeValue(last: store.lastDrag ?? startLocation, position: location))
+    (store.norm + dragChangeValue(last: lastDrag ?? startLocation, position: location))
       .clamped(to: 0.0...1.0)
+  }
+
+  func dragChangeValue(last: CGPoint, position: CGPoint) -> Double {
+    let dY = last.y - position.y
+    // Calculate dX for dY scaling effect -- max value must be < 1/2 of controlSize
+    let dX = min(abs(position.x - controlRadius), controlRadius - 1)
+    // Calculate "scrubber" scaling effect, where the change in dx gets smaller the further away from the center one
+    // moves the touch/pointer. No scaling if in +/- maxChangeRegionWidthHalf vertical path in the middle of the knob,
+    // otherwise the value gets smaller than 1.0 as the touch moves farther away outside of the maxChangeRegionWidthHalf
+    let scrubberScaling = (dX < maxDragChangeRegionWidthHalf
+                           ? 1.0
+                           : (1.0 - (dX - maxDragChangeRegionWidthHalf) / controlRadius))
+    // Finally, calculate change to `norm` value
+    return dY * dragScaling * scrubberScaling
   }
 
   var rotatedCircle: some Shape {
@@ -138,36 +176,34 @@ public struct TrackView: View {
   var indicator: some Shape {
     var path = Path()
     // Starting point at the end of the progress track (once rotated)
-    path.move(to: .init(x: theme.controlValueStrokeLineWidthHalf, y: theme.controlRadius))
+    path.move(to: .init(x: theme.controlValueStrokeLineWidthHalf, y: controlRadius))
     // Ending point that is towards the center
-    path.addLine(to: .init(x: min(theme.controlIndicatorLength, theme.controlRadius), y: theme.controlRadius))
+    path.addLine(to: .init(x: min(theme.controlIndicatorLength, controlRadius), y: controlRadius))
     return path
   }
 
   var rotatedIndicator: some Shape {
-    indicator
+    return indicator
       .rotation(.degrees(-50 + Double(store.norm) * 280))
   }
 }
 
 private extension Shape {
 
-  func trackStroke(config: KnobConfig, theme: Theme) -> some View {
-    trim(
+  func trackStroke(config: KnobConfig, theme: Theme, gradient: RadialGradient) -> some View {
+    return trim(
       from: theme.controlIndicatorStartAngleNormalized,
       to: theme.controlIndicatorEndAngleNormalized
     )
-    .stroke(theme.controlBackgroundColor, style: theme.controlTrackStrokeStyle)
-    .frame(width: theme.controlDiameter, height: theme.controlDiameter, alignment: .center)
+    .stroke(gradient, style: theme.controlTrackStrokeStyle)
   }
 
-  func progressStroke(config: KnobConfig, theme: Theme, norm: Double) -> some View {
-    trim(
+  func progressStroke(config: KnobConfig, theme: Theme, gradient: RadialGradient, norm: Double) -> some View {
+    return trim(
       from: theme.controlIndicatorStartAngleNormalized,
       to: theme.endTrim(for: norm)
     )
-    .stroke(theme.controlForegroundColor, style: theme.controlValueStrokeStyle)
-    .frame(width: theme.controlDiameter, height: theme.controlDiameter, alignment: .center)
+    .stroke(gradient, style: theme.controlValueStrokeStyle)
   }
 }
 

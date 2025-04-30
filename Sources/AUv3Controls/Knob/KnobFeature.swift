@@ -25,12 +25,12 @@ public struct KnobFeature {
     let config: KnobConfig
     let parameter: AUParameter?
     let normValueTransform: NormValueTransform
+    let valueObservationCancelId: String?
     var control: ControlFeature.State
     var editor: EditorFeature.State
     var scrollToDestination: UInt64?
     var showingEditor: Bool = false
-    let valueObservationCancelId: String?
-    var observerToken: AUParameterObserverToken?
+    @ObservationStateIgnored var observerToken: AUParameterObserverToken?
 
     public init(parameter: AUParameter,
                 formatter: KnobValueFormatter = .general(),
@@ -232,16 +232,16 @@ public struct KnobView: View {
 
 #if os(iOS)
   public var body: some View {
-    ZStack {
-      EditorView(store: store.scope(state: \.editor, action: \.editor))
-        .opacity(store.showingEditor ? 1 : 0)
-        .scaleEffect(store.showingEditor ? 1.0 : 0.0)
-      ControlView(store: store.scope(state: \.control, action: \.control))
-        .opacity(store.showingEditor ? 0 : 1)
-        .scaleEffect(store.showingEditor ? 0.0 : 1.0)
+    ZStack(alignment: .top) {
+      if store.showingEditor {
+        EditorView(store: store.scope(state: \.editor, action: \.editor))
+          .frame(width: theme.controlEditorWidth)
+          .transition(.scale)
+      } else {
+        ControlView(store: store.scope(state: \.control, action: \.control))
+          .transition(.scale)
+      }
     }
-    .frame(maxWidth: theme.controlWidthIf(store.showingEditor), maxHeight: theme.controlHeight)
-    .frame(width: theme.controlWidthIf(store.showingEditor), height: theme.controlHeight)
     .task { await store.send(.task).finish() }
     .onDisappear { store.send(.stopValueObservation) }
     .onChange(of: store.showingEditor) { _, _ in
@@ -269,6 +269,9 @@ public struct KnobView: View {
       }
   }
 #endif
+
+  @ViewBuilder private var editorOverlay: some View {
+  }
 }
 
 struct KnobViewPreview: PreviewProvider {

@@ -43,7 +43,6 @@ final class TrackFeatureTests: XCTestCase {
   func testInit() {
     let ctx = Context()
     XCTAssertEqual(0.0, ctx.store.state.norm)
-    XCTAssertNil(ctx.store.state.lastDrag)
   }
   
   @MainActor

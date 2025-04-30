@@ -14,6 +14,10 @@ struct EnvelopeView: View {
       .font(.footnote.smallCaps())
 
     let config = KnobConfig()
+
+    let enableStore = Store(initialState: ToggleFeature.State(isOn: true, displayName: "On")) { ToggleFeature() }
+    let lockStore = Store(initialState: ToggleFeature.State(isOn: true, displayName: "Lock")) { ToggleFeature() }
+
     let delayParam = AUParameterTree.createParameter(withIdentifier: "DELAY", name: "Delay", address: 1, min: 0.0,
                                                      max: 100.0, unit: .generic, unitName: nil, flags: [],
                                                      valueStrings: nil, dependentParameters: nil)
@@ -83,7 +87,11 @@ struct EnvelopeView: View {
     ScrollViewReader { proxy in
       ScrollView(.horizontal) {
         GroupBox(label: label) {
-          HStack(spacing: 8) {
+          HStack(alignment: .center, spacing: 8) {
+            VStack(alignment: .leading, spacing: 12) {
+              ToggleView(store: enableStore)
+              ToggleView(store: lockStore)
+            }
             KnobView(store: delayStore)
             KnobView(store: attackStore)
             KnobView(store: holdStore)
@@ -92,6 +100,7 @@ struct EnvelopeView: View {
             KnobView(store: releaseStore)
           }
         }
+        .frame(height: 140)
         .border(theme.controlBackgroundColor, width: 1)
       }.scrollViewProxy(proxy)
     }
@@ -101,7 +110,7 @@ struct EnvelopeView: View {
 struct EnvelopeViewPreview: PreviewProvider {
   static var previews: some View {
     let volumeTheme = Theme()
-    let modTheme = Theme(editorStyle: .grouped)
+    let modTheme = Theme()
     return VStack {
       EnvelopeView(title: "Volume")
         .environment(\.auv3ControlsTheme, volumeTheme)

@@ -78,17 +78,13 @@ struct EditorView: View {
   }
 
   private var original: some View {
-    VStack(alignment: .center, spacing: 12) {
-      HStack(spacing: 12) {
-        Text(store.displayName)
-          .lineLimit(1, reservesSpace: false)
-        valueEditor
-      }
+    VStack(alignment: .center, spacing: 8) {
+      valueEditor
       buttons
     }
-    .padding()
+    .padding(.bottom, 8)
     .background(.quaternary)
-    .clipShape(RoundedRectangle(cornerRadius: 12))
+    .clipShape(RoundedRectangle(cornerRadius: 8))
     .bind($store.focus, to: $focus)
   }
 
@@ -133,7 +129,7 @@ struct EditorView: View {
   }
 
   private var buttons: some View {
-    HStack(spacing: 24) {
+    HStack(spacing: 16) {
       Button {
         sendAcceptButtonTapped()
       } label: {

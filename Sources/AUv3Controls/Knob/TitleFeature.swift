@@ -18,7 +18,7 @@ public struct TitleFeature {
     let formatter: KnobValueFormatter
     let showValueDuration: Double
     let showValueCancelId: String
-    var dragActive: Bool = false
+    @ObservationStateIgnored var dragActive: Bool = false
     var formattedValue: String?
     var showingValue: Bool { formattedValue != nil }
 
@@ -108,8 +108,10 @@ public struct TitleView: View {
       }
     }
     .font(theme.font)
-    .frame(width: 120, height: 20)
+    // .frame(width: theme.controlDiameter)
     .foregroundColor(theme.textColor)
+    // .background(.yellow)
+    .contentShape(Rectangle())
     .clipped(antialiased: true)
     .animation(.smooth, value: store.showingValue)
     .animation(.smooth, value: store.formattedValue)

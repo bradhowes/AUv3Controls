@@ -152,6 +152,7 @@ struct ToggleViewPreview: PreviewProvider {
     VStack(alignment: .leading, spacing: 12) {
       ToggleView(store: store1)
       ToggleView(store: store2)
+        .disabled(true)
       Button {
         store1.send(.observedValueChanged(store1.isOn ? 0.0 : 1.0))
       } label: {
