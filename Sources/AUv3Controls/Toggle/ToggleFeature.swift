@@ -140,6 +140,7 @@ public struct ToggleView<Content: View>: View {
         content
       } else {
         Text(store.displayName)
+          .lineLimit(1)
       }
     }
     .toggleStyle(.checked(theme: theme))

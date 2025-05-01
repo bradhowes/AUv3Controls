@@ -90,7 +90,7 @@ struct EnvelopeView: View {
           VStack(alignment: .leading, spacing: 18) {
             label
             ToggleView(store: enableStore)
-            ToggleView(store: lockStore) { Image(systemName: "lock") }
+            ToggleView(store: lockStore) // { Image(systemName: "lock") }
           }
           KnobView(store: delayStore)
           KnobView(store: attackStore)
@@ -99,7 +99,8 @@ struct EnvelopeView: View {
           KnobView(store: sustainStore)
           KnobView(store: releaseStore)
         }
-        .frame(height: 100)
+        .frame(maxHeight: 102)
+        .frame(height: 102)
         .padding()
         .border(theme.controlBackgroundColor, width: 1)
       }.scrollViewProxy(proxy)
