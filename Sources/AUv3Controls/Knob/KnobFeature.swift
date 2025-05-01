@@ -269,9 +269,6 @@ public struct KnobView: View {
       }
   }
 #endif
-
-  @ViewBuilder private var editorOverlay: some View {
-  }
 }
 
 struct KnobViewPreview: PreviewProvider {
