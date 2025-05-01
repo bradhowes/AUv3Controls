@@ -80,9 +80,14 @@ public struct TrackView: View {
 
   // Updated by SwiftUI via `.onGeometryChange`
   @State private var controlRadius: Double = .zero
-  @State private var dragScaling: Double = 1.0
-  @State private var maxDragChangeRegionWidthHalf = 8.0
-  @State private var lastDrag: CGPoint?
+
+  struct DragState {
+    var dragScaling: Double = 1.0
+    var maxDragChangeRegionWidthHalf = 8.0
+    var lastDrag: CGPoint?
+  }
+
+  @GestureState private var dragState = DragState()
 
   public init(store: StoreOf<TrackFeature>) {
     self.store = store
@@ -95,8 +100,6 @@ public struct TrackView: View {
         proxy.size.height
       } action: { height in
         controlRadius = height / 2
-        dragScaling = 1.0 / (height * theme.touchSensitivity)
-        maxDragChangeRegionWidthHalf = max(8, height * theme.maxChangeRegionWidthPercentage) / 2
       }
       .contentShape(.interaction, Circle())
       .aspectRatio(1, contentMode: .fit)
@@ -114,23 +117,26 @@ public struct TrackView: View {
         store.send(.viewTapped)
       }
       .highPriorityGesture(DragGesture(minimumDistance: 0.0, coordinateSpace: .local)
-        .onChanged {
-          let norm = dragNorm(previous: lastDrag ?? $0.startLocation, position: $0.location)
-          if lastDrag == nil {
-            store.send(.dragStarted(norm))
+        .updating($dragState) { currentState, gestureState, transaction in
+          if let lastDrag = gestureState.lastDrag {
+            store.send(.dragChanged(dragNorm(state: gestureState, previous: lastDrag, position: currentState.location)))
+            gestureState.lastDrag = currentState.location
           } else {
-            store.send(.dragChanged(norm))
+            gestureState = .init(
+              dragScaling: 1.0 / (controlRadius * 2 * theme.touchSensitivity),
+              maxDragChangeRegionWidthHalf: max(4, controlRadius * theme.maxChangeRegionWidthPercentage / 2),
+              lastDrag: currentState.location
+            )
+            store.send(.dragStarted(dragNorm(state: gestureState, previous: currentState.location, position: currentState.location)))
           }
-          lastDrag = $0.location
         }
-        .onEnded {
-          store.send(.dragEnded(dragNorm(previous: $0.startLocation, position: $0.location)))
-          lastDrag = nil
+        .onEnded { _ in
+          store.send(.dragEnded(store.norm))
         }
       )
   }
 
-  private func dragNorm(previous: CGPoint, position: CGPoint) -> Double {
+  private func dragNorm(state: DragState, previous: CGPoint, position: CGPoint) -> Double {
     let dY = previous.y - position.y
     // Calculate dX for dY scaling effect -- max value must be < controlRadius
     let dX = min(abs(position.x - controlRadius), controlRadius - 1)
@@ -138,11 +144,11 @@ public struct TrackView: View {
     // moves the touch/pointer. No scaling if in +/- maxChangeRegionWidthHalf vertical path in the middle of the knob,
     // otherwise the value gets smaller than 1.0 as the touch moves farther away outside of the
     // maxChangeRegionWidthHalf
-    let scrubberScaling = (dX < maxDragChangeRegionWidthHalf
+    let scrubberScaling = (dX < state.maxDragChangeRegionWidthHalf
                            ? 1.0
-                           : (1.0 - (dX - maxDragChangeRegionWidthHalf) / controlRadius))
+                           : (1.0 - (dX - state.maxDragChangeRegionWidthHalf) / controlRadius))
     // Finally, calculate change to `norm` value
-    return (store.norm + dY * dragScaling * scrubberScaling).clamped(to: 0.0...1.0)
+    return (store.norm + dY * state.dragScaling * scrubberScaling).clamped(to: 0.0...1.0)
   }
 
   private var rotatedCircle: some Shape {
