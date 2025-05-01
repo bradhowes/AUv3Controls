@@ -5,12 +5,6 @@ import SwiftUI
 
 /// Shared attributes for controls that represents some theme of an app/view.
 public class Theme: @unchecked Sendable {
-
-  public enum EditorStyle: Sendable {
-    case original
-    case grouped
-  }
-
   /// The width of the standard knob value editor
   public let controlEditorWidth: Double = 200
   /// How long to show the value in the knob's label
@@ -82,8 +76,6 @@ public class Theme: @unchecked Sendable {
     controlIndicatorEndAngle.radians - controlIndicatorStartAngle.radians
   )
 
-  public let editorStyle: EditorStyle
-
   // WIP
 
   public func controlForegroundGradient(radius: Double) -> RadialGradient {
@@ -126,7 +118,6 @@ public class Theme: @unchecked Sendable {
     controlTitleGap: Double = 12.0,
     font: Font = .callout,
     parameterValueChanged: ((AUParameterAddress) -> Void)? = nil,
-    editorStyle: EditorStyle = .original,
     touchSensitivity: Double = 2.0,
     maxChangeRegionWidthPercentage: Double = 0.1
   ) {
@@ -140,7 +131,6 @@ public class Theme: @unchecked Sendable {
     self.controlIndicatorLength = max(controlValueStrokeStyle.lineWidth / 2, controlIndicatorLength)
     self.controlTitleGap = controlTitleGap
     self.font = font
-    self.editorStyle = editorStyle
     self.touchSensitivity = touchSensitivity
     self.maxChangeRegionWidthPercentage = maxChangeRegionWidthPercentage
   }

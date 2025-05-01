@@ -70,33 +70,23 @@ struct EditorView: View {
   }
 
   var body: some View {
-    if theme.editorStyle == .grouped {
-      grouped
-    } else {
-      original
-    }
-  }
-
-  private var original: some View {
-    VStack(alignment: .center, spacing: 8) {
+    VStack(alignment: .center, spacing: 4) {
       valueEditor
+        .padding(.init(top: 2, leading: 4, bottom: 0, trailing: 4))
       buttons
     }
-    .padding(.bottom, 8)
-    .background(.quaternary)
-    .clipShape(RoundedRectangle(cornerRadius: 8))
-    .bind($store.focus, to: $focus)
-  }
-
-  private var grouped: some View {
-    GroupBox(label: groupTitle) {
-      VStack(spacing: 12) {
-        valueEditor
-        buttons
-      }
+    .padding(.init(top: 2, leading: 0, bottom: 4, trailing: 0))
+    .background {
+      RoundedRectangle(cornerRadius: 8)
+        .fill(.quaternary)
+        .stroke(.gray, lineWidth: 1)
     }
-    .background(.quaternary)
-    .clipShape(RoundedRectangle(cornerRadius: 12))
+    .overlay(alignment: .top) {
+      Text(store.displayName)
+        .font(theme.font)
+        .foregroundStyle(theme.textColor)
+        .offset(y: -24)
+    }
     .bind($store.focus, to: $focus)
   }
 
@@ -157,8 +147,7 @@ struct EditorView: View {
 }
 
 struct EditorViewPreview: PreviewProvider {
-  static let theme1 = Theme(editorStyle: .original)
-  static let theme2 = Theme(editorStyle: .grouped)
+  static let theme = Theme()
   static let param = AUParameterTree.createParameter(withIdentifier: "FEEDBACK", name: "Feedback", address: 1,
                                                      min: 0.0, max: 100.0, unit: .generic, unitName: nil,
                                                      valueStrings: nil, dependentParameters: nil)
@@ -173,9 +162,7 @@ struct EditorViewPreview: PreviewProvider {
   static var previews: some View {
     VStack {
       EditorView(store: store)
-        .auv3ControlsTheme(theme1)
-      EditorView(store: store)
-        .auv3ControlsTheme(theme2)
+        .auv3ControlsTheme(theme)
     }
     .frame(width: 240)
   }
