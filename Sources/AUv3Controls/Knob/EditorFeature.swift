@@ -19,10 +19,10 @@ public struct EditorFeature {
     var focus: Field?
     var hasFocus: Bool { focus != nil }
 
-    public init(displayName: String, formatter: KnobValueFormatter) {
+    public init(displayName: String, formatter: KnobValueFormatter, value: String = "") {
       self.displayName = displayName
       self.formatter = formatter
-      self.value = ""
+      self.value = value
       self.focus = nil
     }
 
@@ -70,24 +70,23 @@ struct EditorView: View {
   }
 
   var body: some View {
-    VStack(alignment: .center, spacing: 4) {
-      valueEditor
-        .padding(.init(top: 2, leading: 4, bottom: 0, trailing: 4))
-      buttons
-    }
-    .padding(.init(top: 2, leading: 0, bottom: 4, trailing: 0))
-    .background {
-      RoundedRectangle(cornerRadius: 8)
-        .fill(.quaternary)
-        .stroke(.gray, lineWidth: 1)
-    }
-    .overlay(alignment: .top) {
+    VStack(spacing: 2) {
       Text(store.displayName)
         .font(theme.font)
         .foregroundStyle(theme.textColor)
-        .offset(y: -24)
+      VStack(alignment: .center, spacing: 4) {
+        valueEditor
+          .padding(.init(top: 2, leading: 4, bottom: 0, trailing: 4))
+        buttons
+      }
+      .padding(.init(top: 2, leading: 0, bottom: 4, trailing: 0))
+      .background {
+        RoundedRectangle(cornerRadius: 8)
+          .fill(.quaternary)
+          .stroke(.gray, lineWidth: 1)
+      }
+      .bind($store.focus, to: $focus)
     }
-    .bind($store.focus, to: $focus)
   }
 
   private var groupTitle: some View {
@@ -154,7 +153,8 @@ struct EditorViewPreview: PreviewProvider {
   static let config = KnobConfig()
   @State static var store = Store(initialState: EditorFeature.State(
     displayName: "Release",
-    formatter: .duration(1...2)
+    formatter: .duration(1...2),
+    value: "20000.123456789"
   )) {
     EditorFeature()
   }
@@ -164,6 +164,6 @@ struct EditorViewPreview: PreviewProvider {
       EditorView(store: store)
         .auv3ControlsTheme(theme)
     }
-    .frame(width: 240)
+    .frame(width: theme.controlEditorWidth)
   }
 }

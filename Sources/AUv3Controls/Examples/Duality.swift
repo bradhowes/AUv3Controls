@@ -117,8 +117,8 @@ struct DualityView: View {
             .frame(height: 120)
             .offset(y: 12)
             VStack(alignment: .leading, spacing: 12) {
-              ToggleView(store: store1)
-              ToggleView(store: store2)
+              ToggleView(store: store1) { Text(store1.displayName) }
+              ToggleView(store: store2) { Text(store2.displayName) }
             }
           }
         }.auv3ControlsTheme(mockAUv3.theme)

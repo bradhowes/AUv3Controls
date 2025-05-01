@@ -4,9 +4,10 @@ import AudioUnit
 import SwiftUI
 
 /// Shared attributes for controls that represents some theme of an app/view.
-public class Theme: @unchecked Sendable {
-  /// The width of the standard knob value editor
-  public let controlEditorWidth: Double = 200
+public struct Theme: Sendable {
+  /// The width of the standard knob value editor. This is wide enough with the given font settings
+  /// to show 20000.123456789
+  public let controlEditorWidth: Double = 180
   /// How long to show the value in the knob's label
   public let controlShowValueDuration: TimeInterval = 1.25
   /// Duration of the animation when changing between value and title in control label
@@ -32,20 +33,11 @@ public class Theme: @unchecked Sendable {
   /// Stroke style to use when drawing the control track (backgound)
   public var controlTrackStrokeStyle: StrokeStyle
   /// Stroke style to use when drawiing the control value indicator (foreground)
-  public var controlValueStrokeStyle: StrokeStyle {
-    didSet {
-      controlValueStrokeLineWidth = controlValueStrokeStyle.lineWidth
-    }
-  }
+  public var controlValueStrokeStyle: StrokeStyle
   /// The line width of the value stroke style
-  private(set) public lazy var controlValueStrokeLineWidth: Double = self.controlValueStrokeStyle.lineWidth {
-    didSet {
-      controlValueStrokeLineWidthHalf = controlValueStrokeLineWidth / 2
-      controlIndicatorLength = max(controlIndicatorLength, controlValueStrokeLineWidthHalf)
-    }
-  }
+  public var controlValueStrokeLineWidth: Double { self.controlValueStrokeStyle.lineWidth }
   /// Half of the line width of the value stroke style
-  private(set) public lazy var controlValueStrokeLineWidthHalf: Double = controlValueStrokeLineWidth / 2
+  public var controlValueStrokeLineWidthHalf: Double { controlValueStrokeLineWidth / 2 }
   /// The spacing to put between the knob control and the title below it
   public var controlTitleGap: Double
   /// The length of the indicator at the end of the progress track. Positive value points toward the center of the
@@ -55,26 +47,26 @@ public class Theme: @unchecked Sendable {
       controlIndicatorLength = max(controlIndicatorLength, controlValueStrokeLineWidthHalf)
     }
   }
-  /// Starting angle for the Knob track0
-  public var controlIndicatorStartAngle = Angle(degrees: 40) {
+  /// Starting angle for the Knob track
+  public var controlIndicatorStartAngle: Angle {
     didSet {
       controlIndicatorStartAngleNormalized = controlIndicatorStartAngle.normalized
     }
   }
   /// Normalized starting angle value for the knob track
-  private(set) public lazy var controlIndicatorStartAngleNormalized: Double = controlIndicatorStartAngle.normalized
+  private(set) public var controlIndicatorStartAngleNormalized: Double
   /// Ending angle for the Knob track
-  public var controlIndicatorEndAngle = Angle(degrees: 320) {
+  public var controlIndicatorEndAngle: Angle {
     didSet {
       self.controlIndicatorEndAngleNormalized = controlIndicatorEndAngle.normalized
     }
   }
   /// Normalized ending angle for the knob track
-  private(set) public lazy var controlIndicatorEndAngleNormalized: Double = controlIndicatorEndAngle.normalized
+  private(set) public var controlIndicatorEndAngleNormalized: Double
 
-  private(set) public lazy var controlIndicatorStartEndSpanRadians: Double = (
+  public var controlIndicatorStartEndSpanRadians: Double {
     controlIndicatorEndAngle.radians - controlIndicatorStartAngle.radians
-  )
+  }
 
   // WIP
 
@@ -116,6 +108,8 @@ public class Theme: @unchecked Sendable {
     controlValueStrokeStyle: StrokeStyle = .init(lineWidth: 10.0, lineCap: .round),
     controlIndicatorLength: Double = 16.0,
     controlTitleGap: Double = 12.0,
+    controlIndicatorStartAngle: Angle = Angle(degrees: 40.0),
+    controlIndicatorEndAngle: Angle = Angle(degrees: 320.0),
     font: Font = .callout,
     parameterValueChanged: ((AUParameterAddress) -> Void)? = nil,
     touchSensitivity: Double = 2.0,
@@ -133,6 +127,11 @@ public class Theme: @unchecked Sendable {
     self.font = font
     self.touchSensitivity = touchSensitivity
     self.maxChangeRegionWidthPercentage = maxChangeRegionWidthPercentage
+
+    self.controlIndicatorStartAngle = controlIndicatorStartAngle
+    self.controlIndicatorEndAngle = controlIndicatorEndAngle
+    self.controlIndicatorStartAngleNormalized = controlIndicatorStartAngle.normalized
+    self.controlIndicatorEndAngleNormalized = controlIndicatorEndAngle.normalized
   }
 }
 
@@ -171,10 +170,6 @@ extension Color {
       return self.mix_shim(with: colorScheme == .dark ? .black : .white, by: 0.5)
     }
   }
-}
-
-extension Theme {
-
 }
 
 extension Theme {

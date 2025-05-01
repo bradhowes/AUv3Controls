@@ -11,7 +11,7 @@ struct EnvelopeView: View {
   var body: some View {
     let label = Text(title)
       .foregroundStyle(theme.controlForegroundColor)
-      .font(.footnote.smallCaps())
+      .font(.caption.smallCaps())
 
     let config = KnobConfig()
 
@@ -86,21 +86,21 @@ struct EnvelopeView: View {
 
     ScrollViewReader { proxy in
       ScrollView(.horizontal) {
-        GroupBox(label: label) {
-          HStack(alignment: .center, spacing: 8) {
-            VStack(alignment: .leading, spacing: 12) {
-              ToggleView(store: enableStore)
-              ToggleView(store: lockStore)
-            }
-            KnobView(store: delayStore)
-            KnobView(store: attackStore)
-            KnobView(store: holdStore)
-            KnobView(store: decayStore)
-            KnobView(store: sustainStore)
-            KnobView(store: releaseStore)
+        HStack(alignment: .top, spacing: 12) {
+          VStack(alignment: .leading, spacing: 18) {
+            label
+            ToggleView(store: enableStore) { Text(enableStore.displayName) }
+            ToggleView(store: lockStore) { Image(systemName: "lock") }
           }
+          KnobView(store: delayStore)
+          KnobView(store: attackStore)
+          KnobView(store: holdStore)
+          KnobView(store: decayStore)
+          KnobView(store: sustainStore)
+          KnobView(store: releaseStore)
         }
-        .frame(height: 140)
+        .frame(height: 100)
+        .padding()
         .border(theme.controlBackgroundColor, width: 1)
       }.scrollViewProxy(proxy)
     }
@@ -109,13 +109,17 @@ struct EnvelopeView: View {
 
 struct EnvelopeViewPreview: PreviewProvider {
   static var previews: some View {
-    let volumeTheme = Theme()
-    let modTheme = Theme()
+    var volumeTheme = Theme()
+    volumeTheme.controlTrackStrokeStyle = StrokeStyle(lineWidth: 5, lineCap: .round)
+    volumeTheme.controlValueStrokeStyle = StrokeStyle(lineWidth: 3, lineCap: .round)
+    volumeTheme.toggleOnIndicatorSystemName = "arrowtriangle.down.fill"
+    volumeTheme.toggleOffIndicatorSystemName = "arrowtriangle.down"
+    // let modTheme = Theme()
     return VStack {
       EnvelopeView(title: "Volume")
         .environment(\.auv3ControlsTheme, volumeTheme)
-      EnvelopeView(title: "Modulation")
-        .environment(\.auv3ControlsTheme, modTheme)
+      EnvelopeView(title: "Mod")
+        .environment(\.auv3ControlsTheme, volumeTheme)
     }
   }
 }

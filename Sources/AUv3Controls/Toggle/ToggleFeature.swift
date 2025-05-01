@@ -34,8 +34,9 @@ public struct ToggleFeature {
     }
   }
 
-  public enum Action: Equatable, Sendable {
+  public enum Action: BindableAction, Equatable, Sendable {
     case animatedObservedValueChanged(Bool)
+    case binding(BindingAction<State>)
     case observedValueChanged(AUValue)
     case stopValueObservation
     case task
@@ -50,13 +51,13 @@ public struct ToggleFeature {
   }
 
   public var body: some Reducer<State, Action> {
+    BindingReducer()
     Reduce { state, action in
       switch action {
-
       case let .animatedObservedValueChanged(value):
         state.isOn = value
         return .none
-
+      case .binding: return .none
       case let .observedValueChanged(value):
         return .run { send in await send(.animatedObservedValueChanged(value.asBool)) }.animation()
 
@@ -94,7 +95,6 @@ extension ToggleFeature {
     let stream: AsyncStream<AUValue>
     (state.observerToken, stream) = parameter.startObserving()
     return .run { send in
-      print("running \(valueObservationCancelId)")
       for await value in stream {
         await send(.observedValueChanged(value))
       }
@@ -116,23 +116,31 @@ extension ToggleFeature {
   }
 }
 
-public struct ToggleView: View {
-  private let store: StoreOf<ToggleFeature>
-  @Environment(\.auv3ControlsTheme) private var theme
+public struct DefaultTextView: View {
+  let value: String
 
-  public init(store: StoreOf<ToggleFeature>) {
+  public var body: some View {
+    Text(value)
+  }
+}
+
+public struct ToggleView<Content: View>: View {
+  @Bindable private var store: StoreOf<ToggleFeature>
+  @Environment(\.auv3ControlsTheme) private var theme
+  private let content: Content
+
+  public init(store: StoreOf<ToggleFeature>, @ViewBuilder content: () -> Content) {
     self.store = store
+    self.content = content()
   }
 
   public var body: some View {
-    WithViewStore(self.store, observe: { $0 }, content: { viewStore in
-      Toggle(isOn: viewStore.binding(get: \.isOn, send: .toggleTapped)) {
-        Text(viewStore.displayName)
-      }
-      .toggleStyle(.checked(theme: theme))
-      .task { await viewStore.send(.task).finish() }
-      .onDisappear { viewStore.send(.stopValueObservation) }
-    })
+    Toggle(isOn: $store.isOn) {
+      content
+    }
+    .toggleStyle(.checked(theme: theme))
+    .task { await store.send(.task).finish() }
+    .onDisappear { store.send(.stopValueObservation) }
   }
 }
 
@@ -150,8 +158,8 @@ struct ToggleViewPreview: PreviewProvider {
 
   static var previews: some View {
     VStack(alignment: .leading, spacing: 12) {
-      ToggleView(store: store1)
-      ToggleView(store: store2)
+      ToggleView(store: store1) { Text(store1.displayName) }
+      ToggleView(store: store2) { Text(store2.displayName) }
         .disabled(true)
       Button {
         store1.send(.observedValueChanged(store1.isOn ? 0.0 : 1.0))

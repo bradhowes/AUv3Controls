@@ -91,10 +91,10 @@ struct ControlView: View {
   }
   
   var body: some View {
-    TrackView(store: store.scope(state: \.track, action: \.track))
-      .overlay(alignment: .bottom) {
-        TitleView(store: store.scope(state: \.title, action: \.title))
-      }
+    VStack(alignment: .center, spacing: -8) {
+      TrackView(store: store.scope(state: \.track, action: \.track))
+      TitleView(store: store.scope(state: \.title, action: \.title))
+    }
   }
 }
 

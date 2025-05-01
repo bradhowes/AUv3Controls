@@ -88,7 +88,7 @@ final class ToggleFeatureTests: XCTestCase {
       @State var store: StoreOf<ToggleFeature>
 
       var body: some SwiftUI.View {
-        ToggleView(store: store)
+        ToggleView(store: store) { Text(store.displayName) }
       }
     }
 
@@ -111,7 +111,7 @@ final class ToggleFeatureTests: XCTestCase {
       @State var store: StoreOf<ToggleFeature>
 
       var body: some SwiftUI.View {
-        ToggleView(store: store)
+        ToggleView(store: store) { Text(store.displayName) }
       }
     }
 

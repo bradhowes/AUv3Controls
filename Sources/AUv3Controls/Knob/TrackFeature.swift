@@ -101,18 +101,7 @@ public struct TrackView: View {
       } action: { height in
         controlRadius = height / 2
       }
-      .contentShape(.interaction, Circle())
-      .aspectRatio(1, contentMode: .fit)
-      .overlay {
-        rotatedCircle
-          .trackStroke(config: config, theme: theme)
-        rotatedCircle
-          .progressStroke(config: config, theme: theme, norm: store.norm)
-        rotatedIndicator
-          .stroke(theme.controlForegroundColor, style: theme.controlValueStrokeStyle)
-      }
-      .offset(y: -16)
-      .animation(.smooth, value: store.norm)
+      .contentShape(Circle())
       .onTapGesture(count: 1) {
         store.send(.viewTapped)
       }
@@ -134,6 +123,15 @@ public struct TrackView: View {
           store.send(.dragEnded(store.norm))
         }
       )
+      .overlay {
+        rotatedCircle
+          .trackStroke(config: config, theme: theme)
+        rotatedCircle
+          .progressStroke(config: config, theme: theme, norm: store.norm)
+        rotatedIndicator
+          .stroke(theme.controlForegroundColor, style: theme.controlValueStrokeStyle)
+      }
+      .animation(.smooth, value: store.norm)
   }
 
   private func dragNorm(state: DragState, previous: CGPoint, position: CGPoint) -> Double {
