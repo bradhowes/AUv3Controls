@@ -89,7 +89,7 @@ struct EnvelopeView: View {
         HStack(alignment: .top, spacing: 12) {
           VStack(alignment: .leading, spacing: 18) {
             label
-            ToggleView(store: enableStore) { Text(enableStore.displayName) }
+            ToggleView(store: enableStore)
             ToggleView(store: lockStore) { Image(systemName: "lock") }
           }
           KnobView(store: delayStore)

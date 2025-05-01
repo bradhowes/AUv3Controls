@@ -127,7 +127,7 @@ public struct DefaultTextView: View {
 public struct ToggleView<Content: View>: View {
   @Bindable private var store: StoreOf<ToggleFeature>
   @Environment(\.auv3ControlsTheme) private var theme
-  private let content: Content
+  private var content: Content? = nil
 
   public init(store: StoreOf<ToggleFeature>, @ViewBuilder content: () -> Content) {
     self.store = store
@@ -136,11 +136,22 @@ public struct ToggleView<Content: View>: View {
 
   public var body: some View {
     Toggle(isOn: $store.isOn) {
-      content
+      if content != nil {
+        content
+      } else {
+        Text(store.displayName)
+      }
     }
     .toggleStyle(.checked(theme: theme))
     .task { await store.send(.task).finish() }
     .onDisappear { store.send(.stopValueObservation) }
+  }
+}
+
+extension ToggleView where Content == EmptyView {
+
+  public init(store: StoreOf<ToggleFeature>) {
+    self.store = store
   }
 }
 
@@ -160,7 +171,6 @@ struct ToggleViewPreview: PreviewProvider {
     VStack(alignment: .leading, spacing: 12) {
       ToggleView(store: store1) { Text(store1.displayName) }
       ToggleView(store: store2) { Text(store2.displayName) }
-        .disabled(true)
       Button {
         store1.send(.observedValueChanged(store1.isOn ? 0.0 : 1.0))
       } label: {
