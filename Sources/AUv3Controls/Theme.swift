@@ -14,7 +14,7 @@ public class Theme: @unchecked Sendable {
   /// The width of the standard knob value editor
   public let controlEditorWidth: Double = 200
   /// How long to show the value in the knob's label
-  public let controlShowValueDuration = 1.25
+  public let controlShowValueDuration: TimeInterval = 1.25
   /// Duration of the animation when changing between value and title in control label
   public let controlChangeAnimationDuration: TimeInterval = 0.35
   /**
@@ -22,7 +22,7 @@ public class Theme: @unchecked Sendable {
    By default this is 2x the `controlSize` value. Setting it to 4 will require 4x the `controlSize` distance
    to go from `minimumValue` to `maximumValue`, thus making it more sensitive in general.
    */
-  public let touchSensitivity: CGFloat
+  public let touchSensitivity: Double
   /// The background color to use when drawing the control
   public var controlBackgroundColor: Color
   /// The foreground color to use when drawing the control
@@ -44,19 +44,19 @@ public class Theme: @unchecked Sendable {
     }
   }
   /// The line width of the value stroke style
-  private(set) public lazy var controlValueStrokeLineWidth: CGFloat = self.controlValueStrokeStyle.lineWidth {
+  private(set) public lazy var controlValueStrokeLineWidth: Double = self.controlValueStrokeStyle.lineWidth {
     didSet {
       controlValueStrokeLineWidthHalf = controlValueStrokeLineWidth / 2
       controlIndicatorLength = max(controlIndicatorLength, controlValueStrokeLineWidthHalf)
     }
   }
   /// Half of the line width of the value stroke style
-  private(set) public lazy var controlValueStrokeLineWidthHalf: CGFloat = controlValueStrokeLineWidth / 2
+  private(set) public lazy var controlValueStrokeLineWidthHalf: Double = controlValueStrokeLineWidth / 2
   /// The spacing to put between the knob control and the title below it
-  public var controlTitleGap: CGFloat
+  public var controlTitleGap: Double
   /// The length of the indicator at the end of the progress track. Positive value points toward the center of the
   /// track, negative values will point away from the center.
-  public var controlIndicatorLength: CGFloat {
+  public var controlIndicatorLength: Double {
     didSet {
       controlIndicatorLength = max(controlIndicatorLength, controlValueStrokeLineWidthHalf)
     }
@@ -68,7 +68,7 @@ public class Theme: @unchecked Sendable {
     }
   }
   /// Normalized starting angle value for the knob track
-  private(set) public lazy var controlIndicatorStartAngleNormalized: CGFloat = controlIndicatorStartAngle.normalized
+  private(set) public lazy var controlIndicatorStartAngleNormalized: Double = controlIndicatorStartAngle.normalized
   /// Ending angle for the Knob track
   public var controlIndicatorEndAngle = Angle(degrees: 320) {
     didSet {
@@ -76,9 +76,9 @@ public class Theme: @unchecked Sendable {
     }
   }
   /// Normalized ending angle for the knob track
-  private(set) public lazy var controlIndicatorEndAngleNormalized: CGFloat = controlIndicatorEndAngle.normalized
+  private(set) public lazy var controlIndicatorEndAngleNormalized: Double = controlIndicatorEndAngle.normalized
 
-  private(set) public lazy var controlIndicatorStartEndSpanRadians: CGFloat = (
+  private(set) public lazy var controlIndicatorStartEndSpanRadians: Double = (
     controlIndicatorEndAngle.radians - controlIndicatorStartAngle.radians
   )
 
@@ -105,6 +105,13 @@ public class Theme: @unchecked Sendable {
   }
 
   /**
+   Percentage of `controlDiameter` where a touch/mouse event will perform maximum value change. This defines a
+   vertical region in the middle of the view. Events outside of this region will have finer sensitivity and control
+   over value changes.
+   */
+  public let maxChangeRegionWidthPercentage: Double
+
+  /**
    Initialize instance.
 
    - parameter bundle the Bundle to use for assets
@@ -115,12 +122,13 @@ public class Theme: @unchecked Sendable {
     bundle: Bundle? = nil,
     controlTrackStrokeStyle: StrokeStyle = .init(lineWidth: 10.0, lineCap: .round),
     controlValueStrokeStyle: StrokeStyle = .init(lineWidth: 10.0, lineCap: .round),
-    controlIndicatorLength: CGFloat = 16.0,
-    controlTitleGap: CGFloat = 12.0,
+    controlIndicatorLength: Double = 16.0,
+    controlTitleGap: Double = 12.0,
     font: Font = .callout,
     parameterValueChanged: ((AUParameterAddress) -> Void)? = nil,
     editorStyle: EditorStyle = .original,
-    touchSensitivity: CGFloat = 2.0
+    touchSensitivity: Double = 2.0,
+    maxChangeRegionWidthPercentage: Double = 0.1
   ) {
     self.controlBackgroundColor = Self.color(.controlBackgroundColor, from: bundle,
                                              default: .init(hex: "333333") ?? .gray)
@@ -134,14 +142,8 @@ public class Theme: @unchecked Sendable {
     self.font = font
     self.editorStyle = editorStyle
     self.touchSensitivity = touchSensitivity
+    self.maxChangeRegionWidthPercentage = maxChangeRegionWidthPercentage
   }
-
-  /**
-   Percentage of `controlDiameter` where a touch/mouse event will perform maximum value change. This defines a
-   vertical region in the middle of the view. Events outside of this region will have finer sensitivity and control
-   over value changes.
-   */
-  public let maxChangeRegionWidthPercentage: CGFloat = 0.1
 }
 
 private extension Theme {
