@@ -112,10 +112,9 @@ struct DualityView: View {
           VStack(spacing: 24) {
             HStack(spacing: 18) {
               KnobView(store: store3)
-                .frame(width: 100, height: 100)
               KnobView(store: store4)
-                .frame(width: 100, height: 100)
             }
+            .frame(height: 120)
             .offset(y: 12)
             VStack(alignment: .leading, spacing: 12) {
               ToggleView(store: store1)
