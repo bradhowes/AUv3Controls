@@ -92,6 +92,7 @@ public struct TitleView: View {
   private let store: StoreOf<TitleFeature>
   @Environment(\.isEnabled) private var enabled
   @Environment(\.auv3ControlsTheme) private var theme
+  @State private var minWidth: Double = .zero
 
   public init(store: StoreOf<TitleFeature>) {
     self.store = store
@@ -107,8 +108,15 @@ public struct TitleView: View {
           .transition(.move(edge: store.showingValue ? .top : .bottom))
       }
     }
+    .onGeometryChange(for: Double.self) {
+      $0.size.width
+    } action: {
+      self.minWidth = max(self.minWidth, $0)
+      print(self.minWidth)
+    }
     .font(theme.font)
     .foregroundColor(theme.textColor)
+    .frame(minWidth: minWidth)
     .contentShape(Rectangle())
     .clipped(antialiased: true)
     .animation(.smooth, value: store.showingValue)
