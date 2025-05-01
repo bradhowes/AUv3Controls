@@ -84,6 +84,26 @@ public class Theme: @unchecked Sendable {
 
   public let editorStyle: EditorStyle
 
+  // WIP
+
+  public func controlForegroundGradient(radius: Double) -> RadialGradient {
+    .init(
+      gradient: Gradient(colors: [.black, controlForegroundColor, .white]),
+      center: .center,
+      startRadius: radius - controlValueStrokeLineWidth * 1.5,
+      endRadius: radius + controlValueStrokeLineWidth / 2
+    )
+  }
+
+  public func controlBackgroundGradient(radius: Double) -> RadialGradient {
+    .init(
+      gradient: Gradient(colors: [.white, controlBackgroundColor, .black]),
+      center: .center,
+      startRadius: radius - controlValueStrokeLineWidth * 1.5,
+      endRadius: radius + controlValueStrokeLineWidth / 2
+    )
+  }
+
   /**
    Initialize instance.
 

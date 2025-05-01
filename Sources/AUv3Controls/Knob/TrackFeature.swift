@@ -85,23 +85,6 @@ public struct TrackView: View {
   @State private var maxDragChangeRegionWidthHalf = 8.0
   @State private var lastDrag: CGPoint?
 
-  var foregroundGradient: RadialGradient {
-    .init(
-      gradient: Gradient(colors: [.white, theme.controlForegroundColor, .black]),
-      center: .center,
-      startRadius: 0, endRadius: 100
-    )
-  }
-
-  var backgroundGradient: RadialGradient {
-    .init(
-      gradient: Gradient(colors: [.white, theme.controlBackgroundColor, .black]),
-      center: .center,
-      startRadius: 0,
-      endRadius: 100
-    )
-  }
-
   public init(store: StoreOf<TrackFeature>) {
     self.store = store
   }
@@ -120,11 +103,11 @@ public struct TrackView: View {
       .aspectRatio(1, contentMode: .fit)
       .overlay {
         rotatedCircle
-          .trackStroke(config: config, theme: theme, gradient: backgroundGradient)
+          .trackStroke(config: config, theme: theme)
         rotatedCircle
-          .progressStroke(config: config, theme: theme, gradient: foregroundGradient, norm: store.norm)
+          .progressStroke(config: config, theme: theme, norm: store.norm)
         rotatedIndicator
-          .stroke(foregroundGradient, style: theme.controlValueStrokeStyle)
+          .stroke(theme.controlForegroundColor, style: theme.controlValueStrokeStyle)
       }
       .offset(y: -16)
       .animation(.smooth, value: store.norm)
@@ -190,20 +173,20 @@ public struct TrackView: View {
 
 private extension Shape {
 
-  func trackStroke(config: KnobConfig, theme: Theme, gradient: RadialGradient) -> some View {
+  func trackStroke(config: KnobConfig, theme: Theme) -> some View {
     return trim(
       from: theme.controlIndicatorStartAngleNormalized,
       to: theme.controlIndicatorEndAngleNormalized
     )
-    .stroke(gradient, style: theme.controlTrackStrokeStyle)
+    .stroke(theme.controlBackgroundColor, style: theme.controlTrackStrokeStyle)
   }
 
-  func progressStroke(config: KnobConfig, theme: Theme, gradient: RadialGradient, norm: Double) -> some View {
+  func progressStroke(config: KnobConfig, theme: Theme, norm: Double) -> some View {
     return trim(
       from: theme.controlIndicatorStartAngleNormalized,
       to: theme.endTrim(for: norm)
     )
-    .stroke(gradient, style: theme.controlValueStrokeStyle)
+    .stroke(theme.controlForegroundColor, style: theme.controlValueStrokeStyle)
   }
 }
 
