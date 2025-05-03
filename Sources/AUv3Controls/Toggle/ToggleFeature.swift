@@ -111,7 +111,6 @@ extension ToggleFeature {
     }
     parameter.removeParameterObserver(token)
     state.observerToken = nil
-    print("stopping \(valueObservationCancelId)")
     return .cancel(id: valueObservationCancelId)
   }
 }

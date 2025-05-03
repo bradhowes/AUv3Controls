@@ -58,8 +58,9 @@ public struct ControlFeature {
       case .track(.dragStarted): return reduce(into: &state, action: .title(.dragActive(true)))
       case .track(.dragEnded): return reduce(into: &state, action: .title(.dragActive(false)))
       case .track(.viewTapped): return showValue(&state)
-      case .track: return trackChanged(&state)
+      case .track(.dragChanged): return trackChanged(&state)
       case .valueChanged(let value): return valueChanged(&state, value: value)
+      case .track: return .none
       }
     }
   }

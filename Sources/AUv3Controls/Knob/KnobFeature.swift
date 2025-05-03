@@ -105,7 +105,7 @@ public struct KnobFeature {
     Reduce { state, action in
       switch action {
       case .control(let controlAction): return controlChanged(&state, action: controlAction)
-      case .editor(let editorAction): return editValue(&state, action: editorAction)
+      case .editor(let editorAction): return editorChanged(&state, action: editorAction)
       case .observedValueChanged(let value): return reduce(into: &state, action: .control(.valueChanged(Double(value))))
       case .performScrollTo(let id): return scrollTo(&state, id: id)
       case .stopValueObservation: return stopObserving(&state)
@@ -125,19 +125,29 @@ private extension KnobFeature {
     }
   }
 
-  func editValue(_ state: inout State, action: EditorFeature.Action) -> Effect<Action> {
-    guard
-      action == .acceptButtonTapped,
-      let editorValue = Double(state.editor.value)
-    else {
+  func editorChanged(_ state: inout State, action: EditorFeature.Action) -> Effect<Action> {
+    switch action {
+    case .acceptButtonTapped:
+      if let editorValue = Double(state.editor.value) {
+        let value = state.normValueTransform.normToValue(state.normValueTransform.valueToNorm(editorValue))
+        state.showingEditor = false
+        state.scrollToDestination = nil
+        return .merge(
+          setParameterEffect(state: state, value: value, cause: .value),
+          reduce(into: &state, action: .control(.valueChanged(Double(value))))
+        )
+      }
+
+    case .cancelButtonTapped:
+      state.showingEditor = false
+      state.scrollToDestination = nil
       return .none
+
+    default:
+      break
     }
-    let value = state.normValueTransform.normToValue(state.normValueTransform.valueToNorm(editorValue))
-    state.showingEditor = false
-    return .merge(
-      setParameterEffect(state: state, value: value, cause: .value),
-      reduce(into: &state, action: .control(.valueChanged(Double(value))))
-    ).animation(.smooth)
+
+    return .none
   }
 
   func scrollTo(_ state: inout State, id: UInt64?) -> Effect<Action> {
@@ -147,8 +157,9 @@ private extension KnobFeature {
 
   func showEditor(_ state: inout State) -> Effect<Action> {
     state.showingEditor = true
+    state.scrollToDestination = state.id
     let value = state.normValueTransform.normToValue(state.control.track.norm)
-    return reduce(into: &state, action: .editor(.beginEditing(value))).animation(.smooth)
+    return reduce(into: &state, action: .editor(.beginEditing(value)))
   }
 
   func startObserving(_ state: inout State) -> Effect<Action> {
@@ -185,11 +196,7 @@ private extension KnobFeature {
     )
   }
 
-  func setParameterEffect(
-    state: State,
-    value: Double,
-    cause: AUParameterAutomationEventType?
-  ) -> Effect<Action> {
+  func setParameterEffect(state: State, value: Double, cause: AUParameterAutomationEventType?) -> Effect<Action> {
     guard let cause,
           let parameter = state.parameter
     else {
@@ -244,15 +251,11 @@ public struct KnobView: View {
     }
     .task { await store.send(.task).finish() }
     .onDisappear { store.send(.stopValueObservation) }
-    .onChange(of: store.showingEditor) { _, _ in
-      store.send(.performScrollTo(store.id))
-    }
     .onChange(of: store.scrollToDestination) { _, newValue in
       guard let newValue, let proxy = proxy else { return }
       withAnimation {
         proxy.scrollTo(newValue)
       }
-      store.send(.performScrollTo(nil))
     }
     .id(store.id)
   }

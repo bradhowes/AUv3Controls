@@ -112,7 +112,6 @@ public struct TitleView: View {
       $0.size.width
     } action: {
       self.minWidth = max(self.minWidth, $0)
-      print(self.minWidth)
     }
     .font(theme.font)
     .foregroundColor(theme.textColor)
