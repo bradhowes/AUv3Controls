@@ -33,7 +33,7 @@ public struct KnobFeature {
 
     @ObservationStateIgnored var observerToken: AUParameterObserverToken?
 
-    var value: Double {
+    public var value: Double {
       normValueTransform.normToValue(control.track.norm)
     }
 
