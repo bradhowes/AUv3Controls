@@ -4,6 +4,7 @@ import AudioToolbox
 import ComposableArchitecture
 
 extension AUParameter {
+  public typealias Observation = (AUParameterObserverToken, AsyncStream<AUValue>)
 
   /**
    Obtain a stream of value changes from a parameter, presumably changed by another entity such as a MIDI
@@ -11,7 +12,7 @@ extension AUParameter {
 
    - returns: 2-tuple containing a token for cancelling the observation and an AsyncStream of observed values
    */
-  public func startObserving(onTermination: (@Sendable (Any) -> Void)? = nil) -> (AUParameterObserverToken, AsyncStream<AUValue>) {
+  public func startObserving(onTermination: (@Sendable (Any) -> Void)? = nil) -> Observation {
     let (stream, continuation) = AsyncStream<AUValue>.makeStream()
     let observerToken = self.token(byAddingParameterObserver: { address, value in
       var lastSeen: AUValue?

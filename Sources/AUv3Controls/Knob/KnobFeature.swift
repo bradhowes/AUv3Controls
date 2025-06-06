@@ -30,7 +30,12 @@ public struct KnobFeature {
     var editor: EditorFeature.State
     var scrollToDestination: UInt64?
     var showingEditor: Bool = false
+
     @ObservationStateIgnored var observerToken: AUParameterObserverToken?
+
+    var value: Double {
+      normValueTransform.normToValue(control.track.norm)
+    }
 
     public init(parameter: AUParameter,
                 formatter: KnobValueFormatter = .general(),
