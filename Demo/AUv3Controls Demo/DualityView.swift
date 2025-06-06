@@ -8,7 +8,13 @@ private let param2 = AUParameterTree.createBoolean(withIdentifier: "Monophonic",
 private let param3 = AUParameterTree.createFloat(withIdentifier: "Volume", name: "Volume", address: 3, range: 0...100)
 private let param4 = AUParameterTree.createFloat(withIdentifier: "Pan", name: "Pan", address: 4, range: -50...50)
 
-let theme = Theme()
+let theme: Theme = {
+  var theme = Theme()
+  theme.toggleOffIndicatorSystemName = "arrowtriangle.down"
+  theme.toggleOnIndicatorSystemName = "arrowtriangle.down.fill"
+  return theme
+}()
+
 let config = KnobConfig()
 
 private class MockAUv3 {
@@ -91,6 +97,7 @@ struct DualityView: View {
           ToggleView(store: store2)
         }
       }
+      .auv3ControlsTheme(theme)
       .padding()
       GroupBox(label: Label("MIDI Controls", systemImage: "pianokeys")) {
         let param3Range = ClosedRange<Double>(uncheckedBounds: (Double(param3.range.lowerBound), Double(param3.range.upperBound)))

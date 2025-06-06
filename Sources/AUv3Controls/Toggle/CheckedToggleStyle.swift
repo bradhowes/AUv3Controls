@@ -18,9 +18,11 @@ public struct CheckedToggleStyle: ToggleStyle {
         Image(systemName: configuration.isOn ? theme.toggleOnIndicatorSystemName : theme.toggleOffIndicatorSystemName)
           .foregroundColor(theme.controlForegroundColor)
           .accessibility(label: Text(configuration.isOn ? "Checked" : "Unchecked"))
+          .animation(.smooth, value: configuration.isOn)
         configuration.label
           .font(theme.font)
           .foregroundStyle(theme.textColor)
+          .animation(.smooth, value: configuration.isOn)
       }
     }
     .buttonStyle(.borderless)
