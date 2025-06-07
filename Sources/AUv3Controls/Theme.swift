@@ -7,7 +7,7 @@ import SwiftUI
 public struct Theme: Sendable {
   /// The width of the standard knob value editor. This is wide enough with the given font settings
   /// to show 20000.123456789
-  public let controlEditorWidth: Double = 180
+  public let controlEditorWidth: Double = 140
   /// How long to show the value in the knob's label
   public let controlShowValueDuration: TimeInterval = 1.25
   /// Duration of the animation when changing between value and title in control label

@@ -137,7 +137,7 @@ struct EditorView: View {
       .buttonStyle(.borderless)
       .foregroundColor(theme.textColor)
     }
-    .padding(.init(top: 8, leading: 0, bottom: 8, trailing: 0))
+    .padding(.init(top: 2, leading: 0, bottom: 0, trailing: 0))
   }
 
   func sendAcceptButtonTapped() {
@@ -158,7 +158,7 @@ struct EditorViewPreview: PreviewProvider {
   @State static var store = Store(initialState: EditorFeature.State(
     displayName: "Release",
     formatter: .duration(1...2),
-    value: "20000.123456789"
+    value: "20000.12345"
   )) {
     EditorFeature()
   }
