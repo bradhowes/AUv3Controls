@@ -4,7 +4,7 @@ import AVFoundation
 import ComposableArchitecture
 import SwiftUI
 
-/***
+/**
  A value editor for a `KnobFeature` control. Provides a text field for editing the current value of the control, and
  two buttons, one to accept the changes, and another to cancel them.
  */
@@ -82,7 +82,7 @@ struct EditorView: View {
       .padding(.init(top: 2, leading: 0, bottom: 4, trailing: 0))
       .background {
         RoundedRectangle(cornerRadius: 8)
-          .fill(.quaternary)
+          .fill(theme.editorBackgroundColor)
           .stroke(.gray, lineWidth: 1)
       }
       .bind($store.focus, to: $focus)
@@ -122,18 +122,22 @@ struct EditorView: View {
       Button {
         sendAcceptButtonTapped()
       } label: {
-        Text("Accept", comment: "Name of button that accepts an edited value")
+        Text("OK", comment: "Name of button that accepts an edited value")
+          .font(.callout)
+          .bold()
       }
-      .buttonStyle(.bordered)
+      // .buttonStyle(.bordered)
       .foregroundColor(theme.textColor)
       Button {
         sendCancelButtonTapped()
       } label: {
         Text("Cancel", comment: "Name of button that cancels editing")
+          .font(.callout)
       }
       .buttonStyle(.borderless)
       .foregroundColor(theme.textColor)
     }
+    .padding(.init(top: 8, leading: 0, bottom: 8, trailing: 0))
   }
 
   func sendAcceptButtonTapped() {

@@ -24,6 +24,8 @@ public struct Theme: Sendable {
   public var controlForegroundColor: Color
   /// The color of any text components of the control
   public var textColor: Color
+  /// The background color to use for the value editor box
+  public var editorBackgroundColor: Color = Color(hex: "101010")!
   /// The font to use for any text components of the control
   public var font: Font = .callout
   /// The indicator to use for a toggle control when the value is `true`
