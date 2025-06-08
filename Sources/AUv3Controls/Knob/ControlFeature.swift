@@ -12,6 +12,7 @@ import SwiftUI
  */
 @Reducer
 public struct ControlFeature {
+  let formatter: any KnobValueFormattingProvider
 
   @ObservableState
   public struct State: Equatable {
@@ -23,13 +24,11 @@ public struct ControlFeature {
       displayName: String,
       value: Double,
       normValueTransform: NormValueTransform,
-      formatter: KnobValueFormatter,
       config: KnobConfig
     ) {
       self.normValueTransform = normValueTransform
       self.title = .init(
         displayName: displayName,
-        formatter: formatter,
         showValueDuration: config.controlShowValueDuration
       )
       self.track = .init(
@@ -46,11 +45,13 @@ public struct ControlFeature {
     case valueChanged(Double)
   }
 
-  public init() {}
+  public init(formatter: any KnobValueFormattingProvider) {
+    self.formatter = formatter
+  }
 
   public var body: some Reducer<State, Action> {
     Scope(state: \.track, action: \.track) { TrackFeature() }
-    Scope(state: \.title, action: \.title) { TitleFeature() }
+    Scope(state: \.title, action: \.title) { TitleFeature(formatter: formatter) }
 
     Reduce { state, action in
       switch action {
@@ -116,10 +117,9 @@ struct ControlViewPreview: PreviewProvider {
     displayName: param.displayName,
     value: Double(param.value),
     normValueTransform: .init(parameter: param),
-    formatter: .duration(),
     config: config
   )) {
-    ControlFeature()
+    ControlFeature(formatter: KnobValueFormatter.duration())
   }
 
   static var previews: some View {

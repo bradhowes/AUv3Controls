@@ -19,10 +19,9 @@ private final class Context {
       displayName: param.displayName,
       value: 0,
       normValueTransform: .init(parameter: param),
-      formatter: .general(),
       config: config
     )) {
-      ControlFeature()
+      ControlFeature(formatter: KnobValueFormatter.general())
     } withDependencies: {
       $0.continuousClock = ImmediateClock()
     }
@@ -84,10 +83,9 @@ final class ControlFeatureTests: XCTestCase {
       displayName: ctx.param.displayName,
       value: 0.0,
       normValueTransform: .init(parameter: ctx.param),
-      formatter: .general(1...2),
       config: ctx.config
     )) {
-      ControlFeature()
+      ControlFeature(formatter: KnobValueFormatter.general(1...2))
     } withDependencies: {
       $0.continuousClock = ContinuousClock()
     })

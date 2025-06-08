@@ -18,70 +18,67 @@ struct EnvelopeView: View {
     let enableStore = Store(initialState: ToggleFeature.State(isOn: true, displayName: "On")) { ToggleFeature() }
     let lockStore = Store(initialState: ToggleFeature.State(isOn: true, displayName: "Lock")) { ToggleFeature() }
 
+    let secondsFormatter = KnobValueFormatter.seconds()
+    let percentageFormatter = KnobValueFormatter.percentage()
+
     let delayParam = AUParameterTree.createParameter(withIdentifier: "DELAY", name: "Delay", address: 1, min: 0.0,
-                                                     max: 100.0, unit: .generic, unitName: nil, flags: [],
+                                                     max: 2.0, unit: .seconds, unitName: nil, flags: [],
                                                      valueStrings: nil, dependentParameters: nil)
     let delayStore = Store(initialState: KnobFeature.State(
       parameter: delayParam,
-      formatter: .duration(1...1),
       config: config
     )) {
-      KnobFeature()
+      KnobFeature(formatter: secondsFormatter)
     }
 
     let attackParam = AUParameterTree.createParameter(withIdentifier: "ATTACK", name: "Attack", address: 2, min: 0.0,
-                                                      max: 100.0, unit: .generic, unitName: nil, flags: [],
+                                                      max: 5.0, unit: .seconds, unitName: nil, flags: [],
                                                       valueStrings: nil, dependentParameters: nil)
     let attackStore = Store(initialState: KnobFeature.State(
       parameter: attackParam,
-      formatter: .duration(1...2),
       config: config
     )) {
-      KnobFeature()
+      KnobFeature(formatter: secondsFormatter)
     }
 
     let holdParam = AUParameterTree.createParameter(withIdentifier: "HOLD", name: "Hold", address: 3, min: 0.0,
-                                                    max: 100.0, unit: .generic, unitName: nil, flags: [],
+                                                    max: 5, unit: .seconds, unitName: nil, flags: [],
                                                     valueStrings: nil, dependentParameters: nil)
     let holdStore = Store(initialState: KnobFeature.State(
       parameter: holdParam,
-      formatter: .general(1...3),
       config: config
     )) {
-      KnobFeature()
+      KnobFeature(formatter: secondsFormatter)
     }
 
     let decayParam = AUParameterTree.createParameter(withIdentifier: "DECAY", name: "Decay", address: 4, min: 0.0,
-                                                     max: 100.0, unit: .generic, unitName: nil, flags: [],
+                                                     max: 10.0, unit: .seconds, unitName: nil, flags: [],
                                                      valueStrings: nil, dependentParameters: nil)
     let decayStore = Store(initialState: KnobFeature.State(
       parameter: decayParam,
-      formatter: .duration(1...4),
       config: config
     )) {
-      KnobFeature()
+      KnobFeature(formatter: secondsFormatter)
     }
 
     let sustainParam = AUParameterTree.createParameter(withIdentifier: "SUSTAIN", name: "Sustain", address: 5, min: 0.0,
-                                                       max: 100.0, unit: .generic, unitName: nil, flags: [],
+                                                       max: 100.0, unit: .percent, unitName: nil, flags: [],
                                                        valueStrings: nil, dependentParameters: nil)
     let sustainStore = Store(initialState: KnobFeature.State(
       parameter: sustainParam,
-      formatter: .general(2...4),
       config: config
     )) {
-      KnobFeature()
+      KnobFeature(formatter: percentageFormatter)
     }
 
     let releaseParam = AUParameterTree.createParameter(withIdentifier: "RELEASE", name: "Release", address: 6, min: 0.0,
-                                                       max: 100.0, unit: .generic, unitName: nil, flags: [],
+                                                       max: 10.0, unit: .seconds, unitName: nil, flags: [],
                                                        valueStrings: nil, dependentParameters: nil)
     let releaseStore = Store(initialState: KnobFeature.State(
       parameter: releaseParam,
-      formatter: .duration(1...4),
       config: config
     )) {
-      KnobFeature()
+      KnobFeature(formatter: secondsFormatter)
     }
 
     ScrollViewReader { proxy in

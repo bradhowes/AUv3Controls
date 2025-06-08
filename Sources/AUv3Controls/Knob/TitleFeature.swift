@@ -11,20 +11,19 @@ import SwiftUI
  */
 @Reducer
 public struct TitleFeature {
+  let formatter: any KnobValueFormattingProvider
 
   @ObservableState
   public struct State: Equatable {
     let displayName: String
-    let formatter: KnobValueFormatter
     let showValueDuration: Double
     let showValueCancelId: String
     @ObservationStateIgnored var dragActive: Bool = false
     var formattedValue: String?
     var showingValue: Bool { formattedValue != nil }
 
-    public init(displayName: String, formatter: KnobValueFormatter, showValueDuration: Double) {
+    public init(displayName: String, showValueDuration: Double) {
       self.displayName = displayName
-      self.formatter = formatter
       self.showValueDuration = showValueDuration
       self.showValueCancelId = "ShowValueCancelId[\(UUID().uuidString)]"
     }
@@ -39,7 +38,9 @@ public struct TitleFeature {
 
   @Dependency(\.continuousClock) var clock
 
-  public init() {}
+  public init(formatter: any KnobValueFormattingProvider) {
+    self.formatter = formatter
+  }
 
   public var body: some Reducer<State, Action> {
     Reduce { state, action in
@@ -66,7 +67,7 @@ private extension TitleFeature {
   }
 
   func showValueEffect(state: inout State, value: Double) -> Effect<Action> {
-    state.formattedValue = state.formatter.forDisplay(value)
+    state.formattedValue = formatter.forDisplay(value)
     return state.dragActive ? .none : startTitleTimerEffect(&state)
   }
 
@@ -135,10 +136,9 @@ struct TitleViewPreview: PreviewProvider {
   static let theme = Theme()
   @State static var store = Store(initialState: TitleFeature.State(
     displayName: param.displayName,
-    formatter: .duration(2...2),
     showValueDuration: theme.controlShowValueDuration
   )) {
-    TitleFeature()
+    TitleFeature(formatter: KnobValueFormatter.duration(2...2))
   }
 
   static var previews: some View {

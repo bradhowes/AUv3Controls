@@ -13,11 +13,8 @@ private final class Context {
                                               min: 0.0, max: 100.0, unit: .generic, unitName: nil,
                                               valueStrings: nil, dependentParameters: nil)
   let config = KnobConfig()
-  lazy var store = TestStore(initialState: .init(
-    displayName: param.displayName,
-    formatter: .general(2...4)
-  )) {
-    EditorFeature()
+  lazy var store = TestStore(initialState: .init(displayName: param.displayName)) {
+    EditorFeature(formatter: KnobValueFormatter.general(2...4))
   } withDependencies: { $0.continuousClock = ImmediateClock() }
 
   init() {}
@@ -88,13 +85,12 @@ final class EditorFeatureTests: XCTestCase {
     }
 
     let view = MyView(config: ctx.config, store: Store(initialState: .init(
-      displayName: ctx.param.displayName,
-      formatter: .general(1...2)
-    )) {
-      EditorFeature()
-    } withDependencies: {
-      $0.continuousClock = ContinuousClock()
-    })
+      displayName: ctx.param.displayName)) {
+        EditorFeature(formatter: KnobValueFormatter.general(1...2))
+      } withDependencies: {
+        $0.continuousClock = ContinuousClock()
+      }
+    )
 
     await view.store.send(.valueChanged("12.34")).finish()
 

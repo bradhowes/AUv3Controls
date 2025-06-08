@@ -15,7 +15,7 @@ private final class Context {
                                               valueStrings: nil, dependentParameters: nil)
   let config = KnobConfig()
   lazy var store = TestStore(initialState: .init(parameter: param, config: config)) {
-    KnobFeature { [weak self] address in
+    KnobFeature(formatter: KnobValueFormatter.general()) { [weak self] address in
       guard let self else { return }
       changed[address] = changed[address]! + 1
     }
@@ -164,7 +164,7 @@ final class KnobFeatureTests: XCTestCase {
     }
 
     let view = MyView(config: ctx.config, store: Store(initialState: .init(parameter: ctx.param, config: ctx.config)) {
-      KnobFeature()
+      KnobFeature(formatter: KnobValueFormatter.general())
     } withDependencies: {
       $0.continuousClock = ContinuousClock()
     })

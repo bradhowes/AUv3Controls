@@ -18,6 +18,17 @@ import SwiftUI
  */
 @Reducer
 public struct KnobFeature {
+  let formatter: any KnobValueFormattingProvider
+  // Only used for unit tests
+  private let parameterValueChanged: ((AUParameterAddress) -> Void)?
+
+  public init(
+    formatter: any KnobValueFormattingProvider,
+    parameterValueChanged: ((AUParameterAddress) -> Void)? = nil
+  ) {
+    self.formatter = formatter
+    self.parameterValueChanged = parameterValueChanged
+  }
 
   @ObservableState
   public struct State: Equatable {
@@ -37,10 +48,7 @@ public struct KnobFeature {
       normValueTransform.normToValue(control.track.norm)
     }
 
-    public init(parameter: AUParameter,
-                formatter: KnobValueFormatter = .general(),
-                config: KnobConfig = .default
-    ) {
+    public init(parameter: AUParameter, config: KnobConfig = .default) {
       let normValueTransform: NormValueTransform = .init(parameter: parameter)
       self.id = parameter.address
       self.config = config
@@ -51,10 +59,9 @@ public struct KnobFeature {
         displayName: parameter.displayName,
         value: Double(parameter.value),
         normValueTransform: normValueTransform,
-        formatter: formatter,
         config: config
       )
-      self.editor = .init(displayName: parameter.displayName, formatter: formatter)
+      self.editor = .init(displayName: parameter.displayName)
     }
 
     public init(
@@ -80,10 +87,9 @@ public struct KnobFeature {
         displayName: displayName,
         value: value,
         normValueTransform: normValueTransform,
-        formatter: formatter,
         config: config
       )
-      self.editor = .init(displayName: displayName, formatter: formatter)
+      self.editor = .init(displayName: displayName)
     }
   }
 
@@ -96,16 +102,9 @@ public struct KnobFeature {
     case task
   }
 
-  // Only used for unit tests
-  private let parameterValueChanged: ((AUParameterAddress) -> Void)?
-
-  public init(parameterValueChanged: ((AUParameterAddress) -> Void)? = nil) {
-    self.parameterValueChanged = parameterValueChanged
-  }
-
   public var body: some Reducer<State, Action> {
-    Scope(state: \.control, action: \.control) { ControlFeature() }
-    Scope(state: \.editor, action: \.editor) { EditorFeature() }
+    Scope(state: \.control, action: \.control) { ControlFeature(formatter: formatter) }
+    Scope(state: \.editor, action: \.editor) { EditorFeature(formatter: formatter) }
 
     Reduce { state, action in
       switch action {
@@ -293,7 +292,7 @@ struct KnobViewPreview: PreviewProvider {
   )
   static let config = KnobConfig()
   static var store = Store(initialState: KnobFeature.State(parameter: param, config: config)) {
-    KnobFeature()
+    KnobFeature(formatter: KnobValueFormatter.general())
   }
 
   static var previews: some View {

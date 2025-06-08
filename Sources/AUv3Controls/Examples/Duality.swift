@@ -98,11 +98,11 @@ struct DualityView: View {
 
     self.store3 = .init(initialState: KnobFeature.State(
       parameter: mockAUv3.param3,
-      formatter: .frequency(),
       config: mockAUv3.config)) {
-      KnobFeature() }
+        KnobFeature(formatter: KnobValueFormatter.seconds()) }
     self.store4 = .init(initialState: KnobFeature.State(parameter: mockAUv3.param4, config: mockAUv3.config)) {
-      KnobFeature() }
+      KnobFeature(formatter: KnobValueFormatter.frequency())
+    }
   }
 
   var body: some View {

@@ -4,15 +4,26 @@ import AudioToolbox
 import Foundation
 
 /**
- Value formatters for a knob when it needs to show the current setting. This is a bit convoluted in order to support
- the `frequency` case below, where we want to format with one formatter when the value is less than 1000.0 and
- another formatter for values >= 1000.0.
+ General protocol for formatting a parameter value, whether for display or for editing. The former may have a suffix
+ attached to the formatted value while the latter never does.
  */
-public struct KnobValueFormatter: Equatable, Sendable {
+public protocol KnobValueFormattingProvider: Equatable {
+
+  func forDisplay(_ value: Double) -> String
+
+  func forEditing(_ value: Double) -> String
+}
+
+/**
+ Value formatters for a knob when it needs to show the current setting. This is a bit convoluted in order to support
+ the case where we want different units depending on the value being formatted, such as `frequency` or `seconds`.
+ */
+public struct KnobValueFormatter: Equatable, Sendable, KnobValueFormattingProvider {
 
   struct Formatter: Equatable {
     let formatter: FloatingPointFormatStyle<Double>
     let suffix: String
+
     init(significantDigits: ClosedRange<Int>, suffix: String) {
       self.formatter = .init().precision(.significantDigits(significantDigits))
       self.suffix = suffix
@@ -83,7 +94,18 @@ public struct KnobValueFormatter: Equatable, Sendable {
    - returns: a formatter
    */
   public static func duration(_ significantDigits: ClosedRange<Int> = 1...3, suffix: String = "s") -> Self {
-    KnobValueFormatter([significantDigits], suffixes: [suffix])
+    Self([significantDigits], suffixes: [suffix])
+  }
+
+  public static func seconds(
+    millisecondsSigDigits: ClosedRange<Int> = 1...3,
+    secondsSigDigits: ClosedRange<Int> = 1...3
+  ) -> Self {
+    return Self([millisecondsSigDigits, secondsSigDigits], suffixes: ["ms", "s"]) { formatters, withSuffix, value in
+      value < 1.0 ?
+      formatters[0].format(value * 1000.0, withSuffix: withSuffix) :
+      formatters[1].format(value, withSuffix: withSuffix)
+    }
   }
 
   /**
@@ -97,10 +119,7 @@ public struct KnobValueFormatter: Equatable, Sendable {
     herzSigDigits: ClosedRange<Int> = 1...2,
     kiloSigDigits: ClosedRange<Int> = 1...3
   ) -> Self {
-    return KnobValueFormatter(
-      [herzSigDigits, kiloSigDigits],
-      suffixes: [" Hz", "kHz"]
-    ) { formatters, withSuffix, value in
+    return Self([herzSigDigits, kiloSigDigits], suffixes: [" Hz", "kHz"]) { formatters, withSuffix, value in
       value < 1000.0 ?
       formatters[0].format(value, withSuffix: withSuffix) :
       formatters[1].format(value / 1000.0, withSuffix: withSuffix)
@@ -109,5 +128,23 @@ public struct KnobValueFormatter: Equatable, Sendable {
 
   public static func == (lhs: KnobValueFormatter, rhs: KnobValueFormatter) -> Bool {
     lhs.formatters == rhs.formatters
+  }
+}
+
+extension KnobValueFormatter {
+
+  public static func `for`(_ unit: AudioUnitParameterUnit) -> Self {
+    switch unit {
+    case .percent: return .percentage()
+    case .seconds: return .seconds()
+    case .phase, .degrees: return .general(suffix:"°")
+    case .rate: return .general(suffix:"x")
+    case .hertz: return .frequency()
+    case .cents, .absoluteCents: return .general(suffix:" cents")
+    case .decibels: return .general(suffix:" dB")
+    case .BPM: return .general(suffix: " BPM")
+    case .milliseconds: return .duration(suffix: "ms")
+    default: return .general()
+    }
   }
 }

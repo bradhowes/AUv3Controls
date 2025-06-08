@@ -16,10 +16,9 @@ private final class Context {
   let config = KnobConfig()
   lazy var store = TestStore(initialState: .init(
     displayName: param.displayName,
-    formatter: .general(1...4),
     showValueDuration: config.controlShowValueDuration
   )) {
-    TitleFeature()
+    TitleFeature(formatter: KnobValueFormatter.general(1...4))
   } withDependencies: {
     $0.continuousClock = clock
   }
@@ -90,9 +89,8 @@ final class TitleFeatureTests: XCTestCase {
     
     let view = MyView(config: ctx.config, store: Store(initialState: .init(
       displayName: ctx.param.displayName,
-      formatter: .general(1...2),
       showValueDuration: ctx.config.controlShowValueDuration)) {
-      TitleFeature()
+        TitleFeature(formatter: KnobValueFormatter.general(1...2))
     })
 
     try withSnapshotTesting(record: .failed) {
@@ -116,11 +114,10 @@ final class TitleFeatureTests: XCTestCase {
     
     let view = MyView(config: ctx.config, store: Store(initialState: .init(
       displayName: ctx.param.displayName,
-      formatter: .general(1...2),
       showValueDuration: ctx.config.controlShowValueDuration
     )) {
-      TitleFeature()
-    } withDependencies: { 
+      TitleFeature(formatter: KnobValueFormatter.general(1...2))
+    } withDependencies: {
       $0.continuousClock = ContinuousClock()
     })
     
