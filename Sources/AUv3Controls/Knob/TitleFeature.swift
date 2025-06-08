@@ -12,24 +12,26 @@ import SwiftUI
 @Reducer
 public struct TitleFeature {
   let formatter: any KnobValueFormattingProvider
+  let showValueDuration: Duration
+  let showValueCancelId = "ShowValueCancelId[\(UUID().uuidString)]"
 
-  public init(formatter: any KnobValueFormattingProvider) {
+  public init(
+    formatter: any KnobValueFormattingProvider,
+    showValueDuration: Duration = KnobConfig.default.controlShowValueDuration
+  ) {
     self.formatter = formatter
+    self.showValueDuration = showValueDuration
   }
 
   @ObservableState
   public struct State: Equatable {
     let displayName: String
-    let showValueDuration: Double
-    let showValueCancelId: String
     @ObservationStateIgnored var dragActive: Bool = false
     var formattedValue: String?
     var showingValue: Bool { formattedValue != nil }
 
-    public init(displayName: String, showValueDuration: Double) {
+    public init(displayName: String) {
       self.displayName = displayName
-      self.showValueDuration = showValueDuration
-      self.showValueCancelId = "ShowValueCancelId[\(UUID().uuidString)]"
     }
   }
 
@@ -63,7 +65,7 @@ private extension TitleFeature {
 
   func showTitleEffect(state: inout State) -> Effect<Action> {
     state.formattedValue = nil
-    return .cancel(id: state.showValueCancelId)
+    return .cancel(id: showValueCancelId)
   }
 
   func showValueEffect(state: inout State, value: Double) -> Effect<Action> {
@@ -72,15 +74,10 @@ private extension TitleFeature {
   }
 
   func startTitleTimerEffect(_ state: inout State) -> Effect<Action> {
-    let duration: Duration = .seconds(state.showValueDuration)
-    let clock = self.clock
-    let cancelId = state.showValueCancelId
-    return .run { send in
-      try await withTaskCancellation(id: cancelId, cancelInFlight: true) {
-        try await clock.sleep(for: duration)
-        await send(.cancelValueDisplayTimer, animation: .linear)
-      }
-    }
+    return .run { [duration = showValueDuration, clock = self.clock] send in
+      try await clock.sleep(for: duration)
+      await send(.cancelValueDisplayTimer, animation: .linear)
+    }.cancellable(id: showValueCancelId, cancelInFlight: true)
   }
 }
 
@@ -134,10 +131,7 @@ struct TitleViewPreview: PreviewProvider {
                                                      min: 0.0, max: 100.0, unit: .generic, unitName: nil,
                                                      valueStrings: nil, dependentParameters: nil)
   static let theme = Theme()
-  @State static var store = Store(initialState: TitleFeature.State(
-    displayName: param.displayName,
-    showValueDuration: theme.controlShowValueDuration
-  )) {
+  @State static var store = Store(initialState: TitleFeature.State(displayName: param.displayName)) {
     TitleFeature(formatter: KnobValueFormatter.duration(2...2))
   }
 

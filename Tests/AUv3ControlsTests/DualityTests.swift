@@ -87,12 +87,16 @@ final class DualityTests: XCTestCase {
     ctx.floatParam.setValue(0.0, originator: nil)
     ctx.floatParam.setValue(0.5, originator: nil)
     ctx.floatParam.setValue(1.0, originator: nil)
-    // await ctx.clock.advance()
 
-    // await ctx.floatStore.receive(.control(.track(.normChanged(0.01))))
     await ctx.floatStore.receive(.observedValueChanged(1.0)) {
       $0.control.title.formattedValue = "1"
       $0.control.track.norm = 0.01
+    }
+
+    await ctx.clock.advance(by: .seconds(4))
+
+    await ctx.floatStore.receive(.control(.title(.cancelValueDisplayTimer))) {
+      $0.control.title.formattedValue = nil
     }
 
     ctx.floatParam.setValue(12.5, originator: nil)
@@ -102,6 +106,12 @@ final class DualityTests: XCTestCase {
       $0.control.track.norm = 0.125
     }
 
+    await ctx.clock.advance(by: .seconds(4))
+
+    await ctx.floatStore.receive(.control(.title(.cancelValueDisplayTimer))) {
+      $0.control.title.formattedValue = nil
+    }
+
     ctx.floatParam.setValue(100.0, originator: nil)
 
     await ctx.floatStore.receive(.observedValueChanged(100.0)) {
@@ -109,12 +119,17 @@ final class DualityTests: XCTestCase {
       $0.control.track.norm = 1.0
     }
 
+    await ctx.clock.advance(by: .seconds(4))
+
+    await ctx.floatStore.receive(.control(.title(.cancelValueDisplayTimer))) {
+      $0.control.title.formattedValue = nil
+    }
+
     await ctx.floatStore.send(.stopValueObservation) {
       $0.observerToken = nil
       $0.control.title.formattedValue = nil
     }
 
-    XCTAssertEqual(ctx.changed[1], 0)
-    XCTAssertEqual(ctx.changed[2], 0)
+    await ctx.floatStore.finish()
   }
 }

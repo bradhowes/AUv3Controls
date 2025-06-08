@@ -26,7 +26,7 @@ class MockAUv3 {
     let param2 = AUParameterTree.createBoolean(withIdentifier: "Monophonic", name: "Monophonic", address: 2)
     self.param2 = param2
     let param3 = AUParameterTree.createFloat(withIdentifier: "Frequency", name: "Frequency", address: 3,
-                                             range: 10...20_000, logScale: true)
+                                             range: 10...20_000, unit: .hertz, logScale: true)
     self.param3 = param3
     let param4 = AUParameterTree.createFloat(withIdentifier: "Pan", name: "Pan", address: 4, range: -50...50)
     self.param4 = param4
@@ -96,12 +96,11 @@ struct DualityView: View {
     self.store1 = .init(initialState: ToggleFeature.State(parameter: mockAUv3.param1)) { ToggleFeature() }
     self.store2 = .init(initialState: ToggleFeature.State(parameter: mockAUv3.param2)) { ToggleFeature() }
 
-    self.store3 = .init(initialState: KnobFeature.State(
-      parameter: mockAUv3.param3,
-      config: mockAUv3.config)) {
-        KnobFeature(formatter: KnobValueFormatter.seconds(), normValueTransform: .init(parameter: mockAUv3.param3)) }
-    self.store4 = .init(initialState: KnobFeature.State(parameter: mockAUv3.param4, config: mockAUv3.config)) {
-      KnobFeature(formatter: KnobValueFormatter.frequency(), normValueTransform: .init(parameter: mockAUv3.param4))
+    self.store3 = .init(initialState: KnobFeature.State(parameter: mockAUv3.param3)) {
+        KnobFeature(parameter: mockAUv3.param3)
+    }
+    self.store4 = .init(initialState: KnobFeature.State(parameter: mockAUv3.param4)) {
+      KnobFeature(parameter: mockAUv3.param4)
     }
   }
 

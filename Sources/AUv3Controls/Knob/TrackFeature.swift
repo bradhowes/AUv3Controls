@@ -22,11 +22,9 @@ public struct TrackFeature {
 
   @ObservableState
   public struct State: Equatable {
-    let config: KnobConfig
     var norm: Double
 
-    public init(norm: Double, config: KnobConfig) {
-      self.config = config
+    public init(norm: Double) {
       self.norm = norm
     }
   }
@@ -76,8 +74,8 @@ extension TrackFeature {
  */
 public struct TrackView: View {
   private let store: StoreOf<TrackFeature>
-  private var config: KnobConfig { store.config }
   @Environment(\.auv3ControlsTheme) private var theme
+  @Environment(\.auv3ControlsKnobConfig) private var config
 
   // Updated by SwiftUI via `.onGeometryChange`
   @State private var controlRadius: Double = .zero
@@ -205,11 +203,7 @@ struct TrackViewPreview: PreviewProvider {
   )
   static let config = KnobConfig()
   @State static var store = Store(
-    initialState: TrackFeature.State(
-      norm: 0.5,
-      config: config
-    )
-  ) {
+    initialState: TrackFeature.State(norm: 0.5)) {
     TrackFeature(normValueTransform: .init(parameter: param))
   }
 

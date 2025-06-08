@@ -20,24 +20,34 @@ import SwiftUI
 public struct KnobFeature {
   let formatter: any KnobValueFormattingProvider
   let normValueTransform: NormValueTransform
-
+  let debounceDuration: Duration
   // Only used for unit tests
   private let parameterValueChanged: ((AUParameterAddress) -> Void)?
 
   public init(
+    parameter: AUParameter
+  ) {
+    self.formatter = KnobValueFormatter.for(parameter.unit)
+    self.normValueTransform = .init(parameter: parameter)
+    self.debounceDuration = KnobConfig.default.debounceDuration
+    self.parameterValueChanged = nil
+  }
+
+  public init(
     formatter: any KnobValueFormattingProvider,
     normValueTransform: NormValueTransform,
+    debounceDuration: Duration = KnobConfig.default.debounceDuration,
     parameterValueChanged: ((AUParameterAddress) -> Void)? = nil
   ) {
     self.formatter = formatter
     self.normValueTransform = normValueTransform
+    self.debounceDuration = debounceDuration
     self.parameterValueChanged = parameterValueChanged
   }
 
   @ObservableState
   public struct State: Equatable {
     let id: UInt64
-    let config: KnobConfig
     let parameter: AUParameter?
     let normValueTransform: NormValueTransform
     let valueObservationCancelId: String?
@@ -50,17 +60,15 @@ public struct KnobFeature {
 
     public var value: Double { normValueTransform.normToValue(control.track.norm) }
 
-    public init(parameter: AUParameter, config: KnobConfig = .default) {
+    public init(parameter: AUParameter) {
       let normValueTransform: NormValueTransform = .init(parameter: parameter)
       self.id = parameter.address
-      self.config = config
       self.parameter = parameter
       self.normValueTransform = normValueTransform
       self.valueObservationCancelId = "valueObservationCancelId[AUParameter: \(parameter.address)])"
       self.control = .init(
         displayName: parameter.displayName,
-        norm: normValueTransform.valueToNorm(Double(parameter.value)),
-        config: config
+        norm: normValueTransform.valueToNorm(Double(parameter.value))
       )
       self.editor = .init(displayName: parameter.displayName)
     }
@@ -70,9 +78,7 @@ public struct KnobFeature {
       displayName: String,
       minimumValue: Double,
       maximumValue: Double,
-      logarithmic: Bool,
-      formatter: KnobValueFormatter = .general(1...4),
-      config: KnobConfig = .default
+      logarithmic: Bool
     ) {
       let normValueTransform: NormValueTransform = .init(
         minimumValue: minimumValue,
@@ -80,14 +86,12 @@ public struct KnobFeature {
         logScale: logarithmic
       )
       self.id = UUID().asUInt64
-      self.config = config
       self.parameter = nil
       self.normValueTransform = normValueTransform
       self.valueObservationCancelId = nil
       self.control = .init(
         displayName: displayName,
-        norm: normValueTransform.valueToNorm(value),
-        config: config
+        norm: normValueTransform.valueToNorm(value)
       )
       self.editor = .init(displayName: displayName)
     }
@@ -175,7 +179,7 @@ private extension KnobFeature {
     else {
       return .none
     }
-    let duration = state.config.debounceDuration
+    let duration = debounceDuration
     let stream: AsyncStream<AUValue>
     (state.observerToken, stream) = parameter.startObserving()
     return .run { send in
@@ -196,6 +200,7 @@ private extension KnobFeature {
 
     parameter.removeParameterObserver(token)
     state.observerToken = nil
+    print("stopObserving: \(valueObservationCancelId)")
     return .merge(
       .cancel(id: valueObservationCancelId),
       reduce(into: &state, action: .control(.title(.cancelValueDisplayTimer)))
@@ -224,7 +229,6 @@ private extension KnobFeature {
 
 public struct KnobView: View {
   private let store: StoreOf<KnobFeature>
-  private var config: KnobConfig { store.config }
   @Environment(\.isEnabled) var enabled
   @Environment(\.auv3ControlsTheme) var theme
   @Environment(\.scrollViewProxy) var proxy: ScrollViewProxy?
@@ -293,7 +297,7 @@ struct KnobViewPreview: PreviewProvider {
     dependentParameters: nil
   )
   static let config = KnobConfig()
-  static var store = Store(initialState: KnobFeature.State(parameter: param, config: config)) {
+  static var store = Store(initialState: KnobFeature.State(parameter: param)) {
     KnobFeature(formatter: KnobValueFormatter.general(), normValueTransform: .init(parameter: param))
   }
 

@@ -14,10 +14,7 @@ private final class Context {
                                               valueStrings: nil, dependentParameters: nil)
   let clock = TestClock()
   let config = KnobConfig()
-  lazy var store = TestStore(initialState: .init(
-    displayName: param.displayName,
-    showValueDuration: config.controlShowValueDuration
-  )) {
+  lazy var store = TestStore(initialState: .init(displayName: param.displayName)) {
     TitleFeature(formatter: KnobValueFormatter.general(1...4))
   } withDependencies: {
     $0.continuousClock = clock
@@ -40,11 +37,11 @@ final class TitleFeatureTests: XCTestCase {
     await ctx.store.send(.valueChanged(12.34)) { state in
       state.formattedValue = "12.34"
     }
-    await ctx.clock.advance(by: .seconds(ctx.config.controlShowValueDuration / 2.0))
+    await ctx.clock.advance(by: ctx.config.controlShowValueDuration / 2.0)
     await ctx.store.send(.valueChanged(56.78)) { state in
       state.formattedValue = "56.78"
     }
-    await ctx.clock.advance(by: .seconds(ctx.config.controlShowValueDuration))
+    await ctx.clock.advance(by: ctx.config.controlShowValueDuration)
     await ctx.store.receive(.cancelValueDisplayTimer) {
       $0.formattedValue = nil
     }
@@ -87,9 +84,7 @@ final class TitleFeatureTests: XCTestCase {
       }
     }
     
-    let view = MyView(config: ctx.config, store: Store(initialState: .init(
-      displayName: ctx.param.displayName,
-      showValueDuration: ctx.config.controlShowValueDuration)) {
+    let view = MyView(config: ctx.config, store: Store(initialState: .init(displayName: ctx.param.displayName)) {
         TitleFeature(formatter: KnobValueFormatter.general(1...2))
     })
 
@@ -112,10 +107,7 @@ final class TitleFeatureTests: XCTestCase {
       }
     }
     
-    let view = MyView(config: ctx.config, store: Store(initialState: .init(
-      displayName: ctx.param.displayName,
-      showValueDuration: ctx.config.controlShowValueDuration
-    )) {
+    let view = MyView(config: ctx.config, store: Store(initialState: .init(displayName: ctx.param.displayName)) {
       TitleFeature(formatter: KnobValueFormatter.general(1...2))
     } withDependencies: {
       $0.continuousClock = ContinuousClock()

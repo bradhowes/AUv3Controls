@@ -28,10 +28,7 @@ private final class Context {
     self.param = param
     self.config = KnobConfig()
     self.theme = Theme(touchSensitivity: touchSensitivity)
-    store = TestStore(initialState: TrackFeature.State(
-      norm: 0.0,
-      config: config
-    )) {
+    store = TestStore(initialState: TrackFeature.State(norm: 0.0)) {
       TrackFeature(normValueTransform: .init(parameter: param))
     }
   }
@@ -105,10 +102,7 @@ final class TrackFeatureTests: XCTestCase {
       }
     }
     
-    let view = MyView(config: ctx.config, store: Store(initialState: .init(
-      norm: 0.0,
-      config: ctx.config
-    )) {
+    let view = MyView(config: ctx.config, store: Store(initialState: .init(norm: 0.0)) {
       TrackFeature(normValueTransform: .init(parameter: ctx.param))
     })
 
@@ -130,10 +124,7 @@ final class TrackFeatureTests: XCTestCase {
       }
     }
     
-    let view = MyView(config: ctx.config, store: Store(initialState: .init(
-      norm: 0.5,
-      config: ctx.config
-    )) {
+    let view = MyView(config: ctx.config, store: Store(initialState: .init(norm: 0.5)) {
       TrackFeature(normValueTransform: .init(parameter: ctx.param))
     })
 
@@ -155,10 +146,7 @@ final class TrackFeatureTests: XCTestCase {
       }
     }
     
-    let view = MyView(config: ctx.config, store: Store(initialState: .init(
-      norm: 1.0,
-      config: ctx.config
-    )) {
+    let view = MyView(config: ctx.config, store: Store(initialState: .init(norm: 1.0)) {
       TrackFeature(normValueTransform: .init(parameter: ctx.param))
     })
 
@@ -183,10 +171,7 @@ final class TrackFeatureTests: XCTestCase {
       }
     }
 
-    let view = MyView(config: config, store: Store(initialState: .init(
-      norm: 0.5,
-      config: ctx.config
-    )) {
+    let view = MyView(config: config, store: Store(initialState: .init(norm: 0.5)) {
       TrackFeature(normValueTransform: .init(parameter: ctx.param))
     })
 

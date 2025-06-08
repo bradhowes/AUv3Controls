@@ -4,120 +4,230 @@ import AVFoundation
 import ComposableArchitecture
 import SwiftUI
 
+@Reducer
+struct EnvelopeFeature {
+  let delay: AUParameter
+  let attack: AUParameter
+  let hold: AUParameter
+  let decay: AUParameter
+  let sustain: AUParameter
+  let release: AUParameter
+
+  init(parameterBase: AUParameterAddress) {
+    delay = AUParameterTree.createParameter(
+      withIdentifier: "DELAY",
+      name: "Delay",
+      address: parameterBase + 0,
+      min: 0.0,
+      max: 2.0,
+      unit: .seconds,
+      unitName: nil,
+      flags: [.flag_DisplayLogarithmic],
+      valueStrings: nil,
+      dependentParameters: nil
+    )
+
+    attack = AUParameterTree.createParameter(
+      withIdentifier: "ATTACK",
+      name: "Attack",
+      address: parameterBase + 1,
+      min: 0.0,
+      max: 5.0,
+      unit: .seconds,
+      unitName: nil,
+      flags: [.flag_DisplayLogarithmic],
+      valueStrings: nil,
+      dependentParameters: nil
+    )
+
+    hold = AUParameterTree.createParameter(
+      withIdentifier: "HOLD",
+      name: "Hold",
+      address: parameterBase + 2,
+      min: 0.0,
+      max: 5,
+      unit: .seconds,
+      unitName: nil,
+      flags: [.flag_DisplayLogarithmic],
+      valueStrings: nil,
+      dependentParameters: nil
+    )
+
+    decay = AUParameterTree.createParameter(
+      withIdentifier: "DECAY",
+      name: "Decay",
+      address: parameterBase + 3,
+      min: 0.0,
+      max: 5.0,
+      unit: .seconds,
+      unitName: nil,
+      flags: [.flag_DisplayLogarithmic],
+      valueStrings: nil,
+      dependentParameters: nil
+    )
+
+    sustain = AUParameterTree.createParameter(
+      withIdentifier: "SUSTAIN",
+      name: "Sustain",
+      address: parameterBase + 4,
+      min: 0.0,
+      max: 100.0,
+      unit: .percent,
+      unitName: nil,
+      flags: [],
+      valueStrings: nil,
+      dependentParameters: nil
+    )
+
+    release = AUParameterTree.createParameter(
+      withIdentifier: "RELEASE",
+      name: "Release",
+      address: parameterBase + 5,
+      min: 0.0,
+      max: 10.0,
+      unit: .seconds,
+      unitName: nil,
+      flags: [.flag_DisplayLogarithmic],
+      valueStrings: nil,
+      dependentParameters: nil
+    )
+  }
+
+  @ObservableState
+  struct State: Equatable {
+    var enabled: ToggleFeature.State
+    var locked: ToggleFeature.State
+    var delay: KnobFeature.State
+    var attack: KnobFeature.State
+    var hold: KnobFeature.State
+    var decay: KnobFeature.State
+    var sustain: KnobFeature.State
+    var release: KnobFeature.State
+
+    init(
+      delay: AUParameter,
+      attack: AUParameter,
+      hold: AUParameter,
+      decay: AUParameter,
+      sustain: AUParameter,
+      release: AUParameter
+    ) {
+      self.enabled = ToggleFeature.State(isOn: true, displayName: "On")
+      self.locked = ToggleFeature.State(isOn: false, displayName: "Lock")
+      self.delay = KnobFeature.State(parameter: delay)
+      self.attack = KnobFeature.State(parameter: attack)
+      self.hold = KnobFeature.State(parameter: hold)
+      self.decay = KnobFeature.State(parameter: decay)
+      self.sustain = KnobFeature.State(parameter: sustain)
+      self.release = KnobFeature.State(parameter: release)
+    }
+  }
+
+  var state: State {
+    .init(delay: delay, attack: attack, hold: hold, decay: decay, sustain: sustain, release: release)
+  }
+
+  enum Action {
+    case enabled(ToggleFeature.Action)
+    case locked(ToggleFeature.Action)
+    case delay(KnobFeature.Action)
+    case attack(KnobFeature.Action)
+    case hold(KnobFeature.Action)
+    case decay(KnobFeature.Action)
+    case sustain(KnobFeature.Action)
+    case release(KnobFeature.Action)
+  }
+
+  var body: some ReducerOf<Self> {
+    Scope(state: \.enabled, action: \.enabled) { ToggleFeature() }
+    Scope(state: \.locked, action: \.locked) { ToggleFeature() }
+    Scope(state: \.delay, action: \.delay) { KnobFeature(parameter: delay) }
+    Scope(state: \.attack, action: \.attack) { KnobFeature(parameter: attack) }
+    Scope(state: \.hold, action: \.hold) { KnobFeature(parameter: hold) }
+    Scope(state: \.decay, action: \.decay) { KnobFeature(parameter: decay) }
+    Scope(state: \.sustain, action: \.sustain) { KnobFeature(parameter: sustain) }
+    Scope(state: \.release, action: \.release) { KnobFeature(parameter: release) }
+
+    Reduce { state, action in
+      switch action {
+      case .enabled: return .none
+      case .locked: return .none
+      case .delay: return .none
+      case .attack: return .none
+      case .hold: return .none
+      case .decay: return .none
+      case .sustain: return .none
+      case .release: return .none
+      }
+    }
+  }
+}
+
 struct EnvelopeView: View {
+  @Bindable private var store: StoreOf<EnvelopeFeature>
   let title: String
   @Environment(\.auv3ControlsTheme) var theme
 
+  init(store: StoreOf<EnvelopeFeature>, title: String) {
+    self.store = store
+    self.title = title
+  }
+
   var body: some View {
-    let label = Text(title)
-      .foregroundStyle(theme.controlForegroundColor)
-      .font(.caption.smallCaps())
-
-    let config = KnobConfig()
-
-    let enableStore = Store(initialState: ToggleFeature.State(isOn: true, displayName: "On")) { ToggleFeature() }
-    let lockStore = Store(initialState: ToggleFeature.State(isOn: true, displayName: "Lock")) { ToggleFeature() }
-
-    let secondsFormatter = KnobValueFormatter.seconds()
-    let percentageFormatter = KnobValueFormatter.percentage()
-
-    let delayParam = AUParameterTree.createParameter(withIdentifier: "DELAY", name: "Delay", address: 1, min: 0.0,
-                                                     max: 2.0, unit: .seconds, unitName: nil, flags: [],
-                                                     valueStrings: nil, dependentParameters: nil)
-    let delayStore = Store(initialState: KnobFeature.State(
-      parameter: delayParam,
-      config: config
-    )) {
-      KnobFeature(formatter: secondsFormatter, normValueTransform: .init(parameter: delayParam))
-    }
-
-    let attackParam = AUParameterTree.createParameter(withIdentifier: "ATTACK", name: "Attack", address: 2, min: 0.0,
-                                                      max: 5.0, unit: .seconds, unitName: nil, flags: [],
-                                                      valueStrings: nil, dependentParameters: nil)
-    let attackStore = Store(initialState: KnobFeature.State(
-      parameter: attackParam,
-      config: config
-    )) {
-      KnobFeature(formatter: secondsFormatter, normValueTransform: .init(parameter: attackParam))
-    }
-
-    let holdParam = AUParameterTree.createParameter(withIdentifier: "HOLD", name: "Hold", address: 3, min: 0.0,
-                                                    max: 5, unit: .seconds, unitName: nil, flags: [],
-                                                    valueStrings: nil, dependentParameters: nil)
-    let holdStore = Store(initialState: KnobFeature.State(
-      parameter: holdParam,
-      config: config
-    )) {
-      KnobFeature(formatter: secondsFormatter, normValueTransform: .init(parameter: holdParam))
-    }
-
-    let decayParam = AUParameterTree.createParameter(withIdentifier: "DECAY", name: "Decay", address: 4, min: 0.0,
-                                                     max: 10.0, unit: .seconds, unitName: nil, flags: [],
-                                                     valueStrings: nil, dependentParameters: nil)
-    let decayStore = Store(initialState: KnobFeature.State(
-      parameter: decayParam,
-      config: config
-    )) {
-      KnobFeature(formatter: secondsFormatter, normValueTransform: .init(parameter: decayParam))
-    }
-
-    let sustainParam = AUParameterTree.createParameter(withIdentifier: "SUSTAIN", name: "Sustain", address: 5, min: 0.0,
-                                                       max: 100.0, unit: .percent, unitName: nil, flags: [],
-                                                       valueStrings: nil, dependentParameters: nil)
-    let sustainStore = Store(initialState: KnobFeature.State(
-      parameter: sustainParam,
-      config: config
-    )) {
-      KnobFeature(formatter: percentageFormatter, normValueTransform: .init(parameter: sustainParam))
-    }
-
-    let releaseParam = AUParameterTree.createParameter(withIdentifier: "RELEASE", name: "Release", address: 6, min: 0.0,
-                                                       max: 10.0, unit: .seconds, unitName: nil, flags: [],
-                                                       valueStrings: nil, dependentParameters: nil)
-    let releaseStore = Store(initialState: KnobFeature.State(
-      parameter: releaseParam,
-      config: config
-    )) {
-      KnobFeature(formatter: secondsFormatter, normValueTransform: .init(parameter: releaseParam))
-    }
-
-    ScrollViewReader { proxy in
-      ScrollView(.horizontal) {
-        HStack(alignment: .top, spacing: 12) {
-          VStack(alignment: .leading, spacing: 18) {
-            label
-            ToggleView(store: enableStore)
-            ToggleView(store: lockStore) // { Image(systemName: "lock") }
-          }
-          KnobView(store: delayStore)
-          KnobView(store: attackStore)
-          KnobView(store: holdStore)
-          KnobView(store: decayStore)
-          KnobView(store: sustainStore)
-          KnobView(store: releaseStore)
-        }
-        .frame(maxHeight: 102)
-        .frame(height: 102)
-        .padding()
-        .border(theme.controlBackgroundColor, width: 1)
-      }.scrollViewProxy(proxy)
+    EffectsContainer(
+      enabled: store.enabled.isOn,
+      title: title,
+      onOff: ToggleView(store: store.scope(state: \.enabled, action: \.enabled)),
+      globalLock: ToggleView(store: store.scope(state: \.locked, action: \.locked)) { Image(systemName: "lock") }
+    ) {
+      HStack(alignment: .center, spacing: 8) {
+        KnobView(store: store.scope(state: \.delay, action: \.delay))
+        KnobView(store: store.scope(state: \.attack, action: \.attack))
+        KnobView(store: store.scope(state: \.hold, action: \.hold))
+        KnobView(store: store.scope(state: \.decay, action: \.decay))
+        KnobView(store: store.scope(state: \.sustain, action: \.sustain))
+        KnobView(store: store.scope(state: \.release, action: \.release))
+      }
     }
   }
 }
 
 struct EnvelopeViewPreview: PreviewProvider {
   static var previews: some View {
-    var volumeTheme = Theme()
-    volumeTheme.controlTrackStrokeStyle = StrokeStyle(lineWidth: 5, lineCap: .round)
-    volumeTheme.controlValueStrokeStyle = StrokeStyle(lineWidth: 3, lineCap: .round)
-    volumeTheme.toggleOnIndicatorSystemName = "arrowtriangle.down.fill"
-    volumeTheme.toggleOffIndicatorSystemName = "arrowtriangle.down"
-    // let modTheme = Theme()
-    return VStack {
-      EnvelopeView(title: "Volume")
-        .environment(\.auv3ControlsTheme, volumeTheme)
-      EnvelopeView(title: "Mod")
-        .environment(\.auv3ControlsTheme, volumeTheme)
+    var theme = Theme()
+    theme.controlTrackStrokeStyle = StrokeStyle(lineWidth: 5, lineCap: .round)
+    theme.controlValueStrokeStyle = StrokeStyle(lineWidth: 3, lineCap: .round)
+    theme.toggleOnIndicatorSystemName = "arrowtriangle.down.fill"
+    theme.toggleOffIndicatorSystemName = "arrowtriangle.down"
+
+    let vol = EnvelopeFeature(parameterBase: 100)
+    let mod = EnvelopeFeature(parameterBase: 200)
+
+    return Form {
+      Text(
+        """
+      Demo of a collection of knobs in a horizontal ScrollView. The first collection ("Vol") is using default Theme \
+      settings.
+      """
+      )
+
+      ScrollView(.horizontal) {
+        EnvelopeView(store: Store(initialState: vol.state) { vol }, title: "Amp")
+      }
+      .border(Color.black, width: 1)
+
+      Text(
+        """
+        The next collection uses a customized Theme injected via the "auv3ControlsTheme" environment \
+        setting.
+        """
+      )
+
+      ScrollView(.horizontal) {
+        EnvelopeView(store: Store(initialState: mod.state) { mod }, title: "Mod")
+          .environment(\.auv3ControlsTheme, theme)
+      }
+      .border(Color.black, width: 1)
     }
   }
 }

@@ -14,10 +14,16 @@ import SwiftUI
 public struct ControlFeature {
   let formatter: any KnobValueFormattingProvider
   let normValueTransform: NormValueTransform
+  let showValueDuration: Duration
 
-  public init(formatter: any KnobValueFormattingProvider, normValueTransform: NormValueTransform) {
+  public init(
+    formatter: any KnobValueFormattingProvider,
+    normValueTransform: NormValueTransform,
+    showValueDuration: Duration = KnobConfig.default.controlShowValueDuration
+  ) {
     self.formatter = formatter
     self.normValueTransform = normValueTransform
+    self.showValueDuration = showValueDuration
   }
 
   @ObservableState
@@ -27,17 +33,10 @@ public struct ControlFeature {
 
     public init(
       displayName: String,
-      norm: Double,
-      config: KnobConfig
+      norm: Double
     ) {
-      self.title = .init(
-        displayName: displayName,
-        showValueDuration: config.controlShowValueDuration
-      )
-      self.track = .init(
-        norm: norm,
-        config: config
-      )
+      self.title = .init(displayName: displayName)
+      self.track = .init(norm: norm)
     }
   }
 
@@ -49,7 +48,7 @@ public struct ControlFeature {
 
   public var body: some Reducer<State, Action> {
     Scope(state: \.track, action: \.track) { TrackFeature(normValueTransform: normValueTransform) }
-    Scope(state: \.title, action: \.title) { TitleFeature(formatter: formatter) }
+    Scope(state: \.title, action: \.title) { TitleFeature(formatter: formatter, showValueDuration: showValueDuration ) }
 
     Reduce { state, action in
       switch action {
@@ -85,7 +84,7 @@ public struct ControlFeature {
 struct ControlView: View {
   private let store: StoreOf<ControlFeature>
   @Environment(\.auv3ControlsTheme) private var theme
-  
+
   init(store: StoreOf<ControlFeature>) {
     self.store = store
   }
@@ -113,8 +112,7 @@ struct ControlViewPreview: PreviewProvider {
   static let config = KnobConfig()
   static var store = Store( initialState: ControlFeature.State(
     displayName: param.displayName,
-    norm: 0.0,
-    config: config
+    norm: 0.0
   )) {
     ControlFeature(formatter: KnobValueFormatter.duration(), normValueTransform: .init(parameter: param))
   }
