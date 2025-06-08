@@ -39,7 +39,7 @@ private final class Context {
   lazy var floatStore = TestStore(initialState: KnobFeature.State(
     parameter: paramTree.parameter(withAddress: 2)!
   )) {
-    KnobFeature(formatter: KnobValueFormatter.general(1...3))
+    KnobFeature(formatter: KnobValueFormatter.general(1...3), normValueTransform: .init(parameter: floatParam))
   } withDependencies: {
     $0.continuousClock = clock
   }

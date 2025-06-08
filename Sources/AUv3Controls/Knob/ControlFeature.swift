@@ -13,27 +13,29 @@ import SwiftUI
 @Reducer
 public struct ControlFeature {
   let formatter: any KnobValueFormattingProvider
+  let normValueTransform: NormValueTransform
+
+  public init(formatter: any KnobValueFormattingProvider, normValueTransform: NormValueTransform) {
+    self.formatter = formatter
+    self.normValueTransform = normValueTransform
+  }
 
   @ObservableState
   public struct State: Equatable {
-    let normValueTransform: NormValueTransform
     var title: TitleFeature.State
     var track: TrackFeature.State
 
     public init(
       displayName: String,
-      value: Double,
-      normValueTransform: NormValueTransform,
+      norm: Double,
       config: KnobConfig
     ) {
-      self.normValueTransform = normValueTransform
       self.title = .init(
         displayName: displayName,
         showValueDuration: config.controlShowValueDuration
       )
       self.track = .init(
-        norm: normValueTransform.valueToNorm(value),
-        normValueTransform: normValueTransform,
+        norm: norm,
         config: config
       )
     }
@@ -45,12 +47,8 @@ public struct ControlFeature {
     case valueChanged(Double)
   }
 
-  public init(formatter: any KnobValueFormattingProvider) {
-    self.formatter = formatter
-  }
-
   public var body: some Reducer<State, Action> {
-    Scope(state: \.track, action: \.track) { TrackFeature() }
+    Scope(state: \.track, action: \.track) { TrackFeature(normValueTransform: normValueTransform) }
     Scope(state: \.title, action: \.title) { TitleFeature(formatter: formatter) }
 
     Reduce { state, action in
@@ -67,12 +65,12 @@ public struct ControlFeature {
   }
 
   private func showValue(_ state: inout State) -> Effect<Action> {
-    let value = state.normValueTransform.normToValue(state.track.norm)
+    let value = normValueTransform.normToValue(state.track.norm)
     return reduce(into: &state, action: .title(.valueChanged(value)))
   }
 
   private func trackChanged(_ state: inout State) -> Effect<Action> {
-    let value = state.normValueTransform.normToValue(state.track.norm)
+    let value = normValueTransform.normToValue(state.track.norm)
     return reduce(into: &state, action: .title(.valueChanged(value)))
   }
 
@@ -115,11 +113,10 @@ struct ControlViewPreview: PreviewProvider {
   static let config = KnobConfig()
   static var store = Store( initialState: ControlFeature.State(
     displayName: param.displayName,
-    value: Double(param.value),
-    normValueTransform: .init(parameter: param),
+    norm: 0.0,
     config: config
   )) {
-    ControlFeature(formatter: KnobValueFormatter.duration())
+    ControlFeature(formatter: KnobValueFormatter.duration(), normValueTransform: .init(parameter: param))
   }
 
   static var previews: some View {

@@ -8,31 +8,31 @@ import XCTest
 
 @MainActor
 private final class Context {
-  let param = AUParameterTree.createParameter(
-    withIdentifier: "RELEASE",
-    name: "Release",
-    address: 1,
-    min: 0.0,
-    max: 100.0,
-    unit: .generic,
-    unitName: nil,
-    valueStrings: nil,
-    dependentParameters: nil
-  )
-
+  let param: AUParameter
   let config: KnobConfig
   let theme: Theme
-  let store: TestStore<TrackFeature.State, TrackFeature.Action>!
+  let store: TestStore<TrackFeature.State, TrackFeature.Action>
 
   init(touchSensitivity: Double = Theme().touchSensitivity) {
+    let param = AUParameterTree.createParameter(
+      withIdentifier: "RELEASE",
+      name: "Release",
+      address: 1,
+      min: 0.0,
+      max: 100.0,
+      unit: .generic,
+      unitName: nil,
+      valueStrings: nil,
+      dependentParameters: nil
+    )
+    self.param = param
     self.config = KnobConfig()
     self.theme = Theme(touchSensitivity: touchSensitivity)
     store = TestStore(initialState: TrackFeature.State(
       norm: 0.0,
-      normValueTransform: .init(parameter: param),
       config: config
     )) {
-      TrackFeature()
+      TrackFeature(normValueTransform: .init(parameter: param))
     }
   }
 }
@@ -107,10 +107,9 @@ final class TrackFeatureTests: XCTestCase {
     
     let view = MyView(config: ctx.config, store: Store(initialState: .init(
       norm: 0.0,
-      normValueTransform: .init(parameter: ctx.param),
       config: ctx.config
     )) {
-      TrackFeature()
+      TrackFeature(normValueTransform: .init(parameter: ctx.param))
     })
 
     try withSnapshotTesting(record: .failed) {
@@ -133,10 +132,9 @@ final class TrackFeatureTests: XCTestCase {
     
     let view = MyView(config: ctx.config, store: Store(initialState: .init(
       norm: 0.5,
-      normValueTransform: .init(parameter: ctx.param),
       config: ctx.config
     )) {
-      TrackFeature()
+      TrackFeature(normValueTransform: .init(parameter: ctx.param))
     })
 
     try withSnapshotTesting(record: .failed) {
@@ -159,10 +157,9 @@ final class TrackFeatureTests: XCTestCase {
     
     let view = MyView(config: ctx.config, store: Store(initialState: .init(
       norm: 1.0,
-      normValueTransform: .init(parameter: ctx.param),
       config: ctx.config
     )) {
-      TrackFeature()
+      TrackFeature(normValueTransform: .init(parameter: ctx.param))
     })
 
     try withSnapshotTesting(record: .failed) {
@@ -188,10 +185,9 @@ final class TrackFeatureTests: XCTestCase {
 
     let view = MyView(config: config, store: Store(initialState: .init(
       norm: 0.5,
-      normValueTransform: .init(parameter: ctx.param),
       config: ctx.config
     )) {
-      TrackFeature()
+      TrackFeature(normValueTransform: .init(parameter: ctx.param))
     })
 
     try withSnapshotTesting(record: .failed) {

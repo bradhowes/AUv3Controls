@@ -28,7 +28,7 @@ struct EnvelopeView: View {
       parameter: delayParam,
       config: config
     )) {
-      KnobFeature(formatter: secondsFormatter)
+      KnobFeature(formatter: secondsFormatter, normValueTransform: .init(parameter: delayParam))
     }
 
     let attackParam = AUParameterTree.createParameter(withIdentifier: "ATTACK", name: "Attack", address: 2, min: 0.0,
@@ -38,7 +38,7 @@ struct EnvelopeView: View {
       parameter: attackParam,
       config: config
     )) {
-      KnobFeature(formatter: secondsFormatter)
+      KnobFeature(formatter: secondsFormatter, normValueTransform: .init(parameter: attackParam))
     }
 
     let holdParam = AUParameterTree.createParameter(withIdentifier: "HOLD", name: "Hold", address: 3, min: 0.0,
@@ -48,7 +48,7 @@ struct EnvelopeView: View {
       parameter: holdParam,
       config: config
     )) {
-      KnobFeature(formatter: secondsFormatter)
+      KnobFeature(formatter: secondsFormatter, normValueTransform: .init(parameter: holdParam))
     }
 
     let decayParam = AUParameterTree.createParameter(withIdentifier: "DECAY", name: "Decay", address: 4, min: 0.0,
@@ -58,7 +58,7 @@ struct EnvelopeView: View {
       parameter: decayParam,
       config: config
     )) {
-      KnobFeature(formatter: secondsFormatter)
+      KnobFeature(formatter: secondsFormatter, normValueTransform: .init(parameter: decayParam))
     }
 
     let sustainParam = AUParameterTree.createParameter(withIdentifier: "SUSTAIN", name: "Sustain", address: 5, min: 0.0,
@@ -68,7 +68,7 @@ struct EnvelopeView: View {
       parameter: sustainParam,
       config: config
     )) {
-      KnobFeature(formatter: percentageFormatter)
+      KnobFeature(formatter: percentageFormatter, normValueTransform: .init(parameter: sustainParam))
     }
 
     let releaseParam = AUParameterTree.createParameter(withIdentifier: "RELEASE", name: "Release", address: 6, min: 0.0,
@@ -78,7 +78,7 @@ struct EnvelopeView: View {
       parameter: releaseParam,
       config: config
     )) {
-      KnobFeature(formatter: secondsFormatter)
+      KnobFeature(formatter: secondsFormatter, normValueTransform: .init(parameter: releaseParam))
     }
 
     ScrollViewReader { proxy in

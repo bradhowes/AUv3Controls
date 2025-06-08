@@ -13,6 +13,10 @@ import SwiftUI
 public struct TitleFeature {
   let formatter: any KnobValueFormattingProvider
 
+  public init(formatter: any KnobValueFormattingProvider) {
+    self.formatter = formatter
+  }
+
   @ObservableState
   public struct State: Equatable {
     let displayName: String
@@ -37,10 +41,6 @@ public struct TitleFeature {
   }
 
   @Dependency(\.continuousClock) var clock
-
-  public init(formatter: any KnobValueFormattingProvider) {
-    self.formatter = formatter
-  }
 
   public var body: some Reducer<State, Action> {
     Reduce { state, action in

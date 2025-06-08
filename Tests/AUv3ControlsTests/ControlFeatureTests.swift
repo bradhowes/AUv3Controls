@@ -17,11 +17,10 @@ private final class Context {
   func makeStore() -> TestStore<ControlFeature.State, ControlFeature.Action> {
     .init(initialState: .init(
       displayName: param.displayName,
-      value: 0,
-      normValueTransform: .init(parameter: param),
+      norm: 0,
       config: config
     )) {
-      ControlFeature(formatter: KnobValueFormatter.general())
+      ControlFeature(formatter: KnobValueFormatter.general(), normValueTransform: .init(parameter: param))
     } withDependencies: {
       $0.continuousClock = ImmediateClock()
     }
@@ -81,11 +80,10 @@ final class ControlFeatureTests: XCTestCase {
 
     let view = MyView(config: ctx.config, store: Store(initialState: .init(
       displayName: ctx.param.displayName,
-      value: 0.0,
-      normValueTransform: .init(parameter: ctx.param),
+      norm: 0.0,
       config: ctx.config
     )) {
-      ControlFeature(formatter: KnobValueFormatter.general(1...2))
+      ControlFeature(formatter: KnobValueFormatter.general(1...2), normValueTransform: .init(parameter: ctx.param))
     } withDependencies: {
       $0.continuousClock = ContinuousClock()
     })

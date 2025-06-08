@@ -19,14 +19,18 @@ import SwiftUI
 @Reducer
 public struct KnobFeature {
   let formatter: any KnobValueFormattingProvider
+  let normValueTransform: NormValueTransform
+
   // Only used for unit tests
   private let parameterValueChanged: ((AUParameterAddress) -> Void)?
 
   public init(
     formatter: any KnobValueFormattingProvider,
+    normValueTransform: NormValueTransform,
     parameterValueChanged: ((AUParameterAddress) -> Void)? = nil
   ) {
     self.formatter = formatter
+    self.normValueTransform = normValueTransform
     self.parameterValueChanged = parameterValueChanged
   }
 
@@ -44,9 +48,7 @@ public struct KnobFeature {
 
     @ObservationStateIgnored var observerToken: AUParameterObserverToken?
 
-    public var value: Double {
-      normValueTransform.normToValue(control.track.norm)
-    }
+    public var value: Double { normValueTransform.normToValue(control.track.norm) }
 
     public init(parameter: AUParameter, config: KnobConfig = .default) {
       let normValueTransform: NormValueTransform = .init(parameter: parameter)
@@ -57,8 +59,7 @@ public struct KnobFeature {
       self.valueObservationCancelId = "valueObservationCancelId[AUParameter: \(parameter.address)])"
       self.control = .init(
         displayName: parameter.displayName,
-        value: Double(parameter.value),
-        normValueTransform: normValueTransform,
+        norm: normValueTransform.valueToNorm(Double(parameter.value)),
         config: config
       )
       self.editor = .init(displayName: parameter.displayName)
@@ -85,8 +86,7 @@ public struct KnobFeature {
       self.valueObservationCancelId = nil
       self.control = .init(
         displayName: displayName,
-        value: value,
-        normValueTransform: normValueTransform,
+        norm: normValueTransform.valueToNorm(value),
         config: config
       )
       self.editor = .init(displayName: displayName)
@@ -103,7 +103,9 @@ public struct KnobFeature {
   }
 
   public var body: some Reducer<State, Action> {
-    Scope(state: \.control, action: \.control) { ControlFeature(formatter: formatter) }
+    Scope(state: \.control, action: \.control) {
+      ControlFeature(formatter: formatter, normValueTransform: normValueTransform)
+    }
     Scope(state: \.editor, action: \.editor) { EditorFeature(formatter: formatter) }
 
     Reduce { state, action in
@@ -292,7 +294,7 @@ struct KnobViewPreview: PreviewProvider {
   )
   static let config = KnobConfig()
   static var store = Store(initialState: KnobFeature.State(parameter: param, config: config)) {
-    KnobFeature(formatter: KnobValueFormatter.general())
+    KnobFeature(formatter: KnobValueFormatter.general(), normValueTransform: .init(parameter: param))
   }
 
   static var previews: some View {
