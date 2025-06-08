@@ -1,13 +1,19 @@
 import SwiftUI
 
-struct TitleOnOff<T1: View, T2: View>: View {
+public struct TitleOnOff<T1: View, T2: View>: View {
   @Environment(\.auv3ControlsTheme) var theme
 
   let title: String
   let onOffToggleView: T1
   let globalLockToggleView: T2
 
-  var body: some View {
+  public init(title: String, onOffToggleView: T1, globalLockToggleView: T2) {
+    self.title = title
+    self.onOffToggleView = onOffToggleView
+    self.globalLockToggleView = globalLockToggleView
+  }
+
+  public var body: some View {
     VStack(alignment: .leading, spacing: 16) {
       Text(title)
         .foregroundStyle(theme.controlForegroundColor)
@@ -17,12 +23,12 @@ struct TitleOnOff<T1: View, T2: View>: View {
   }
 }
 
-struct EffectsContainer<T1: View, T2: View, C: View>: View {
+public struct EffectsContainer<T1: View, T2: View, C: View>: View {
   let enabled: Bool
   let titleStack: TitleOnOff<T1, T2>
   let contentStack: C
 
-  init(
+  public init(
     enabled: Bool,
     title: String,
     onOff: T1,
@@ -34,7 +40,7 @@ struct EffectsContainer<T1: View, T2: View, C: View>: View {
     self.contentStack = content()
   }
 
-  var body: some View {
+  public var body: some View {
     HStack(alignment: .top, spacing: 12) {
       titleStack
       contentStack
