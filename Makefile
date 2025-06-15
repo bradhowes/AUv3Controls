@@ -89,6 +89,15 @@ resolve-deps: lint
 lint: clean
 	@if command -v swiftlint; then swiftlint; fi
 
+docs:
+	swift package --allow-writing-to-package-directory \
+		generate-documentation \
+		--target AUv3Controls \
+		--disable-indexing \
+		--transform-for-static-hosting \
+		--hosting-base-path AUv3Controls \
+		--output-path ./docs
+
 clean:
 	rm -rf "$(PWD)/.DerivedData-macos" "$(PWD)/.DerivedData-ios" "$(PWD)/.DerivedData-tvos" "$(WORKSPACE)"
 
