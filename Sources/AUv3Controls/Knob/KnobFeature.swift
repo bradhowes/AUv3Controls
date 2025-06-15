@@ -58,7 +58,10 @@ public struct KnobFeature {
 
     @ObservationStateIgnored var observerToken: AUParameterObserverToken?
 
-    public var value: Double { normValueTransform.normToValue(control.track.norm) }
+    public var value: Double {
+      get { normValueTransform.normToValue(control.track.norm) }
+      set { control.track.norm = normValueTransform.valueToNorm(newValue) }
+    }
 
     public init(parameter: AUParameter) {
       let normValueTransform: NormValueTransform = .init(parameter: parameter)
