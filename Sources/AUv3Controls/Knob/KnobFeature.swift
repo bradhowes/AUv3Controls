@@ -271,14 +271,12 @@ public struct KnobView: View {
   }
 #elseif os(macOS)
   public var body: some View {
-    ControlView(store: store.scope(state: \.control, action: \.control), config: config)
-      .frame(maxWidth: config.controlDiameter, maxHeight: config.controlHeight)
-      .frame(width: config.controlDiameter, height: config.controlHeight)
+    ControlView(store: store.scope(state: \.control, action: \.control))
       .task { await store.send(.task).finish() }
       .onDisappear { store.send(.stopValueObservation) }
       .sheet(isPresented: showBinding) {
       } content: {
-        EditorView(store: store.scope(state: \.editor, action: \.editor), config: config)
+        EditorView(store: store.scope(state: \.editor, action: \.editor))
       }
   }
 #endif
