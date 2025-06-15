@@ -29,6 +29,7 @@ public extension AUParameterTree {
    - parameter address: the unique address for the parameter
    - parameter range: the bounds of the parameter
    - parameter unit: the value unit of the parameter
+   - parameter logScale: if `true`, flag the parameter as using logarithmic scaling
    - returns: new `AUParameter`
    */
   static func createFloat(

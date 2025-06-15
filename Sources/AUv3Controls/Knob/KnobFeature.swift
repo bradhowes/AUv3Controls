@@ -5,13 +5,17 @@ import AVFoundation
 import ComposableArchitecture
 import SwiftUI
 
-/***
- A modern rotary knob that shows and controls the floating-point value of an associated AUParameter. The knob control
- consists of three components:
+/**
+ A modern rotary knob that shows and controls the floating-point value of an associated AUParameter.
+
+ The knob control consists of three components:
 
  - circular indicator representing the current value and that reponds to touch/nouse drags for value changes
+ (see ``TrackFeature``)
  - title label that shows the name of the control and that temporarily shows the current value when it changes
+ (see ``TitleFeature``)
  - value editor that appears when tapping/mouse clicking on the title
+ (see ``EditorFeature``)
 
  On iOS platforms, the editor will replace the knob control while it is active. On macOS, the editor appears as a modal
  dialog. The functionality is the same otherwise.
@@ -24,6 +28,11 @@ public struct KnobFeature {
   // Only used for unit tests
   private let parameterValueChanged: ((AUParameterAddress) -> Void)?
 
+  /**
+   Create feature state based on a AUParameter definition.
+
+   - parameter parameter: the AUParameter to use
+   */
   public init(
     parameter: AUParameter
   ) {
@@ -33,6 +42,17 @@ public struct KnobFeature {
     self.parameterValueChanged = nil
   }
 
+  /**
+   Create feature state that is not based on an AUParameter.
+
+   - parameter formatter: the value formatter to use when displaying numeric values as text
+   - parameter normValueTransform: the ``NormValueTransform`` to use to convert between user values and normalized
+   values in range [0-1].
+   - parameter debounceDuration: the number of seconds to wait for another value before processing a value from  an
+   AUParameter.
+   - parameter parameterValueChanged: closure invoked when control receives a value from AUParameter. Only used by
+   tests.
+   */
   public init(
     formatter: any KnobValueFormattingProvider,
     normValueTransform: NormValueTransform,
@@ -63,6 +83,11 @@ public struct KnobFeature {
       set { control.track.norm = normValueTransform.valueToNorm(newValue) }
     }
 
+    /**
+     Initialze reducer with values from AUParameter definition.
+
+     - parameter parameter: the `AUParameter` to use
+     */
     public init(parameter: AUParameter) {
       let normValueTransform: NormValueTransform = .init(parameter: parameter)
       self.id = parameter.address
@@ -76,6 +101,15 @@ public struct KnobFeature {
       self.editor = .init(displayName: parameter.displayName)
     }
 
+    /**
+     Initialize reducer.
+
+     - parameter value: initial value to use in control
+     - parameter displayName: the display name for the control
+     - parameter minimumValue: the minimum value of the control
+     - parameter maximumValue: the maximum value of the control
+     - parameter logarithmic: if `true` the control works in the logarithmic scale
+     */
     public init(
       value: Double,
       displayName: String,

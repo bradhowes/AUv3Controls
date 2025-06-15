@@ -24,11 +24,24 @@ public struct KnobValueFormatter: Equatable, Sendable, KnobValueFormattingProvid
     let formatter: FloatingPointFormatStyle<Double>
     let suffix: String
 
+    /**
+     Create new formatter that shows a max number of significant digits
+
+     - parameter significantDigits: number of significant digits to show
+     - parameter suffix: the suffix to append to the formatted value
+     */
     init(significantDigits: ClosedRange<Int>, suffix: String) {
       self.formatter = .init().precision(.significantDigits(significantDigits))
       self.suffix = suffix
     }
 
+    /**
+     Format a floating-point value into a string representation.
+
+     - parameter value: the value to format
+     - parameter withSuffix: the units suffix to append
+     - returns: the formatted value
+     */
     func format(_ value: Double, withSuffix: Bool = true) -> String {
       self.formatter.format(value) + (withSuffix ? suffix : "")
     }
@@ -73,30 +86,44 @@ public struct KnobValueFormatter: Equatable, Sendable, KnobValueFormattingProvid
     FloatingPointFormatStyle<Double>().precision(.significantDigits(1...6)).format(value)
   }
 
+  /**
+   Createa a general-purpose value formatter.
+
+   - parameter significantDigits: number of significant digits
+   - parameter suffix: the units suffix to append to the formatted value
+   - returns: new ``KnobValueFormatter``
+   */
   public static func general(_ significantDigits: ClosedRange<Int> = 1...2, suffix: String = "") -> Self {
     Self([significantDigits], suffixes: [suffix])
   }
   /**
    Formatter for percentages
 
-   - parameter fractionDigits: the number of digits to the right of the decimal point
-   - returns: a formatter
+   - parameter significantDigits: the number of digits to the right of the decimal point
+   - returns: new ``KnobValueFormatter``
    */
   public static func percentage(_ significantDigits: ClosedRange<Int> = 1...3) -> Self {
     Self([significantDigits], suffixes: ["%"])
   }
 
   /**
-   Formatter for durations in time
+   Formatter for time durations in seconds.
 
-   - parameter fractionDigits: the number of digits to the right of the decimal point
+   - parameter significantDigits: the number of digits to the right of the decimal point
    - parameter suffix: the text to append to the formatted value
-   - returns: a formatter
+   - returns: new ``KnobValueFormatter``
    */
   public static func duration(_ significantDigits: ClosedRange<Int> = 1...3, suffix: String = "s") -> Self {
     Self([significantDigits], suffixes: [suffix])
   }
 
+  /**
+   Formatter for time durations in milliseconods or seconds depending on value being formatted.
+
+   - parameter millisecondsSigDigits: the number of digits to the right of the decimal point for milliseconds values
+   - parameter secondsSigDigits: the number of digits to the right of the decimal point for seconds values
+   - returns: new ``KnobValueFormatter``
+   */
   public static func seconds(
     millisecondsSigDigits: ClosedRange<Int> = 1...3,
     secondsSigDigits: ClosedRange<Int> = 1...3
@@ -111,8 +138,8 @@ public struct KnobValueFormatter: Equatable, Sendable, KnobValueFormattingProvid
   /**
    Formatter for frequencies
 
-   - parameter herzFractionDigits: the number of digits to the right of the decimal point if value < 1000
-   - parameter kiloFractionDigits: the number of digits to the right of the decimal point if value >= 1000
+   - parameter herzSigDigits: the number of digits to the right of the decimal point if value < 1000
+   - parameter kiloSigDigits: the number of digits to the right of the decimal point if value >= 1000
    - returns: a formatter
    */
   public static func frequency(
@@ -126,6 +153,13 @@ public struct KnobValueFormatter: Equatable, Sendable, KnobValueFormattingProvid
     }
   }
 
+  /**
+   Equality comparison between two formatters.
+
+   - parameter lhs: the first formatter to compare
+   - parameter rhs: the second formatter to compare
+   - returns: `true` if the instances are the same
+   */
   public static func == (lhs: KnobValueFormatter, rhs: KnobValueFormatter) -> Bool {
     lhs.formatters == rhs.formatters
   }
@@ -133,6 +167,12 @@ public struct KnobValueFormatter: Equatable, Sendable, KnobValueFormattingProvid
 
 extension KnobValueFormatter {
 
+  /**
+   Obtain a formatter for a given `AudioUnitParameterUnit` value.
+
+   - parameter unit: the `AudioUnitParameterUnit` to use
+   - returns: the corresponding formatter
+   */
   public static func `for`(_ unit: AudioUnitParameterUnit) -> Self {
     switch unit {
     case .percent: return .percentage()
