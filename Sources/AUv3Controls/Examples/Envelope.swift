@@ -148,7 +148,7 @@ struct EnvelopeFeature {
     Scope(state: \.sustain, action: \.sustain) { KnobFeature(parameter: sustain) }
     Scope(state: \.release, action: \.release) { KnobFeature(parameter: release) }
 
-    Reduce { state, action in
+    Reduce { _, action in
       switch action {
       case .enabled: return .none
       case .locked: return .none

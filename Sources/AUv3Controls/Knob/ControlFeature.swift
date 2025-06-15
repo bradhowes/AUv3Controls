@@ -88,7 +88,7 @@ struct ControlView: View {
   init(store: StoreOf<ControlFeature>) {
     self.store = store
   }
-  
+
   var body: some View {
     VStack(alignment: .center, spacing: -8) {
       TrackView(store: store.scope(state: \.track, action: \.track))

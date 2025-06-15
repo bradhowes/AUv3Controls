@@ -105,7 +105,7 @@ public struct TrackView: View {
         store.send(.viewTapped)
       }
       .highPriorityGesture(DragGesture(minimumDistance: 0.1, coordinateSpace: .local)
-        .updating($dragState) { currentState, gestureState, transaction in
+        .updating($dragState) { currentState, gestureState, _ in
           if let lastDrag = gestureState.lastDrag {
             store.send(.dragChanged(dragNorm(state: gestureState, previous: lastDrag, position: currentState.location)))
             gestureState.lastDrag = currentState.location

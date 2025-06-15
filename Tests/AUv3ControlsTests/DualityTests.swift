@@ -63,10 +63,10 @@ final class DualityTests: XCTestCase {
     }
 
     ctx.boolParam.setValue(1.0, originator: nil)
-    await ctx.boolStore.receive(.observedValueChanged(1.0))
+    await ctx.boolStore.receive(.observedValueChanged(1.0)) { $0.isOn = true }
 
     ctx.boolParam.setValue(0.0, originator: nil)
-    await ctx.boolStore.receive(.observedValueChanged(0.0))
+    await ctx.boolStore.receive(.observedValueChanged(0.0)) { $0.isOn = false }
 
     await ctx.boolStore.send(.stopValueObservation) { $0.observerToken = nil }
     await ctx.boolStore.finish()

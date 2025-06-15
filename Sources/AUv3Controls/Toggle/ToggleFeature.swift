@@ -120,7 +120,7 @@ public struct DefaultTextView: View {
 public struct ToggleView<Content: View>: View {
   @Bindable private var store: StoreOf<ToggleFeature>
   @Environment(\.auv3ControlsTheme) private var theme
-  private var content: Content? = nil
+  private var content: Content?
 
   public init(store: StoreOf<ToggleFeature>, @ViewBuilder content: () -> Content) {
     self.store = store
