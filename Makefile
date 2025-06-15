@@ -95,10 +95,11 @@ docs:
 		--target AUv3Controls \
 		--disable-indexing \
 		--transform-for-static-hosting \
-		--hosting-base-path AUv3Controls \
+		--hosting-base-path https://keystrokecountdown.com/AUv3Controls/ \
 		--output-path ./docs
 
 clean:
-	rm -rf "$(PWD)/.DerivedData-macos" "$(PWD)/.DerivedData-ios" "$(PWD)/.DerivedData-tvos" "$(WORKSPACE)"
+	rm -rf "$(PWD)/.DerivedData-macos" "$(PWD)/.DerivedData-ios" "$(PWD)/.DerivedData-tvos" "$(WORKSPACE)" \
+	"$(PWD)/docs"
 
 .PHONY: test test-ios test-macos test-tvos coverage percentage
