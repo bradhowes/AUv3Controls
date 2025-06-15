@@ -2,7 +2,7 @@ PLATFORM_IOS = iOS Simulator,name=iPad mini (A17 Pro)
 PLATFORM_MACOS = macOS
 PLATFORM_TVOS = tvOS Simulator,name=Apple TV 4K (3rd generation) (at 1080p)
 TARGET = AUv3Controls
-BUILD_FLAGS = -quiet -skipMacroValidation
+BUILD_FLAGS = -quiet -skipMacroValidation -skipPackagePluginValidation
 WORKSPACE = $(PWD)/.workspace
 XCCOV = xcrun xccov view --report --only-targets
 
