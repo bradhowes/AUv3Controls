@@ -5,12 +5,19 @@
 //  Created by Brad Howes on 12/11/2023.
 //
 
+import AUv3Controls
 import SwiftUI
 
 @main
 struct AUv3Controls_DemoApp: App {
   var body: some Scene {
-    WindowGroup {
+    var theme = Theme()
+    theme.controlTrackStrokeStyle = StrokeStyle(lineWidth: 5, lineCap: .round)
+    theme.controlValueStrokeStyle = StrokeStyle(lineWidth: 3, lineCap: .round)
+    theme.toggleOnIndicatorSystemName = "arrowtriangle.down.fill"
+    theme.toggleOffIndicatorSystemName = "arrowtriangle.down"
+
+    return WindowGroup {
       TabView {
         DualityView()
           .padding()
@@ -18,15 +25,12 @@ struct AUv3Controls_DemoApp: App {
             Label("Duality", systemImage: "1.circle")
           }
           .tag(1)
-        VStack {
-          EnvelopeView(title: "Amp")
-          EnvelopeView(title: "Filter")
-        }
-        .padding()
-        .tabItem {
-          Label("Envelope", systemImage: "1.circle")
-        }
-        .tag(2)
+        EnvelopeViews()
+          .padding()
+          .tabItem {
+            Label("Envelopes", systemImage: "1.circle")
+          }
+          .tag(2)
       }
     }
   }

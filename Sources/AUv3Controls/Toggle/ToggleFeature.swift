@@ -14,6 +14,7 @@ public struct ToggleFeature {
     public let parameter: AUParameter?
     public let displayName: String
     public let valueObservationCancelId: String?
+
     @ObservationStateIgnored internal var observerToken: AUParameterObserverToken?
 
     public init(parameter: AUParameter, isOn: Bool = false) {
@@ -35,12 +36,11 @@ public struct ToggleFeature {
   }
 
   public enum Action: BindableAction, Equatable, Sendable {
-    case animatedObservedValueChanged(Bool)
     case binding(BindingAction<State>)
     case observedValueChanged(AUValue)
     case stopValueObservation
     case task
-    case toggleTapped
+    case toggleTapped(Bool)
   }
 
   // Only used for unit tests
@@ -54,18 +54,14 @@ public struct ToggleFeature {
     BindingReducer()
     Reduce { state, action in
       switch action {
-      case let .animatedObservedValueChanged(value):
-        state.isOn = value
-        return .none
       case .binding: return .none
       case let .observedValueChanged(value):
-        return .run { send in await send(.animatedObservedValueChanged(value.asBool)) }.animation()
-
+        print("observedValueChanged: ", value)
+        state.isOn = value.asBool
+        return .none
       case .stopValueObservation: return stopObserving(&state)
-
       case .task: return startObserving(&state)
-
-      case .toggleTapped: return setParameterEffect(&state)
+      case let .toggleTapped(value): return setParameterEffect(&state, value: value)
       }
     }
   }
@@ -73,14 +69,12 @@ public struct ToggleFeature {
 
 extension ToggleFeature {
 
-  private func setParameterEffect(_ state: inout State) -> Effect<Action> {
-    state.isOn.toggle()
+  private func setParameterEffect(_ state: inout State, value: Bool) -> Effect<Action> {
+    state.isOn = value
     if let parameter = state.parameter {
       let newValue = state.isOn.asValue
-      if parameter.value != newValue {
-        parameter.setValue(newValue, originator: state.observerToken, atHostTime: 0, eventType: .value)
-        parameterValueChanged?(parameter.address)
-      }
+      parameter.setValue(newValue, originator: state.observerToken, atHostTime: 0, eventType: .value)
+      parameterValueChanged?(parameter.address)
     }
     return .none
   }
@@ -134,7 +128,7 @@ public struct ToggleView<Content: View>: View {
   }
 
   public var body: some View {
-    Toggle(isOn: $store.isOn) {
+    Toggle(isOn: $store.isOn.sending(\.toggleTapped)) {
       if content != nil {
         content
       } else {

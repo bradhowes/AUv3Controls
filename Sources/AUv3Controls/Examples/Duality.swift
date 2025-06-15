@@ -34,7 +34,9 @@ class MockAUv3 {
     self.paramTree = AUParameterTree.createTree(withChildren: [param1, param2, param3, param4])
     self.paramTree.implementorValueObserver = { parameter, value in
       if let binding = self.bindings[parameter.address] {
-        binding.wrappedValue = Double(value)
+        DispatchQueue.main.async {
+          binding.wrappedValue = Double(value)
+        }
       }
     }
   }

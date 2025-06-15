@@ -203,31 +203,18 @@ struct EnvelopeViewPreview: PreviewProvider {
     let vol = EnvelopeFeature(parameterBase: 100)
     let mod = EnvelopeFeature(parameterBase: 200)
 
-    return Form {
-      Text(
-        """
-      Demo of a collection of knobs in a horizontal ScrollView. The first collection ("Vol") is using default Theme \
-      settings.
-      """
-      )
-
+    return VStack {
       ScrollView(.horizontal) {
         EnvelopeView(store: Store(initialState: vol.state) { vol }, title: "Amp")
+          .padding(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
+          .border(theme.controlForegroundColor)
       }
-      .border(Color.black, width: 1)
-
-      Text(
-        """
-        The next collection uses a customized Theme injected via the "auv3ControlsTheme" environment \
-        setting.
-        """
-      )
-
       ScrollView(.horizontal) {
         EnvelopeView(store: Store(initialState: mod.state) { mod }, title: "Mod")
+          .padding(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
           .environment(\.auv3ControlsTheme, theme)
+          .border(theme.controlForegroundColor)
       }
-      .border(Color.black, width: 1)
     }
   }
 }
