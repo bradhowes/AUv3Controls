@@ -22,7 +22,7 @@ extension Comparable where Self: BinaryFloatingPoint {
    - returns: normalized value
    */
   internal func normalize(in limits: ClosedRange<Self>) -> Self {
-    clamped(to: limits) / (limits.upperBound - limits.lowerBound)
+    (clamped(to: limits) - limits.lowerBound) / (limits.upperBound - limits.lowerBound)
   }
 }
 

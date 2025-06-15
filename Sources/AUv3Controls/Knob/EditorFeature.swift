@@ -90,12 +90,6 @@ struct EditorView: View {
     }
   }
 
-  private var groupTitle: some View {
-    Text(store.displayName)
-      .foregroundStyle(Color.gray.opacity(0.6))
-      .font(.footnote)
-  }
-
   private var valueEditor: some View {
     ZStack(alignment: .trailing) {
 #if os(iOS)
@@ -103,12 +97,12 @@ struct EditorView: View {
         .keyboardType(.numbersAndPunctuation)
         .focused($focus, equals: .value)
         .submitLabel(.go)
-        .onSubmit { sendAcceptButtonTapped() }
+        .onSubmit { store.send(.acceptButtonTapped, animation: .linear) }
         .disableAutocorrection(true)
         .textFieldStyle(.roundedBorder)
 #elseif os(macOS)
       TextField(store.value, text: $store.value)
-        .onSubmit { sendAcceptButtonTapped() }
+        .onSubmit { store.send(.acceptButtonTapped, animation: .linear) }
         .textFieldStyle(.roundedBorder)
 #endif
       Image(systemName: "xmark.circle.fill")
@@ -121,16 +115,15 @@ struct EditorView: View {
   private var buttons: some View {
     HStack(spacing: 16) {
       Button {
-        sendAcceptButtonTapped()
+        store.send(.acceptButtonTapped, animation: .linear)
       } label: {
         Text("OK", comment: "Name of button that accepts an edited value")
           .font(.callout)
           .bold()
       }
-      // .buttonStyle(.bordered)
       .foregroundColor(theme.textColor)
       Button {
-        sendCancelButtonTapped()
+        store.send(.acceptButtonTapped, animation: .linear)
       } label: {
         Text("Cancel", comment: "Name of button that cancels editing")
           .font(.callout)
@@ -139,14 +132,6 @@ struct EditorView: View {
       .foregroundColor(theme.textColor)
     }
     .padding(.init(top: 2, leading: 0, bottom: 0, trailing: 0))
-  }
-
-  func sendAcceptButtonTapped() {
-    store.send(.acceptButtonTapped, animation: .linear)
-  }
-
-  func sendCancelButtonTapped() {
-    store.send(.acceptButtonTapped, animation: .linear)
   }
 }
 
