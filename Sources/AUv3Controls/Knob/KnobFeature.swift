@@ -11,11 +11,11 @@ import SwiftUI
  The knob control consists of three components:
 
  - circular indicator representing the current value and that reponds to touch/nouse drags for value changes
- (see ``TrackFeature``)
+ (``TrackFeature``)
  - title label that shows the name of the control and that temporarily shows the current value when it changes
- (see ``TitleFeature``)
+ (``TitleFeature``)
  - value editor that appears when tapping/mouse clicking on the title
- (see ``EditorFeature``)
+ (``EditorFeature``)
 
  On iOS platforms, the editor will replace the knob control while it is active. On macOS, the editor appears as a modal
  dialog. The functionality is the same otherwise.
