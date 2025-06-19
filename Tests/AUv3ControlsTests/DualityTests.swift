@@ -130,4 +130,41 @@ final class DualityTests: XCTestCase {
 
     await ctx.floatStore.finish()
   }
+
+  @MainActor
+  func testStateSetValue() async throws {
+    let ctx = Context()
+    _ = await ctx.floatStore.withExhaustivity(.off) {
+      await ctx.floatStore.send(.task)
+    }
+
+    await ctx.floatStore.send(.setValue(100.0)) {
+      $0.control.track.norm = 1.0
+      $0.control.title.formattedValue = "100"
+    }
+
+    await ctx.clock.advance(by: .seconds(4))
+
+    await ctx.floatStore.receive(.control(.title(.cancelValueDisplayTimer))) {
+      $0.control.title.formattedValue = nil
+    }
+
+    await ctx.floatStore.send(.setValue(50.0)) {
+      $0.control.track.norm = 0.5
+      $0.control.title.formattedValue = "50"
+    }
+
+    await ctx.clock.advance(by: .seconds(4))
+
+    await ctx.floatStore.receive(.control(.title(.cancelValueDisplayTimer))) {
+      $0.control.title.formattedValue = nil
+    }
+
+    await ctx.floatStore.send(.stopValueObservation) {
+      $0.observerToken = nil
+      $0.control.title.formattedValue = nil
+    }
+
+    await ctx.floatStore.finish()
+  }
 }

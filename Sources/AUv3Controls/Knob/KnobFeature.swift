@@ -80,12 +80,6 @@ public struct KnobFeature {
 
     public var value: Double {
       get { normValueTransform.normToValue(control.track.norm) }
-      set {
-        control.track.norm = normValueTransform.valueToNorm(newValue)
-        if let parameter, let observerToken {
-          parameter.setValue(Float(newValue), originator: observerToken)
-        }
-      }
     }
 
     /**
@@ -144,6 +138,7 @@ public struct KnobFeature {
     case editor(EditorFeature.Action)
     case observedValueChanged(AUValue)
     case performScrollTo(UInt64?)
+    case setValue(Double)
     case stopValueObservation
     case task
   }
@@ -158,8 +153,9 @@ public struct KnobFeature {
       switch action {
       case .control(let controlAction): return controlChanged(&state, action: controlAction)
       case .editor(let editorAction): return editorChanged(&state, action: editorAction)
-      case .observedValueChanged(let value): return reduce(into: &state, action: .control(.valueChanged(Double(value))))
+      case let .observedValueChanged(value): return reduce(into: &state, action: .control(.valueChanged(Double(value))))
       case .performScrollTo(let id): return scrollTo(&state, id: id)
+      case let .setValue(value): return setValue(&state, value: value)
       case .stopValueObservation: return stopObserving(&state)
       case .task: return startObserving(&state)
       }
@@ -200,6 +196,14 @@ private extension KnobFeature {
     }
 
     return .none
+  }
+
+  func setValue(_ state: inout State, value: Double) -> Effect<Action> {
+    if let parameter = state.parameter,
+       let observerToken = state.observerToken {
+      parameter.setValue(Float(value), originator: observerToken)
+    }
+    return reduce(into: &state, action: .control(.valueChanged(value)))
   }
 
   func scrollTo(_ state: inout State, id: UInt64?) -> Effect<Action> {
@@ -345,6 +349,7 @@ struct KnobViewPreview: PreviewProvider {
     VStack {
       KnobView(store: store)
         .frame(width: 140, height: 140)
+      Text("observerdValueChanged:")
       Button {
         store.send(.observedValueChanged(0.0))
       } label: {
@@ -357,6 +362,22 @@ struct KnobViewPreview: PreviewProvider {
       }
       Button {
         store.send(.observedValueChanged(100.0))
+      } label: {
+        Text("Go to 100")
+      }
+      Text("setValue:")
+      Button {
+        store.send(.setValue(0.0))
+      } label: {
+        Text("Go to 0")
+      }
+      Button {
+        store.send(.setValue(50.0))
+      } label: {
+        Text("Go to 50")
+      }
+      Button {
+        store.send(.setValue(100.0))
       } label: {
         Text("Go to 100")
       }
