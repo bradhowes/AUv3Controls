@@ -80,7 +80,12 @@ public struct KnobFeature {
 
     public var value: Double {
       get { normValueTransform.normToValue(control.track.norm) }
-      set { control.track.norm = normValueTransform.valueToNorm(newValue) }
+      set {
+        control.track.norm = normValueTransform.valueToNorm(newValue)
+        if let parameter, let observerToken {
+          parameter.setValue(Float(newValue), originator: observerToken)
+        }
+      }
     }
 
     /**
