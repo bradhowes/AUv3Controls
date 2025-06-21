@@ -38,6 +38,7 @@ public struct ToggleFeature {
   public enum Action: BindableAction, Equatable, Sendable {
     case binding(BindingAction<State>)
     case observedValueChanged(AUValue)
+    case setValue(Bool)
     case stopValueObservation
     case task
     case toggleTapped(Bool)
@@ -59,6 +60,7 @@ public struct ToggleFeature {
         print("observedValueChanged: ", value)
         state.isOn = value.asBool
         return .none
+      case let .setValue(value): return setParameterEffect(&state, value: value)
       case .stopValueObservation: return stopObserving(&state)
       case .task: return startObserving(&state)
       case let .toggleTapped(value): return setParameterEffect(&state, value: value)
@@ -71,9 +73,15 @@ extension ToggleFeature {
 
   private func setParameterEffect(_ state: inout State, value: Bool) -> Effect<Action> {
     state.isOn = value
-    if let parameter = state.parameter {
+    if let parameter = state.parameter,
+       let observerToken = state.observerToken {
       let newValue = state.isOn.asValue
-      parameter.setValue(newValue, originator: state.observerToken, atHostTime: 0, eventType: .value)
+      parameter.setValue(
+        newValue,
+        originator: observerToken,
+        atHostTime: 0,
+        eventType: .value
+      )
       parameterValueChanged?(parameter.address)
     }
     return .none

@@ -201,7 +201,12 @@ private extension KnobFeature {
   func setValue(_ state: inout State, value: Double) -> Effect<Action> {
     if let parameter = state.parameter,
        let observerToken = state.observerToken {
-      parameter.setValue(Float(value), originator: observerToken)
+      parameter.setValue(
+        Float(value),
+        originator: observerToken,
+        atHostTime: 0,
+        eventType: .value
+      )
     }
     return reduce(into: &state, action: .control(.valueChanged(value)))
   }
