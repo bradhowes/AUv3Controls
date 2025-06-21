@@ -79,6 +79,30 @@ final class ToggleFeatureTests: XCTestCase {
   }
 
   @MainActor
+  func testSetValue() async {
+    let ctx = Context()
+    let store = ctx.makeStore()
+
+    _ = await store.withExhaustivity(.off) {
+      await store.send(.task)
+    }
+
+    await store.send(.setValue(true)) {
+      $0.isOn = true
+    }
+    XCTAssertEqual(1.0, ctx.param.value)
+
+    await store.send(.setValue(false)) {
+      $0.isOn = false
+    }
+    XCTAssertEqual(0.0, ctx.param.value)
+
+    await store.send(.stopValueObservation) {
+      $0.observerToken = nil
+    }
+  }
+
+  @MainActor
   func testOffRendering() async throws {
     let ctx = Context()
 
