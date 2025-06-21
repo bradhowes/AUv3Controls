@@ -12,7 +12,7 @@ public struct KnobConfig: Equatable, Sendable {
   public static let `default` = KnobConfig()
 
   /// How long to show the value in the knob's label
-  public let controlShowValueDuration: Duration
+  public let controlShowValueMilliseconds: Int
 
   /**
    Amount of time to wait with no more AUParameter changes before emitting the last one in the async stream of
@@ -20,13 +20,13 @@ public struct KnobConfig: Equatable, Sendable {
    one limits the rate of emission but ultimately emits all events: debouncing drops all but the last event in a
    window of time.
    */
-  public let debounceDuration: Duration
+  public let debounceMilliseconds: Int
 
   public init(
-    showValueDuration: Duration = .seconds(1.25),
-    debounceDuration: Duration = .milliseconds(10)
+    showValueDuration: Int = 1250,
+    debounceDuration: Int = 10
   ) {
-    self.controlShowValueDuration = showValueDuration
-    self.debounceDuration = debounceDuration
+    self.controlShowValueMilliseconds = showValueDuration
+    self.debounceMilliseconds = debounceDuration
   }
 }

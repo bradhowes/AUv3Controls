@@ -24,7 +24,7 @@ import SwiftUI
 public struct KnobFeature {
   let formatter: any KnobValueFormattingProvider
   let normValueTransform: NormValueTransform
-  let debounceDuration: Duration
+  let debounceMilliseconds: Int
   // Only used for unit tests
   private let parameterValueChanged: ((AUParameterAddress) -> Void)?
 
@@ -38,7 +38,7 @@ public struct KnobFeature {
   ) {
     self.formatter = KnobValueFormatter.for(parameter.unit)
     self.normValueTransform = .init(parameter: parameter)
-    self.debounceDuration = KnobConfig.default.debounceDuration
+    self.debounceMilliseconds = KnobConfig.default.debounceMilliseconds
     self.parameterValueChanged = nil
   }
 
@@ -56,12 +56,12 @@ public struct KnobFeature {
   public init(
     formatter: any KnobValueFormattingProvider,
     normValueTransform: NormValueTransform,
-    debounceDuration: Duration = KnobConfig.default.debounceDuration,
+    debounceMilliseconds: Int = KnobConfig.default.debounceMilliseconds,
     parameterValueChanged: ((AUParameterAddress) -> Void)? = nil
   ) {
     self.formatter = formatter
     self.normValueTransform = normValueTransform
-    self.debounceDuration = debounceDuration
+    self.debounceMilliseconds = debounceMilliseconds
     self.parameterValueChanged = parameterValueChanged
   }
 
@@ -230,11 +230,11 @@ private extension KnobFeature {
     else {
       return .none
     }
-    let duration = debounceDuration
+    let duration = debounceMilliseconds
     let stream: AsyncStream<AUValue>
     (state.observerToken, stream) = parameter.startObserving()
     return .run { send in
-      for await value in stream.debounce(for: duration) {
+      for await value in stream.debounce(for: .milliseconds(duration)) {
         await send(.observedValueChanged(value))
       }
     }.cancellable(id: valueObservationCancelId, cancelInFlight: true)
@@ -254,7 +254,7 @@ private extension KnobFeature {
     print("stopObserving: \(valueObservationCancelId)")
     return .merge(
       .cancel(id: valueObservationCancelId),
-      reduce(into: &state, action: .control(.title(.cancelValueDisplayTimer)))
+      reduce(into: &state, action: .control(.title(.valueDisplayTimerFired)))
     )
   }
 
@@ -311,7 +311,6 @@ public struct KnobView: View {
       }
     }
     .task { await store.send(.task).finish() }
-    .onDisappear { store.send(.stopValueObservation) }
     .onChange(of: store.scrollToDestination) { _, newValue in
       guard let newValue, let proxy = proxy else { return }
       withAnimation {
@@ -324,7 +323,6 @@ public struct KnobView: View {
   public var body: some View {
     ControlView(store: store.scope(state: \.control, action: \.control))
       .task { await store.send(.task).finish() }
-      .onDisappear { store.send(.stopValueObservation) }
       .sheet(isPresented: showBinding) {
       } content: {
         EditorView(store: store.scope(state: \.editor, action: \.editor))

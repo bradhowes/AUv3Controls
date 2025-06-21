@@ -13,11 +13,21 @@ private final class Context {
                                               min: 0.0, max: 100.0, unit: .generic, unitName: nil,
                                               valueStrings: nil, dependentParameters: nil)
   let clock = TestClock()
-  let config = KnobConfig()
-  lazy var store = TestStore(initialState: .init(displayName: param.displayName)) {
+  let config = KnobConfig.default
+  let mainQueue = DispatchQueue.test
+
+  lazy var test = TestStore(initialState: .init(displayName: param.displayName)) {
     TitleFeature(formatter: KnobValueFormatter.general(1...4))
   } withDependencies: {
     $0.continuousClock = clock
+    $0.mainQueue = mainQueue.eraseToAnyScheduler()
+  }
+
+  lazy var live = Store(initialState: .init(displayName: param.displayName)) {
+    TitleFeature(formatter: KnobValueFormatter.general(1...4))
+  } withDependencies: {
+    $0.continuousClock = ImmediateClock()
+    $0.mainQueue = DispatchQueue.main.eraseToAnyScheduler()
   }
 
   init() {}
@@ -28,21 +38,21 @@ final class TitleFeatureTests: XCTestCase {
   @MainActor
   func testInit() {
     let ctx = Context()
-    XCTAssertNil(ctx.store.state.formattedValue)
+    XCTAssertNil(ctx.test.state.formattedValue)
   }
   
   @MainActor
   func testValueChanged() async {
     let ctx = Context()
-    await ctx.store.send(.valueChanged(12.34)) { state in
+    await ctx.test.send(.valueChanged(12.34)) { state in
       state.formattedValue = "12.34"
     }
-    await ctx.clock.advance(by: ctx.config.controlShowValueDuration / 2.0)
-    await ctx.store.send(.valueChanged(56.78)) { state in
+    await ctx.clock.advance(by: .milliseconds(ctx.config.controlShowValueMilliseconds) / 2.0)
+    await ctx.test.send(.valueChanged(56.78)) { state in
       state.formattedValue = "56.78"
     }
-    await ctx.clock.advance(by: ctx.config.controlShowValueDuration)
-    await ctx.store.receive(.cancelValueDisplayTimer) {
+    await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.controlShowValueMilliseconds))
+    await ctx.test.receive(.valueDisplayTimerFired) {
       $0.formattedValue = nil
     }
   }
@@ -50,11 +60,12 @@ final class TitleFeatureTests: XCTestCase {
   @MainActor
   func testStoppedShowingValue() async {
     let ctx = Context()
-    await ctx.store.send(.valueChanged(12.34)) { state in
+    await ctx.test.send(.valueChanged(12.34)) { state in
       state.formattedValue = "12.34"
     }
     await ctx.clock.run()
-    await ctx.store.receive(.cancelValueDisplayTimer) { state in
+    await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.controlShowValueMilliseconds))
+    await ctx.test.receive(.valueDisplayTimerFired) { state in
       state.formattedValue = nil
     }
   }
@@ -62,10 +73,10 @@ final class TitleFeatureTests: XCTestCase {
   @MainActor
   func testTapped() async {
     let ctx = Context()
-    await ctx.store.send(.valueChanged(12.34)) { state in
+    await ctx.test.send(.valueChanged(12.34)) { state in
       state.formattedValue = "12.34"
     }
-    await ctx.store.send(.titleTapped) { state in
+    await ctx.test.send(.titleTapped) { state in
       state.formattedValue = nil
     }
     // Nothing should be running now.
@@ -91,35 +102,26 @@ final class TitleFeatureTests: XCTestCase {
     try withSnapshotTesting(record: .failed) {
       try assertSnapshot(matching: view)
     }
-
-    await view.store.send(.cancelValueDisplayTimer).finish()
   }
   
   @MainActor
   func testShowingValue() async throws {
     let ctx = Context()
     struct MyView: SwiftUI.View {
-      let config: KnobConfig
       @State var store: StoreOf<TitleFeature>
-      
+
       var body: some SwiftUI.View {
         TitleView(store: store)
       }
     }
-    
-    let view = MyView(config: ctx.config, store: Store(initialState: .init(displayName: ctx.param.displayName)) {
-      TitleFeature(formatter: KnobValueFormatter.general(1...2))
-    } withDependencies: {
-      $0.continuousClock = ContinuousClock()
-    })
-    
-    await view.store.send(.valueChanged(12.34)).finish()
+
+    let view = MyView(store: ctx.live)
+
+    await view.store.send(TitleFeature.Action.valueChanged(12.34)).finish()
 
     try withSnapshotTesting(record: .failed) {
       try assertSnapshot(matching: view)
     }
-
-    await view.store.send(.cancelValueDisplayTimer).finish()
   }
 
   @MainActor
@@ -130,5 +132,13 @@ final class TitleFeatureTests: XCTestCase {
         try assertSnapshot(matching: view)
       }
     }
+  }
+}
+
+struct MyView: SwiftUI.View {
+  @State var store: StoreOf<TitleFeature>
+
+  var body: some SwiftUI.View {
+    TitleView(store: store)
   }
 }

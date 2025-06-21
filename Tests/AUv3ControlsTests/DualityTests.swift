@@ -25,6 +25,8 @@ private final class Context {
     dependentParameters: nil
   )
 
+  let mainQueue = DispatchQueue.test
+
   lazy var paramTree = AUParameterTree.createTree(withChildren: [boolParam, floatParam])
 
   lazy var boolStore = TestStore(initialState: ToggleFeature.State(parameter: paramTree.parameter(withAddress: 1)!)) {
@@ -34,6 +36,7 @@ private final class Context {
     }
   } withDependencies: {
     $0.continuousClock = clock
+    $0.mainQueue = mainQueue.eraseToAnyScheduler()
   }
 
   lazy var floatStore = TestStore(initialState: KnobFeature.State(
@@ -42,6 +45,7 @@ private final class Context {
     KnobFeature(formatter: KnobValueFormatter.general(1...3), normValueTransform: .init(parameter: floatParam))
   } withDependencies: {
     $0.continuousClock = clock
+    $0.mainQueue = mainQueue.eraseToAnyScheduler()
   }
 
   var changed: [AUParameterAddress:Int] = [:]
@@ -91,9 +95,9 @@ final class DualityTests: XCTestCase {
       $0.control.track.norm = 0.01
     }
 
-    await ctx.clock.advance(by: .seconds(4))
+    await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.controlShowValueMilliseconds))
 
-    await ctx.floatStore.receive(.control(.title(.cancelValueDisplayTimer))) {
+    await ctx.floatStore.receive(.control(.title(.valueDisplayTimerFired))) {
       $0.control.title.formattedValue = nil
     }
 
@@ -104,9 +108,9 @@ final class DualityTests: XCTestCase {
       $0.control.track.norm = 0.125
     }
 
-    await ctx.clock.advance(by: .seconds(4))
+    await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.controlShowValueMilliseconds))
 
-    await ctx.floatStore.receive(.control(.title(.cancelValueDisplayTimer))) {
+    await ctx.floatStore.receive(.control(.title(.valueDisplayTimerFired))) {
       $0.control.title.formattedValue = nil
     }
 
@@ -117,9 +121,9 @@ final class DualityTests: XCTestCase {
       $0.control.track.norm = 1.0
     }
 
-    await ctx.clock.advance(by: .seconds(4))
+    await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.controlShowValueMilliseconds))
 
-    await ctx.floatStore.receive(.control(.title(.cancelValueDisplayTimer))) {
+    await ctx.floatStore.receive(.control(.title(.valueDisplayTimerFired))) {
       $0.control.title.formattedValue = nil
     }
 
@@ -143,9 +147,9 @@ final class DualityTests: XCTestCase {
       $0.control.title.formattedValue = "100"
     }
 
-    await ctx.clock.advance(by: .seconds(4))
+    await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.controlShowValueMilliseconds))
 
-    await ctx.floatStore.receive(.control(.title(.cancelValueDisplayTimer))) {
+    await ctx.floatStore.receive(.control(.title(.valueDisplayTimerFired))) {
       $0.control.title.formattedValue = nil
     }
 
@@ -154,9 +158,9 @@ final class DualityTests: XCTestCase {
       $0.control.title.formattedValue = "50"
     }
 
-    await ctx.clock.advance(by: .seconds(4))
+    await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.controlShowValueMilliseconds))
 
-    await ctx.floatStore.receive(.control(.title(.cancelValueDisplayTimer))) {
+    await ctx.floatStore.receive(.control(.title(.valueDisplayTimerFired))) {
       $0.control.title.formattedValue = nil
     }
 

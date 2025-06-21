@@ -14,12 +14,24 @@ private final class Context {
                                               min: 0.0, max: 100.0, unit: .generic, unitName: nil,
                                               valueStrings: nil, dependentParameters: nil)
   let config = KnobConfig()
-  lazy var store = TestStore(initialState: .init(parameter: param)) {
+  let mainQueue = DispatchQueue.test
+
+  lazy var test = TestStore(initialState: .init(parameter: param)) {
     KnobFeature(formatter: KnobValueFormatter.general(), normValueTransform: .init(parameter: param)) { [weak self] address in
       guard let self else { return }
       changed[address] = changed[address]! + 1
     }
-  } withDependencies: { $0.continuousClock = ImmediateClock() }
+  } withDependencies: {
+    $0.continuousClock = ImmediateClock()
+    $0.mainQueue = mainQueue.eraseToAnyScheduler()
+  }
+
+  lazy var live = Store(initialState: .init(parameter: param)) {
+    KnobFeature(formatter: KnobValueFormatter.general(), normValueTransform: .init(parameter: param))
+  } withDependencies: {
+    $0.continuousClock = ImmediateClock()
+    $0.mainQueue = DispatchQueue.main.eraseToAnyScheduler()
+  }
 
   var changed: [AUParameterAddress:Int] = [:]
 
@@ -34,18 +46,20 @@ final class KnobFeatureTests: XCTestCase {
   @MainActor
   func testValueChanged() async {
     let ctx = Context()
-    await ctx.store.send(.control(.track(.dragChanged(0.36)))) { state in
+    await ctx.test.send(.control(.track(.dragChanged(0.36)))) { state in
       state.control.track.norm = 0.3600000000000
       state.control.title.formattedValue = "36"
     }
-    await ctx.store.receive(.control(.title(.cancelValueDisplayTimer))) {
+    await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.controlShowValueMilliseconds))
+    await ctx.test.receive(.control(.title(.valueDisplayTimerFired))) {
       $0.control.title.formattedValue = nil
     }
-    await ctx.store.send(.control(.track(.dragChanged(0.0)))) { state in
+    await ctx.test.send(.control(.track(.dragChanged(0.0)))) { state in
       state.control.track.norm = 0.0
       state.control.title.formattedValue = "0"
     }
-    await ctx.store.receive(.control(.title(.cancelValueDisplayTimer))) { state in
+    await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.controlShowValueMilliseconds))
+    await ctx.test.receive(.control(.title(.valueDisplayTimerFired))) { state in
       state.control.title.formattedValue = nil
     }
     XCTAssertEqual(ctx.changed[1], 2)
@@ -54,15 +68,16 @@ final class KnobFeatureTests: XCTestCase {
   @MainActor
   func testValueEditing() async {
     let ctx = Context()
-    _ = await ctx.store.withExhaustivity(.off) {
-      await ctx.store.send(.control(.track(.dragChanged(0.36)))) { state in
+    _ = await ctx.test.withExhaustivity(.off) {
+      await ctx.test.send(.control(.track(.dragChanged(0.36)))) { state in
         state.control.track.norm = 0.3600000000000000
         state.control.title.formattedValue = "36"
       }
-      await ctx.store.receive(.control(.title(.cancelValueDisplayTimer))) {
+      await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.controlShowValueMilliseconds))
+      await ctx.test.receive(.control(.title(.valueDisplayTimerFired))) {
         $0.control.title.formattedValue = nil
       }
-      await ctx.store.send(.control(.title(.titleTapped))) { state in
+      await ctx.test.send(.control(.title(.titleTapped))) { state in
         state.editor.focus = .value
         state.editor.value = "36"
       }
@@ -72,25 +87,27 @@ final class KnobFeatureTests: XCTestCase {
   @MainActor
   func testAcceptValidEdit() async {
     let ctx = Context()
-    _ = await ctx.store.withExhaustivity(.off) {
-      await ctx.store.send(.control(.track(.dragChanged(0.36)))) { state in
+    _ = await ctx.test.withExhaustivity(.off) {
+      await ctx.test.send(.control(.track(.dragChanged(0.36)))) { state in
         state.control.track.norm = 0.3600000000000000
         state.control.title.formattedValue = "36"
       }
-      await ctx.store.receive(.control(.title(.cancelValueDisplayTimer))) {
+      await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.controlShowValueMilliseconds))
+      await ctx.test.receive(.control(.title(.valueDisplayTimerFired))) {
         $0.control.title.formattedValue = nil
       }
-      await ctx.store.send(.control(.title(.titleTapped))) { state in
+      await ctx.test.send(.control(.title(.titleTapped))) { state in
         state.editor.focus = .value
         state.editor.value = "36"
       }
-      await ctx.store.send(.editor(.valueChanged("32.124"))) { state in
+      await ctx.test.send(.editor(.valueChanged("32.124"))) { state in
       }
-      await ctx.store.send(.editor(.acceptButtonTapped)) { state in
+      await ctx.test.send(.editor(.acceptButtonTapped)) { state in
         state.control.title.formattedValue = "32"
         state.editor.focus = nil
       }
-      await ctx.store.receive(.control(.title(.cancelValueDisplayTimer))) {
+      await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.controlShowValueMilliseconds))
+      await ctx.test.receive(.control(.title(.valueDisplayTimerFired))) {
         $0.control.title.formattedValue = nil
       }
     }
@@ -100,23 +117,24 @@ final class KnobFeatureTests: XCTestCase {
   @MainActor
   func testAcceptInvalidEdit() async {
     let ctx = Context()
-    await ctx.store.send(.control(.track(.dragChanged(0.36)))) { state in
+    await ctx.test.send(.control(.track(.dragChanged(0.36)))) { state in
       state.control.track.norm = 0.3600000000000000
       state.control.title.formattedValue = "36"
     }
-    await ctx.store.receive(.control(.title(.cancelValueDisplayTimer))) {
+    await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.controlShowValueMilliseconds))
+    await ctx.test.receive(.control(.title(.valueDisplayTimerFired))) {
       $0.control.title.formattedValue = nil
     }
-    await ctx.store.send(.control(.title(.titleTapped))) { state in
+    await ctx.test.send(.control(.title(.titleTapped))) { state in
       state.editor.focus = .value
       state.editor.value = "36"
       state.showingEditor = true
       state.scrollToDestination = 1
     }
-    await ctx.store.send(.editor(.clearButtonTapped)) { state in
+    await ctx.test.send(.editor(.clearButtonTapped)) { state in
       state.editor.value = ""
     }
-    await ctx.store.send(.editor(.acceptButtonTapped)) { state in
+    await ctx.test.send(.editor(.acceptButtonTapped)) { state in
       state.control.track.norm = 0.3600000000000000
       state.control.title.formattedValue = nil
       state.editor.focus = nil
@@ -126,23 +144,24 @@ final class KnobFeatureTests: XCTestCase {
   @MainActor
   func testCancelEdit() async {
     let ctx = Context()
-    await ctx.store.send(.control(.track(.dragChanged(0.36)))) { state in
+    await ctx.test.send(.control(.track(.dragChanged(0.36)))) { state in
       state.control.track.norm = 0.3600000000000000
       state.control.title.formattedValue = "36"
     }
-      await ctx.store.receive(.control(.title(.cancelValueDisplayTimer))) {
+    await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.controlShowValueMilliseconds))
+    await ctx.test.receive(.control(.title(.valueDisplayTimerFired))) {
       $0.control.title.formattedValue = nil
     }
-    await ctx.store.send(.control(.title(.titleTapped))) { state in
+    await ctx.test.send(.control(.title(.titleTapped))) { state in
       state.editor.focus = .value
       state.editor.value = "36"
       state.showingEditor = true
       state.scrollToDestination = 1
     }
-    await ctx.store.send(.editor(.valueChanged("32.124"))) { state in
+    await ctx.test.send(.editor(.valueChanged("32.124"))) { state in
       state.editor.value = "32.124"
     }
-    await ctx.store.send(.editor(.cancelButtonTapped)) { state in
+    await ctx.test.send(.editor(.cancelButtonTapped)) { state in
       state.control.track.norm = 0.3600000000000000
       state.control.title.formattedValue = nil
       state.editor.focus = nil
@@ -155,7 +174,6 @@ final class KnobFeatureTests: XCTestCase {
   func testChangedValue() async throws {
     let ctx = Context()
     struct MyView: SwiftUI.View {
-      let config: KnobConfig
       @State var store: StoreOf<KnobFeature>
 
       var body: some SwiftUI.View {
@@ -163,14 +181,10 @@ final class KnobFeatureTests: XCTestCase {
       }
     }
 
-    let view = MyView(config: ctx.config, store: Store(initialState: .init(parameter: ctx.param)) {
-      KnobFeature(formatter: KnobValueFormatter.general(), normValueTransform: .init(parameter: ctx.param))
-    } withDependencies: {
-      $0.continuousClock = ContinuousClock()
-    })
+    let view = MyView(store: ctx.live)
 
     await view.store.send(
-      .control(.track(.dragChanged(0.0)))).finish()
+      KnobFeature.Action.control(.track(.dragChanged(0.0)))).finish()
 
     try withSnapshotTesting(record: .failed) {
       try assertSnapshot(matching: view)

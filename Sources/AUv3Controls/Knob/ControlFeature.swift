@@ -14,16 +14,16 @@ import SwiftUI
 public struct ControlFeature {
   let formatter: any KnobValueFormattingProvider
   let normValueTransform: NormValueTransform
-  let showValueDuration: Duration
+  let showValueMilliseconds: Int
 
   public init(
     formatter: any KnobValueFormattingProvider,
     normValueTransform: NormValueTransform,
-    showValueDuration: Duration = KnobConfig.default.controlShowValueDuration
+    showValueMilliseconds: Int = KnobConfig.default.controlShowValueMilliseconds
   ) {
     self.formatter = formatter
     self.normValueTransform = normValueTransform
-    self.showValueDuration = showValueDuration
+    self.showValueMilliseconds = showValueMilliseconds
   }
 
   @ObservableState
@@ -48,7 +48,7 @@ public struct ControlFeature {
 
   public var body: some Reducer<State, Action> {
     Scope(state: \.track, action: \.track) { TrackFeature(normValueTransform: normValueTransform) }
-    Scope(state: \.title, action: \.title) { TitleFeature(formatter: formatter, showValueDuration: showValueDuration ) }
+    Scope(state: \.title, action: \.title) { TitleFeature(formatter: formatter, showValueMilliseconds: showValueMilliseconds ) }
 
     Reduce { state, action in
       switch action {

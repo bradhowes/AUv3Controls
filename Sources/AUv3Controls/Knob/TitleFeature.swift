@@ -3,6 +3,7 @@
 import AVFoundation
 import Clocks
 import ComposableArchitecture
+import Foundation
 import SwiftUI
 
 /**
@@ -12,15 +13,15 @@ import SwiftUI
 @Reducer
 public struct TitleFeature {
   let formatter: any KnobValueFormattingProvider
-  let showValueDuration: Duration
+  let showValueMilliseconds: Int
   let showValueCancelId = "ShowValueCancelId[\(UUID().uuidString)]"
 
   public init(
     formatter: any KnobValueFormattingProvider,
-    showValueDuration: Duration = KnobConfig.default.controlShowValueDuration
+    showValueMilliseconds: Int = KnobConfig.default.controlShowValueMilliseconds
   ) {
     self.formatter = formatter
-    self.showValueDuration = showValueDuration
+    self.showValueMilliseconds = showValueMilliseconds
   }
 
   @ObservableState
@@ -36,21 +37,22 @@ public struct TitleFeature {
   }
 
   public enum Action: Equatable, Sendable {
-    case cancelValueDisplayTimer
     case dragActive(Bool)
     case titleTapped
     case valueChanged(Double)
+    case valueDisplayTimerFired
   }
 
   @Dependency(\.continuousClock) var clock
+  @Dependency(\.mainQueue) var mainQueue
 
   public var body: some Reducer<State, Action> {
     Reduce { state, action in
       switch action {
-      case .cancelValueDisplayTimer: return showTitleEffect(state: &state)
       case let .dragActive(value): return dragActive(&state, value: value)
       case .titleTapped: return showTitleEffect(state: &state)
       case .valueChanged(let value): return showValueEffect(state: &state, value: value)
+      case .valueDisplayTimerFired: return showTitleEffect(state: &state)
       }
     }
   }
@@ -74,10 +76,9 @@ private extension TitleFeature {
   }
 
   func startTitleTimerEffect(_ state: inout State) -> Effect<Action> {
-    return .run { [duration = showValueDuration, clock = self.clock] send in
-      try await clock.sleep(for: duration)
-      await send(.cancelValueDisplayTimer, animation: .linear)
-    }.cancellable(id: showValueCancelId, cancelInFlight: true)
+    return .run { send in
+      await send(.valueDisplayTimerFired, animation: .linear)
+    }.debounce(id: showValueCancelId, for: .milliseconds(showValueMilliseconds), scheduler: mainQueue)
   }
 }
 
