@@ -71,10 +71,12 @@ public struct KnobFeature {
     let parameter: AUParameter?
     let normValueTransform: NormValueTransform
     let valueObservationCancelId: String?
+    let displayName: String
     var control: ControlFeature.State
-    var editor: EditorFeature.State
     var scrollToDestination: UInt64?
+
     var showingEditor: Bool = false
+    var editorValue: String = ""
 
     @ObservationStateIgnored var observerToken: AUParameterObserverToken?
 
@@ -93,11 +95,11 @@ public struct KnobFeature {
       self.parameter = parameter
       self.normValueTransform = normValueTransform
       self.valueObservationCancelId = "valueObservationCancelId[AUParameter: \(parameter.address)])"
+      self.displayName = parameter.displayName
       self.control = .init(
         displayName: parameter.displayName,
         norm: normValueTransform.valueToNorm(Double(parameter.value))
       )
-      self.editor = .init(displayName: parameter.displayName)
     }
 
     /**
@@ -125,17 +127,18 @@ public struct KnobFeature {
       self.parameter = nil
       self.normValueTransform = normValueTransform
       self.valueObservationCancelId = nil
+      self.displayName = displayName
       self.control = .init(
         displayName: displayName,
         norm: normValueTransform.valueToNorm(value)
       )
-      self.editor = .init(displayName: displayName)
     }
   }
 
-  public enum Action: Equatable, Sendable {
+  public enum Action: BindableAction, Equatable, Sendable {
+    case binding(BindingAction<State>)
     case control(ControlFeature.Action)
-    case editor(EditorFeature.Action)
+    case editorAccepted
     case observedValueChanged(AUValue)
     case performScrollTo(UInt64?)
     case setValue(Double)
@@ -144,15 +147,15 @@ public struct KnobFeature {
   }
 
   public var body: some Reducer<State, Action> {
+    BindingReducer()
     Scope(state: \.control, action: \.control) {
       ControlFeature(formatter: formatter, normValueTransform: normValueTransform)
     }
-    Scope(state: \.editor, action: \.editor) { EditorFeature(formatter: formatter) }
-
     Reduce { state, action in
       switch action {
+      case .binding: return .none
       case .control(let controlAction): return controlChanged(&state, action: controlAction)
-      case .editor(let editorAction): return editorChanged(&state, action: editorAction)
+      case .editorAccepted: return editorAccepted(&state)
       case let .observedValueChanged(value): return reduce(into: &state, action: .control(.valueChanged(Double(value))))
       case .performScrollTo(let id): return scrollTo(&state, id: id)
       case let .setValue(value): return setValue(&state, value: value)
@@ -173,28 +176,16 @@ private extension KnobFeature {
     }
   }
 
-  func editorChanged(_ state: inout State, action: EditorFeature.Action) -> Effect<Action> {
-    switch action {
-    case .acceptButtonTapped:
-      if let editorValue = Double(state.editor.value) {
-        let value = state.normValueTransform.normToValue(state.normValueTransform.valueToNorm(editorValue))
-        state.showingEditor = false
-        state.scrollToDestination = nil
-        return .merge(
-          setParameterEffect(state: state, value: value, cause: .value),
-          reduce(into: &state, action: .control(.valueChanged(Double(value))))
-        )
-      }
-
-    case .cancelButtonTapped:
+  func editorAccepted(_ state: inout State) -> Effect<Action> {
+    if let editorValue = Double(state.editorValue) {
+      let value = state.normValueTransform.normToValue(state.normValueTransform.valueToNorm(editorValue))
       state.showingEditor = false
       state.scrollToDestination = nil
-      return .none
-
-    default:
-      break
+      return .merge(
+        setParameterEffect(state: state, value: value, cause: .value),
+        reduce(into: &state, action: .control(.valueChanged(Double(value))))
+      )
     }
-
     return .none
   }
 
@@ -217,10 +208,10 @@ private extension KnobFeature {
   }
 
   func showEditor(_ state: inout State) -> Effect<Action> {
-    state.showingEditor = true
-    state.scrollToDestination = state.id
     let value = state.normValueTransform.normToValue(state.control.track.norm)
-    return reduce(into: &state, action: .editor(.beginEditing(value)))
+    state.showingEditor = true
+    state.editorValue = formatter.forEditing(value)
+    return .none
   }
 
   func startObserving(_ state: inout State) -> Effect<Action> {
@@ -279,54 +270,48 @@ private extension KnobFeature {
 }
 
 public struct KnobView: View {
-  private let store: StoreOf<KnobFeature>
+  @Bindable private var store: StoreOf<KnobFeature>
   @Environment(\.isEnabled) var enabled
   @Environment(\.auv3ControlsTheme) var theme
   @Environment(\.scrollViewProxy) var proxy: ScrollViewProxy?
 
-#if os(macOS)
-  private let showBinding: Binding<Bool>
-#endif
-
   public init(store: StoreOf<KnobFeature>) {
     self.store = store
-#if os(macOS)
-    self.showBinding = Binding<Bool>(
-      get: { store.editor.hasFocus },
-      set: { _ in }
-    )
-#endif
   }
 
 #if os(iOS)
   public var body: some View {
-    ZStack(alignment: .top) {
-      if store.showingEditor {
-        EditorView(store: store.scope(state: \.editor, action: \.editor))
-          .frame(width: theme.controlEditorWidth)
-          .transition(.scale)
-      } else {
-        ControlView(store: store.scope(state: \.control, action: \.control))
-          .transition(.scale)
+    ControlView(store: store.scope(state: \.control, action: \.control))
+      .task { await store.send(.task).finish() }
+      .onChange(of: store.scrollToDestination) { _, newValue in
+        guard let newValue, let proxy = proxy else { return }
+        withAnimation {
+          proxy.scrollTo(newValue)
+        }
       }
+      .id(store.id)
+      .alert(
+        store.displayName,
+        isPresented: $store.showingEditor) {
+          TextField(store.editorValue, text: $store.editorValue)
+            .keyboardType(.numbersAndPunctuation)
+          Button("OK") {
+            store.send(.editorAccepted)
+          }
+          Button("Cancel", role: .cancel) { store.showingEditor = false }
+        }
     }
-    .task { await store.send(.task).finish() }
-    .onChange(of: store.scrollToDestination) { _, newValue in
-      guard let newValue, let proxy = proxy else { return }
-      withAnimation {
-        proxy.scrollTo(newValue)
-      }
-    }
-    .id(store.id)
-  }
 #elseif os(macOS)
   public var body: some View {
     ControlView(store: store.scope(state: \.control, action: \.control))
       .task { await store.send(.task).finish() }
-      .sheet(isPresented: showBinding) {
-      } content: {
-        EditorView(store: store.scope(state: \.editor, action: \.editor))
-      }
+      .alert(
+        store.displayName,
+        isPresented: $store.showingEditor) {
+          TextField(store.editorValue, text: $store.editorValue)
+          Button("OK") { store.send(.editorAccepted) }
+          Button("Cancel", role: .cancel) { store.showingEditor = false }
+        }
   }
 #endif
 }
