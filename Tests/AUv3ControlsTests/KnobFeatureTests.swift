@@ -65,111 +65,53 @@ final class KnobFeatureTests: XCTestCase {
     XCTAssertEqual(ctx.changed[1], 2)
   }
 
-//  @MainActor
-//  func testValueEditing() async {
-//    let ctx = Context()
-//    _ = await ctx.test.withExhaustivity(.off) {
-//      await ctx.test.send(.control(.track(.dragChanged(0.36)))) { state in
-//        state.control.track.norm = 0.3600000000000000
-//        state.control.title.formattedValue = "36"
-//      }
-//      await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.controlShowValueMilliseconds))
-//      await ctx.test.receive(.control(.title(.valueDisplayTimerFired))) {
-//        $0.control.title.formattedValue = nil
-//      }
-//      await ctx.test.send(.control(.title(.titleTapped))) { state in
-//        state.editor.focus = .value
-//        state.editor.value = "36"
-//      }
-//    }
-//  }
-//
-//  @MainActor
-//  func testAcceptValidEdit() async {
-//    let ctx = Context()
-//    _ = await ctx.test.withExhaustivity(.off) {
-//      await ctx.test.send(.control(.track(.dragChanged(0.36)))) { state in
-//        state.control.track.norm = 0.3600000000000000
-//        state.control.title.formattedValue = "36"
-//      }
-//      await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.controlShowValueMilliseconds))
-//      await ctx.test.receive(.control(.title(.valueDisplayTimerFired))) {
-//        $0.control.title.formattedValue = nil
-//      }
-//      await ctx.test.send(.control(.title(.titleTapped))) { state in
-//        state.editor.focus = .value
-//        state.editor.value = "36"
-//      }
-//      await ctx.test.send(.editor(.valueChanged("32.124"))) { state in
-//      }
-//      await ctx.test.send(.editor(.acceptButtonTapped)) { state in
-//        state.control.title.formattedValue = "32"
-//        state.editor.focus = nil
-//      }
-//      await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.controlShowValueMilliseconds))
-//      await ctx.test.receive(.control(.title(.valueDisplayTimerFired))) {
-//        $0.control.title.formattedValue = nil
-//      }
-//    }
-//    XCTAssertEqual(ctx.changed[1], 2)
-//  }
-//
-//  @MainActor
-//  func testAcceptInvalidEdit() async {
-//    let ctx = Context()
-//    await ctx.test.send(.control(.track(.dragChanged(0.36)))) { state in
-//      state.control.track.norm = 0.3600000000000000
-//      state.control.title.formattedValue = "36"
-//    }
-//    await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.controlShowValueMilliseconds))
-//    await ctx.test.receive(.control(.title(.valueDisplayTimerFired))) {
-//      $0.control.title.formattedValue = nil
-//    }
-//    await ctx.test.send(.control(.title(.titleTapped))) { state in
-//      state.editor.focus = .value
-//      state.editor.value = "36"
-//      state.showingEditor = true
-//      state.scrollToDestination = 1
-//    }
-//    await ctx.test.send(.editor(.clearButtonTapped)) { state in
-//      state.editor.value = ""
-//    }
-//    await ctx.test.send(.editor(.acceptButtonTapped)) { state in
-//      state.control.track.norm = 0.3600000000000000
-//      state.control.title.formattedValue = nil
-//      state.editor.focus = nil
-//    }
-//  }
-//
-//  @MainActor
-//  func testCancelEdit() async {
-//    let ctx = Context()
-//    await ctx.test.send(.control(.track(.dragChanged(0.36)))) { state in
-//      state.control.track.norm = 0.3600000000000000
-//      state.control.title.formattedValue = "36"
-//    }
-//    await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.controlShowValueMilliseconds))
-//    await ctx.test.receive(.control(.title(.valueDisplayTimerFired))) {
-//      $0.control.title.formattedValue = nil
-//    }
-//    await ctx.test.send(.control(.title(.titleTapped))) { state in
-//      state.editor.focus = .value
-//      state.editor.value = "36"
-//      state.showingEditor = true
-//      state.scrollToDestination = 1
-//    }
-//    await ctx.test.send(.editor(.valueChanged("32.124"))) { state in
-//      state.editor.value = "32.124"
-//    }
-//    await ctx.test.send(.editor(.cancelButtonTapped)) { state in
-//      state.control.track.norm = 0.3600000000000000
-//      state.control.title.formattedValue = nil
-//      state.editor.focus = nil
-//      state.scrollToDestination = nil
-//      state.showingEditor = false
-//    }
-//  }
-//
+  @MainActor
+  func testAcceptValidEdit() async {
+    let ctx = Context()
+    await ctx.test.send(.control(.track(.dragChanged(0.36)))) { state in
+      state.control.track.norm = 0.3600000000000000
+      state.control.title.formattedValue = "36"
+    }
+    await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.controlShowValueMilliseconds))
+    await ctx.test.receive(.control(.title(.valueDisplayTimerFired))) {
+      $0.control.title.formattedValue = nil
+    }
+    await ctx.test.send(.control(.title(.titleTapped))) { state in
+      state.showingEditor = true
+      state.editorValue = "36"
+    }
+    await ctx.test.send(.editorAccepted("45.678")) { state in
+      state.control.title.formattedValue = "46"
+      state.control.track.norm = 0.45677999999999996
+      state.showingEditor = false
+    }
+    await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.controlShowValueMilliseconds))
+    await ctx.test.receive(.control(.title(.valueDisplayTimerFired))) {
+      $0.control.title.formattedValue = nil
+    }
+    XCTAssertEqual(ctx.changed[1], 2)
+  }
+
+  @MainActor
+  func testCancelEdit() async {
+    let ctx = Context()
+    await ctx.test.send(.control(.track(.dragChanged(0.36)))) { state in
+      state.control.track.norm = 0.3600000000000000
+      state.control.title.formattedValue = "36"
+    }
+    await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.controlShowValueMilliseconds))
+    await ctx.test.receive(.control(.title(.valueDisplayTimerFired))) {
+      $0.control.title.formattedValue = nil
+    }
+    await ctx.test.send(.control(.title(.titleTapped))) { state in
+      state.showingEditor = true
+      state.editorValue = "36"
+    }
+    await ctx.test.send(.editorCancelled) { state in
+      state.showingEditor = false
+    }
+  }
+
   @MainActor
   func testChangedValue() async throws {
     let ctx = Context()

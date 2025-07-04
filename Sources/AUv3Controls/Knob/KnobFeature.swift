@@ -138,7 +138,8 @@ public struct KnobFeature {
   public enum Action: BindableAction, Equatable, Sendable {
     case binding(BindingAction<State>)
     case control(ControlFeature.Action)
-    case editorAccepted
+    case editorAccepted(String)
+    case editorCancelled
     case observedValueChanged(AUValue)
     case performScrollTo(UInt64?)
     case setValue(Double)
@@ -155,7 +156,8 @@ public struct KnobFeature {
       switch action {
       case .binding: return .none
       case .control(let controlAction): return controlChanged(&state, action: controlAction)
-      case .editorAccepted: return editorAccepted(&state)
+      case let .editorAccepted(value): return editorAccepted(&state, value: value)
+      case .editorCancelled: return editorCancelled(&state)
       case let .observedValueChanged(value): return reduce(into: &state, action: .control(.valueChanged(Double(value))))
       case .performScrollTo(let id): return scrollTo(&state, id: id)
       case let .setValue(value): return setValue(&state, value: value)
@@ -176,8 +178,8 @@ private extension KnobFeature {
     }
   }
 
-  func editorAccepted(_ state: inout State) -> Effect<Action> {
-    if let editorValue = Double(state.editorValue) {
+  func editorAccepted(_ state: inout State, value: String) -> Effect<Action> {
+    if let editorValue = Double(value) {
       let value = state.normValueTransform.normToValue(state.normValueTransform.valueToNorm(editorValue))
       state.showingEditor = false
       state.scrollToDestination = nil
@@ -186,6 +188,11 @@ private extension KnobFeature {
         reduce(into: &state, action: .control(.valueChanged(Double(value))))
       )
     }
+    return .none
+  }
+
+  func editorCancelled(_ state: inout State) -> Effect<Action> {
+    state.showingEditor = false
     return .none
   }
 
@@ -296,9 +303,12 @@ public struct KnobView: View {
           TextField(store.editorValue, text: $store.editorValue)
             .keyboardType(.numbersAndPunctuation)
           Button("OK") {
-            store.send(.editorAccepted)
+            // NOTE: action takes value to support testing
+            store.send(.editorAccepted(store.editorValue))
           }
-          Button("Cancel", role: .cancel) { store.showingEditor = false }
+          Button("Cancel", role: .cancel) {
+            store.send(.editorCancelled)
+          }
         }
     }
 #elseif os(macOS)
