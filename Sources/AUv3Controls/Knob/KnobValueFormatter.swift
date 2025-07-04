@@ -83,7 +83,10 @@ public struct KnobValueFormatter: Equatable, Sendable, KnobValueFormattingProvid
    - returns: the textual representation
    */
   public func forEditing(_ value: Double) -> String {
-    FloatingPointFormatStyle<Double>().precision(.significantDigits(1...6)).format(value)
+    FloatingPointFormatStyle<Double>()
+      .grouping(.never)
+      .precision(.significantDigits(1...6))
+      .format(value)
   }
 
   /**
