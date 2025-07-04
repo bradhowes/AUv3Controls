@@ -319,8 +319,13 @@ public struct KnobView: View {
         store.displayName,
         isPresented: $store.showingEditor) {
           TextField(store.editorValue, text: $store.editorValue)
-          Button("OK") { store.send(.editorAccepted) }
-          Button("Cancel", role: .cancel) { store.showingEditor = false }
+          Button("OK") {
+            // NOTE: action takes value to support testing
+            store.send(.editorAccepted(store.editorValue))
+          }
+          Button("Cancel", role: .cancel) {
+            store.send(.editorCancelled)
+          }
         }
   }
 #endif
