@@ -1,11 +1,13 @@
 import ComposableArchitecture
 import CustomAlert
 import SwiftUI
+import SwiftUIIntrospect
 
 
 struct ValueEditorPrompt: ViewModifier {
   @Bindable private var store: StoreOf<KnobFeature>
   @Environment(\.auv3ControlsTheme) var theme
+  @FocusState var focused: String?
 
   init(store: StoreOf<KnobFeature>) {
     self.store = store
@@ -18,19 +20,29 @@ struct ValueEditorPrompt: ViewModifier {
           .font(.system(size: 24))
           .foregroundStyle(theme.textColor)
         TextField("New Value", text: $store.editorValue)
-          .clearButton(text: $store.editorValue, offset: 0)
+          .clearButton(text: $store.editorValue, offset: 8)
+          .textFieldStyle(.roundedBorder)
+          .keyboardType(.decimalPad)
           .onSubmit {
             store.send(.editorAccepted(store.editorValue))
           }
+#if os(iOS)
+          .introspect(.textField, on: .iOS(.v17, .v18)) {
+            if store.showingEditor {
+              $0.becomeFirstResponder()
+            }
+          }
+#endif
           .lineLimit(1)
           .multilineTextAlignment(.leading)
+          .focused($focused, equals: store.displayName)
           .font(.body)
           .padding(8)
-          .background {
-            RoundedRectangle(cornerRadius: 8)
-              .fill(Color(uiColor: .systemBackground))
+          .onChange(of: store.showingEditor) {
+            if store.showingEditor {
+              focused = store.displayName
+            }
           }
-          .padding(12)
       } actions: {
         MultiButton {
           Button {
@@ -49,7 +61,7 @@ struct ValueEditorPrompt: ViewModifier {
 }
 
 extension View {
-  func valueEditorPrompt(store: StoreOf<KnobFeature>) -> some View {
+  func valueEditorPrompt(store: StoreOf<KnobFeature>, focused: FocusState<String?>.Binding? = nil) -> some View {
     modifier(ValueEditorPrompt(store: store))
   }
 }

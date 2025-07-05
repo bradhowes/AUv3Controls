@@ -93,6 +93,8 @@ struct DualityView: View {
   @State var slider3: Double = 0.0
   @State var slider4: Double = 0.0
 
+  @FocusState var focused: String?
+
   init() {
     let mockAUv3 = MockAUv3()
     self.mockAUv3 = mockAUv3
