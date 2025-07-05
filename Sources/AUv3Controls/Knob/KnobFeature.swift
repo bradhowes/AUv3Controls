@@ -3,6 +3,7 @@
 import AsyncAlgorithms
 import AVFoundation
 import ComposableArchitecture
+import CustomAlert
 import SwiftUI
 
 /**
@@ -139,6 +140,7 @@ public struct KnobFeature {
     case binding(BindingAction<State>)
     case control(ControlFeature.Action)
     case editorAccepted(String)
+    case editorCleared
     case editorCancelled
     case observedValueChanged(AUValue)
     case performScrollTo(UInt64?)
@@ -157,6 +159,9 @@ public struct KnobFeature {
       case .binding: return .none
       case .control(let controlAction): return controlChanged(&state, action: controlAction)
       case let .editorAccepted(value): return editorAccepted(&state, value: value)
+      case .editorCleared:
+        state.editorValue = ""
+        return .none
       case .editorCancelled: return editorCancelled(&state)
       case let .observedValueChanged(value): return reduce(into: &state, action: .control(.valueChanged(Double(value))))
       case .performScrollTo(let id): return scrollTo(&state, id: id)
@@ -179,10 +184,10 @@ private extension KnobFeature {
   }
 
   func editorAccepted(_ state: inout State, value: String) -> Effect<Action> {
+    state.showingEditor = false
+    state.scrollToDestination = nil
     if let editorValue = Double(value) {
       let value = state.normValueTransform.normToValue(state.normValueTransform.valueToNorm(editorValue))
-      state.showingEditor = false
-      state.scrollToDestination = nil
       return .merge(
         setParameterEffect(state: state, value: value, cause: .value),
         reduce(into: &state, action: .control(.valueChanged(Double(value))))
@@ -297,20 +302,9 @@ public struct KnobView: View {
         }
       }
       .id(store.id)
-      .alert(
-        store.displayName,
-        isPresented: $store.showingEditor) {
-          TextField(store.editorValue, text: $store.editorValue)
-            .keyboardType(.numbersAndPunctuation)
-          Button("OK") {
-            // NOTE: action takes value to support testing
-            store.send(.editorAccepted(store.editorValue))
-          }
-          Button("Cancel", role: .cancel) {
-            store.send(.editorCancelled)
-          }
-        }
-    }
+      .valueEditorPrompt(store: store)
+  }
+
 #elseif os(macOS)
   public var body: some View {
     ControlView(store: store.scope(state: \.control, action: \.control))
@@ -352,6 +346,7 @@ struct KnobViewPreview: PreviewProvider {
     VStack {
       KnobView(store: store)
         .frame(width: 140, height: 140)
+        .padding([.top, .bottom], 16)
       Text("observerdValueChanged:")
       Button {
         store.send(.observedValueChanged(0.0))
