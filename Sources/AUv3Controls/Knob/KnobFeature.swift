@@ -302,7 +302,7 @@ public struct KnobView: View {
         }
       }
       .id(store.id)
-      .valueEditorPrompt(store: store)
+      .nativeValueEditorPrompt(store: store)
   }
 
 #elseif os(macOS)

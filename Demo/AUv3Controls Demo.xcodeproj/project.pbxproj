@@ -19,6 +19,7 @@
 		BD2F12E92B0176F800E5D0CE /* AUv3Controls in Frameworks */ = {isa = PBXBuildFile; productRef = BD2F12E82B0176F800E5D0CE /* AUv3Controls */; };
 		BD4F94E02C8E09C100E5BA37 /* EnvelopeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD4F94DF2C8E09C100E5BA37 /* EnvelopeView.swift */; };
 		BD7A93512CFA03C300B848BB /* AUv3Controls in Frameworks */ = {isa = PBXBuildFile; productRef = BD7A93502CFA03C300B848BB /* AUv3Controls */; };
+		BDEB90542E19C37000BF16B5 /* SwiftUIIntrospect in Frameworks */ = {isa = PBXBuildFile; productRef = BDEB90532E19C37000BF16B5 /* SwiftUIIntrospect */; };
 		BDEC132A2B95790600789D13 /* DualityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD2F12BB2B0175C300E5D0CE /* DualityView.swift */; };
 /* End PBXBuildFile section */
 
@@ -62,6 +63,7 @@
 				BD2F12E62B0175ED00E5D0CE /* AUv3Controls in Frameworks */,
 				BD7A93512CFA03C300B848BB /* AUv3Controls in Frameworks */,
 				BD2F12E92B0176F800E5D0CE /* AUv3Controls in Frameworks */,
+				BDEB90542E19C37000BF16B5 /* SwiftUIIntrospect in Frameworks */,
 				BD03E6132DB4D3E000778C39 /* AUv3Controls in Frameworks */,
 				BD03E6162DB4D4B400778C39 /* AUv3Controls in Frameworks */,
 			);
@@ -164,6 +166,7 @@
 				BD7A93502CFA03C300B848BB /* AUv3Controls */,
 				BD03E6122DB4D3E000778C39 /* AUv3Controls */,
 				BD03E6152DB4D4B400778C39 /* AUv3Controls */,
+				BDEB90532E19C37000BF16B5 /* SwiftUIIntrospect */,
 			);
 			productName = "AUv3Controls Demo";
 			productReference = BD2F12B62B0175C300E5D0CE /* AUv3Controls Demo.app */;
@@ -239,6 +242,7 @@
 			mainGroup = BD2F12AD2B0175C300E5D0CE;
 			packageReferences = (
 				BD03E6142DB4D4B400778C39 /* XCLocalSwiftPackageReference "../../AUv3Controls" */,
+				BDEB90522E19C37000BF16B5 /* XCRemoteSwiftPackageReference "swiftui-introspect" */,
 			);
 			productRefGroup = BD2F12B72B0175C300E5D0CE /* Products */;
 			projectDirPath = "";
@@ -665,6 +669,17 @@
 		};
 /* End XCLocalSwiftPackageReference section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		BDEB90522E19C37000BF16B5 /* XCRemoteSwiftPackageReference "swiftui-introspect" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/siteline/swiftui-introspect";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.3.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
 		BD03E6122DB4D3E000778C39 /* AUv3Controls */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -685,6 +700,11 @@
 		BD7A93502CFA03C300B848BB /* AUv3Controls */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = AUv3Controls;
+		};
+		BDEB90532E19C37000BF16B5 /* SwiftUIIntrospect */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BDEB90522E19C37000BF16B5 /* XCRemoteSwiftPackageReference "swiftui-introspect" */;
+			productName = SwiftUIIntrospect;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
