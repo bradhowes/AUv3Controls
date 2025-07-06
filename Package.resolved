@@ -1,5 +1,5 @@
 {
-  "originHash" : "f9db2115101fcdb8c9f52a1dbac0914a7bcc29df36fb6c4c86e043eff193bfbf",
+  "originHash" : "da0a73a90fc1cba85e6c9c95fdb4de5c58a51f834638317189f1bf81c598f9fa",
   "pins" : [
     {
       "identity" : "combine-schedulers",
@@ -8,15 +8,6 @@
       "state" : {
         "revision" : "5928286acce13def418ec36d05a001a9641086f2",
         "version" : "1.0.3"
-      }
-    },
-    {
-      "identity" : "customalert",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/divadretlaw/CustomAlert.git",
-      "state" : {
-        "revision" : "a76ce9ffaca03ff2ee21bc51cf4f8da95eeadf18",
-        "version" : "4.1.1"
       }
     },
     {
@@ -161,42 +152,6 @@
       "state" : {
         "revision" : "f99ae8aa18f0cf0d53481901f88a0991dc3bd4a2",
         "version" : "601.0.1"
-      }
-    },
-    {
-      "identity" : "swiftui-introspect",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/siteline/swiftui-introspect",
-      "state" : {
-        "revision" : "807f73ce09a9b9723f12385e592b4e0aaebd3336",
-        "version" : "1.3.0"
-      }
-    },
-    {
-      "identity" : "windowkit",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/divadretlaw/WindowKit",
-      "state" : {
-        "revision" : "2e689d5ebf019ed3e7abffa4e6ddb06287f231e9",
-        "version" : "2.6.1"
-      }
-    },
-    {
-      "identity" : "windowreader",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/divadretlaw/WindowReader",
-      "state" : {
-        "revision" : "fe6639ab9968e247bb44e98ae298cf23a137dd76",
-        "version" : "3.0.0"
-      }
-    },
-    {
-      "identity" : "windowscenereader",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/divadretlaw/WindowSceneReader",
-      "state" : {
-        "revision" : "7321112ff9df9921256d31fa6d1a07ca5ab695b6",
-        "version" : "3.2.0"
       }
     },
     {

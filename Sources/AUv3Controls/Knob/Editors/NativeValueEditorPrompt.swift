@@ -14,7 +14,9 @@ struct NativeValueEditorPrompt: ViewModifier {
     content
       .alert(store.displayName, isPresented: $store.showingEditor) {
         TextField("New Value", text: $store.editorValue)
+#if os(iOS)
           .keyboardType(.decimalPad)
+#endif
           .onSubmit {
             store.send(.editorAccepted(store.editorValue))
           }

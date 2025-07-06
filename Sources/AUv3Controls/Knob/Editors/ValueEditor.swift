@@ -61,7 +61,7 @@ public struct ValueEditor: View {
     .padding(24)
     .background(
       RoundedRectangle(cornerRadius: 12)
-        .fill(colorScheme == ColorScheme.light ? Color.white : Color(UIColor.darkGray))
+        .fill(colorScheme == ColorScheme.light ? Color(.white) : Color(.darkGray))
         .shadow(radius: 8)
     )
     .padding(30)
