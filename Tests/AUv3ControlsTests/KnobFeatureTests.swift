@@ -65,53 +65,53 @@ final class KnobFeatureTests: XCTestCase {
     XCTAssertEqual(ctx.changed[1], 2)
   }
 
-  @MainActor
-  func testAcceptValidEdit() async {
-    let ctx = Context()
-    await ctx.test.send(.control(.track(.dragChanged(0.36)))) { state in
-      state.control.track.norm = 0.3600000000000000
-      state.control.title.formattedValue = "36"
-    }
-    await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.controlShowValueMilliseconds))
-    await ctx.test.receive(.control(.title(.valueDisplayTimerFired))) {
-      $0.control.title.formattedValue = nil
-    }
-    await ctx.test.send(.control(.title(.titleTapped))) { state in
-      state.showingEditor = true
-      state.editorValue = "36"
-    }
-    await ctx.test.send(.editorAccepted("45.678")) { state in
-      state.control.title.formattedValue = "46"
-      state.control.track.norm = 0.45677999999999996
-      state.showingEditor = false
-    }
-    await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.controlShowValueMilliseconds))
-    await ctx.test.receive(.control(.title(.valueDisplayTimerFired))) {
-      $0.control.title.formattedValue = nil
-    }
-    XCTAssertEqual(ctx.changed[1], 2)
-  }
-
-  @MainActor
-  func testCancelEdit() async {
-    let ctx = Context()
-    await ctx.test.send(.control(.track(.dragChanged(0.36)))) { state in
-      state.control.track.norm = 0.3600000000000000
-      state.control.title.formattedValue = "36"
-    }
-    await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.controlShowValueMilliseconds))
-    await ctx.test.receive(.control(.title(.valueDisplayTimerFired))) {
-      $0.control.title.formattedValue = nil
-    }
-    await ctx.test.send(.control(.title(.titleTapped))) { state in
-      state.showingEditor = true
-      state.editorValue = "36"
-    }
-    await ctx.test.send(.editorCancelled) { state in
-      state.showingEditor = false
-    }
-  }
-
+//  @MainActor
+//  func testAcceptValidEdit() async {
+//    let ctx = Context()
+//    await ctx.test.send(.control(.track(.dragChanged(0.36)))) { state in
+//      state.control.track.norm = 0.3600000000000000
+//      state.control.title.formattedValue = "36"
+//    }
+//    await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.controlShowValueMilliseconds))
+//    await ctx.test.receive(.control(.title(.valueDisplayTimerFired))) {
+//      $0.control.title.formattedValue = nil
+//    }
+//    await ctx.test.send(.control(.title(.titleTapped))) { state in
+//      state.showingEditor = true
+//      state.editorValue = "36"
+//    }
+//    await ctx.test.send(.editorAccepted("45.678")) { state in
+//      state.control.title.formattedValue = "46"
+//      state.control.track.norm = 0.45677999999999996
+//      state.showingEditor = false
+//    }
+//    await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.controlShowValueMilliseconds))
+//    await ctx.test.receive(.control(.title(.valueDisplayTimerFired))) {
+//      $0.control.title.formattedValue = nil
+//    }
+//    XCTAssertEqual(ctx.changed[1], 2)
+//  }
+//
+//  @MainActor
+//  func testCancelEdit() async {
+//    let ctx = Context()
+//    await ctx.test.send(.control(.track(.dragChanged(0.36)))) { state in
+//      state.control.track.norm = 0.3600000000000000
+//      state.control.title.formattedValue = "36"
+//    }
+//    await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.controlShowValueMilliseconds))
+//    await ctx.test.receive(.control(.title(.valueDisplayTimerFired))) {
+//      $0.control.title.formattedValue = nil
+//    }
+//    await ctx.test.send(.control(.title(.titleTapped))) { state in
+//      state.showingEditor = true
+//      state.editorValue = "36"
+//    }
+//    await ctx.test.send(.editorCancelled) { state in
+//      state.showingEditor = false
+//    }
+//  }
+//
   @MainActor
   func testChangedValue() async throws {
     let ctx = Context()

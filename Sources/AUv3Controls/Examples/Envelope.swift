@@ -203,18 +203,21 @@ struct EnvelopeViewPreview: PreviewProvider {
     let vol = EnvelopeFeature(parameterBase: 100)
     let mod = EnvelopeFeature(parameterBase: 200)
 
-    return VStack {
-      ScrollView(.horizontal) {
-        EnvelopeView(store: Store(initialState: vol.state) { vol }, title: "Amp")
-          .padding(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
-          .border(theme.controlForegroundColor)
+    return NavigationStack {
+      VStack {
+        ScrollView(.horizontal) {
+          EnvelopeView(store: Store(initialState: vol.state) { vol }, title: "Amp")
+            .padding(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
+            .border(theme.controlForegroundColor)
+        }
+        ScrollView(.horizontal) {
+          EnvelopeView(store: Store(initialState: mod.state) { mod }, title: "Mod")
+            .padding(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
+            .environment(\.auv3ControlsTheme, theme)
+            .border(theme.controlForegroundColor)
+        }
       }
-      ScrollView(.horizontal) {
-        EnvelopeView(store: Store(initialState: mod.state) { mod }, title: "Mod")
-          .padding(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
-          .environment(\.auv3ControlsTheme, theme)
-          .border(theme.controlForegroundColor)
-      }
+      .knobValueEditorHost()
     }
   }
 }

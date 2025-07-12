@@ -7,6 +7,8 @@ import SwiftUI
 /**
  A value editor for a `KnobFeature` control. Provides a text field for editing the current value of the control, and
  two buttons, one to accept the changes, and another to cancel them.
+
+ NOTE: this is currently not used due to issues with iOS keyboard
  */
 @Reducer
 public struct EditorFeature {

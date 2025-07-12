@@ -3,6 +3,7 @@
 import AsyncAlgorithms
 import AVFoundation
 import ComposableArchitecture
+import Sharing
 import SwiftUI
 
 /**
@@ -25,6 +26,7 @@ public struct KnobFeature {
   let formatter: any KnobValueFormattingProvider
   let normValueTransform: NormValueTransform
   let debounceMilliseconds: Int
+
   // Only used for unit tests
   private let parameterValueChanged: ((AUParameterAddress) -> Void)?
 
@@ -75,9 +77,7 @@ public struct KnobFeature {
     var control: ControlFeature.State
     var scrollToDestination: UInt64?
 
-    var showingEditor: Bool = false
-    var editorValue: String = ""
-
+    @Shared(.valueEditorInfo) var valueEditorInfo
     @ObservationStateIgnored var observerToken: AUParameterObserverToken?
 
     public var value: Double {
@@ -138,9 +138,7 @@ public struct KnobFeature {
   public enum Action: BindableAction, Equatable, Sendable {
     case binding(BindingAction<State>)
     case control(ControlFeature.Action)
-    case editorAccepted(String)
-    case editorCleared
-    case editorCancelled
+    case editorDismissed(String?)
     case observedValueChanged(AUValue)
     case performScrollTo(UInt64?)
     case setValue(Double)
@@ -157,11 +155,7 @@ public struct KnobFeature {
       switch action {
       case .binding: return .none
       case .control(let controlAction): return controlChanged(&state, action: controlAction)
-      case let .editorAccepted(value): return editorAccepted(&state, value: value)
-      case .editorCleared:
-        state.editorValue = ""
-        return .none
-      case .editorCancelled: return editorCancelled(&state)
+      case let .editorDismissed(value): return editorDismissed(&state, value: value)
       case let .observedValueChanged(value): return reduce(into: &state, action: .control(.valueChanged(Double(value))))
       case .performScrollTo(let id): return scrollTo(&state, id: id)
       case let .setValue(value): return setValue(&state, value: value)
@@ -182,21 +176,17 @@ private extension KnobFeature {
     }
   }
 
-  func editorAccepted(_ state: inout State, value: String) -> Effect<Action> {
-    state.showingEditor = false
+  func editorDismissed(_ state: inout State, value: String?) -> Effect<Action> {
     state.scrollToDestination = nil
-    if let editorValue = Double(value) {
-      let value = state.normValueTransform.normToValue(state.normValueTransform.valueToNorm(editorValue))
+    state.$valueEditorInfo.withLock { $0 = nil }
+    if let value,
+       let editorValue = Double(value) {
+      let newValue = state.normValueTransform.normToValue(state.normValueTransform.valueToNorm(editorValue))
       return .merge(
-        setParameterEffect(state: state, value: value, cause: .value),
-        reduce(into: &state, action: .control(.valueChanged(Double(value))))
+        setParameterEffect(state: state, value: newValue, cause: .value),
+        reduce(into: &state, action: .control(.valueChanged(Double(newValue))))
       )
     }
-    return .none
-  }
-
-  func editorCancelled(_ state: inout State) -> Effect<Action> {
-    state.showingEditor = false
     return .none
   }
 
@@ -220,8 +210,13 @@ private extension KnobFeature {
 
   func showEditor(_ state: inout State) -> Effect<Action> {
     let value = state.normValueTransform.normToValue(state.control.track.norm)
-    state.showingEditor = true
-    state.editorValue = formatter.forEditing(value)
+    state.$valueEditorInfo.withLock {
+      $0 = .init(
+        id: state.id,
+        displayName: state.displayName,
+        value: formatter.forEditing(value)
+      )
+    }
     return .none
   }
 
@@ -290,10 +285,16 @@ public struct KnobView: View {
     self.store = store
   }
 
-#if os(iOS)
   public var body: some View {
     ControlView(store: store.scope(state: \.control, action: \.control))
       .task { await store.send(.task).finish() }
+      .onChange(of: store.valueEditorInfo) {
+        if let info = store.valueEditorInfo,
+           info.id == store.id,
+           case .dismissed(let value) = info.action {
+          store.send(.editorDismissed(value))
+        }
+      }
       .onChange(of: store.scrollToDestination) { _, newValue in
         guard let newValue, let proxy = proxy else { return }
         withAnimation {
@@ -301,27 +302,8 @@ public struct KnobView: View {
         }
       }
       .id(store.id)
-      .nativeValueEditorPrompt(store: store)
+      // .nativeValueEditorPrompt(store: store)
   }
-
-#elseif os(macOS)
-  public var body: some View {
-    ControlView(store: store.scope(state: \.control, action: \.control))
-      .task { await store.send(.task).finish() }
-      .alert(
-        store.displayName,
-        isPresented: $store.showingEditor) {
-          TextField(store.editorValue, text: $store.editorValue)
-          Button("OK") {
-            // NOTE: action takes value to support testing
-            store.send(.editorAccepted(store.editorValue))
-          }
-          Button("Cancel", role: .cancel) {
-            store.send(.editorCancelled)
-          }
-        }
-  }
-#endif
 }
 
 struct KnobViewPreview: PreviewProvider {
@@ -342,42 +324,45 @@ struct KnobViewPreview: PreviewProvider {
   }
 
   static var previews: some View {
-    VStack {
-      KnobView(store: store)
-        .frame(width: 140, height: 140)
-        .padding([.top, .bottom], 16)
-      Text("observerdValueChanged:")
-      Button {
-        store.send(.observedValueChanged(0.0))
-      } label: {
-        Text("Go to 0")
+    NavigationStack {
+      VStack {
+        KnobView(store: store)
+          .frame(width: 140, height: 140)
+          .padding([.top, .bottom], 16)
+        Text("observerdValueChanged:")
+        Button {
+          store.send(.observedValueChanged(0.0))
+        } label: {
+          Text("Go to 0")
+        }
+        Button {
+          store.send(.observedValueChanged(50.0))
+        } label: {
+          Text("Go to 50")
+        }
+        Button {
+          store.send(.observedValueChanged(100.0))
+        } label: {
+          Text("Go to 100")
+        }
+        Text("setValue:")
+        Button {
+          store.send(.setValue(0.0))
+        } label: {
+          Text("Go to 0")
+        }
+        Button {
+          store.send(.setValue(50.0))
+        } label: {
+          Text("Go to 50")
+        }
+        Button {
+          store.send(.setValue(100.0))
+        } label: {
+          Text("Go to 100")
+        }
       }
-      Button {
-        store.send(.observedValueChanged(50.0))
-      } label: {
-        Text("Go to 50")
-      }
-      Button {
-        store.send(.observedValueChanged(100.0))
-      } label: {
-        Text("Go to 100")
-      }
-      Text("setValue:")
-      Button {
-        store.send(.setValue(0.0))
-      } label: {
-        Text("Go to 0")
-      }
-      Button {
-        store.send(.setValue(50.0))
-      } label: {
-        Text("Go to 50")
-      }
-      Button {
-        store.send(.setValue(100.0))
-      } label: {
-        Text("Go to 100")
-      }
+      .knobValueEditorHost()
     }
   }
 }

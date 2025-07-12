@@ -97,7 +97,6 @@ struct DualityView: View {
     self.mockAUv3 = mockAUv3
     self.store1 = .init(initialState: ToggleFeature.State(parameter: mockAUv3.param1)) { ToggleFeature() }
     self.store2 = .init(initialState: ToggleFeature.State(parameter: mockAUv3.param2)) { ToggleFeature() }
-
     self.store3 = .init(initialState: KnobFeature.State(parameter: mockAUv3.param3)) {
         KnobFeature(parameter: mockAUv3.param3)
     }
@@ -116,13 +115,15 @@ struct DualityView: View {
               KnobView(store: store4)
             }
             .frame(height: 120)
-            .offset(y: 12)
             VStack(alignment: .leading, spacing: 12) {
               ToggleView(store: store1) { Text(store1.displayName) }
               ToggleView(store: store2) { Text(store2.displayName) }
             }
           }
-        }.auv3ControlsTheme(mockAUv3.theme)
+        }
+        .knobValueEditorHost()
+        .padding()
+
         GroupBox(label: Label("Mock MIDI", systemImage: "pianokeys")) {
           Slider(value: mockAUv3.binding(to: mockAUv3.param3.address, with: $slider3), in: mockAUv3.param3.range)
           HStack {

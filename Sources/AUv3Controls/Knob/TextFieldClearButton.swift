@@ -21,6 +21,7 @@ struct ClearButton: ViewModifier {
     }
   }
 }
+
 extension TextField {
   func clearButton(text: Binding<String>, offset: CGFloat) -> some View {
     modifier(ClearButton(text: text, offset: offset))
