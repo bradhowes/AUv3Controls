@@ -1,0 +1,95 @@
+import ComposableArchitecture
+import CustomAlert
+import SwiftUI
+import SwiftUIIntrospect
+
+
+struct CustomValueEditorView: View {
+  @Shared(.valueEditorInfo) var valueEditorInfo
+  @Environment(\.auv3ControlsTheme) var theme
+  @State private var displayName: String = ""
+  private var value: Binding<String>
+  @FocusState private var isFocused
+
+  init(value: Binding<String>) {
+    self.value = value
+  }
+
+  var body: some View {
+    Text(displayName)
+      .font(.system(size: 18))
+      .foregroundStyle(theme.textColor)
+    TextField("New Value", text: value)
+      .clearButton(text: value, offset: 8)
+      .textFieldStyle(.roundedBorder)
+#if os(iOS)
+      .keyboardType(.decimalPad)
+      .onSubmit { dismiss(accepted: true) }
+#endif
+      .focused($isFocused)
+      .lineLimit(1)
+      .multilineTextAlignment(.leading)
+      .font(.body)
+      .padding(8)
+      .onAppear {
+        isFocused = true
+        displayName = valueEditorInfo?.displayName ?? "???"
+      }
+  }
+
+  private func dismiss(accepted: Bool) {
+    if var valueEditorInfo {
+      // Communicate the change to the knob -- the knob is responsible for setting the shared value to nil.
+      valueEditorInfo.action = .dismissed(accepted ? value.wrappedValue : nil)
+      $valueEditorInfo.withLock { $0 = valueEditorInfo }
+    }
+  }
+}
+
+struct CustomValueEditorHost: ViewModifier {
+  @Shared(.valueEditorInfo) var valueEditorInfo
+  @State private var value: String = ""
+  @State private var isEditing: Bool = false
+
+  func body(content: Content) -> some View {
+    content
+      .onChange(of: valueEditorInfo) {
+        if let valueEditorInfo {
+          isEditing = true
+          value = valueEditorInfo.value
+        } else {
+          isEditing = false
+        }
+      }
+      .customAlert(isPresented: $isEditing) {
+        CustomValueEditorView(value: $value)
+      } actions: {
+        MultiButton {
+          Button {
+            dismiss(accepted: true)
+          } label: {
+            Text("OK")
+          }
+          Button(role: .cancel) {
+            dismiss(accepted: false)
+          } label: {
+            Text("Cancel")
+          }
+        }
+      }
+  }
+
+  private func dismiss(accepted: Bool) {
+    if var valueEditorInfo {
+      // Communicate the change to the knob -- the knob is responsible for setting the shared value to nil.
+      valueEditorInfo.action = .dismissed(accepted ? value : nil)
+      $valueEditorInfo.withLock { $0 = valueEditorInfo }
+    }
+  }
+}
+
+extension View {
+  func knobCustomValueEditorHost() -> some View {
+    modifier(CustomValueEditorHost())
+  }
+}

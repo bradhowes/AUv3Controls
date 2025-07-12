@@ -121,7 +121,7 @@ struct DualityView: View {
             }
           }
         }
-        .knobValueEditorHost()
+        .knobCustomValueEditorHost()
         .padding()
 
         GroupBox(label: Label("Mock MIDI", systemImage: "pianokeys")) {
