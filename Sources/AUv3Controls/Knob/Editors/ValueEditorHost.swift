@@ -73,7 +73,7 @@ struct ValueEditorHost: ViewModifier {
 }
 
 extension View {
-  func knobValueEditorHost() -> some View {
+  public func knobValueEditorHost() -> some View {
     modifier(ValueEditorHost())
   }
 }

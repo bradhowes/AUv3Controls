@@ -88,7 +88,7 @@ struct CustomValueEditorHost: ViewModifier {
 }
 
 extension View {
-  func knobCustomValueEditorHost() -> some View {
+  public func knobCustomValueEditorHost() -> some View {
     modifier(CustomValueEditorHost())
   }
 }

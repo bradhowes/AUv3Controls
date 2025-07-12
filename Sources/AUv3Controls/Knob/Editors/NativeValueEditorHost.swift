@@ -51,7 +51,7 @@ struct NativeValueEditorHost: ViewModifier {
 }
 
 extension View {
-  func knobNativeValueEditorHost() -> some View {
+  public func knobNativeValueEditorHost() -> some View {
     modifier(NativeValueEditorHost())
   }
 }
