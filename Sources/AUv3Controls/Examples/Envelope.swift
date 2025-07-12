@@ -217,7 +217,7 @@ struct EnvelopeViewPreview: PreviewProvider {
             .border(theme.controlForegroundColor)
         }
       }
-      .knobValueEditorHost()
+      .knobCustomValueEditorHost()
     }
   }
 }

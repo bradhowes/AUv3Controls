@@ -302,7 +302,6 @@ public struct KnobView: View {
         }
       }
       .id(store.id)
-      // .nativeValueEditorPrompt(store: store)
   }
 }
 
@@ -362,7 +361,7 @@ struct KnobViewPreview: PreviewProvider {
           Text("Go to 100")
         }
       }
-      .knobValueEditorHost()
+      .knobCustomValueEditorHost()
     }
   }
 }
