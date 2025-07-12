@@ -3,16 +3,20 @@ import CustomAlert
 import SwiftUI
 import SwiftUIIntrospect
 
-
+/**
+ A custom SwiftUI alert-like modal view with a TextField to edit the value of a KnobFeature.
+ */
 struct CustomValueEditorView: View {
   @Shared(.valueEditorInfo) var valueEditorInfo
   @Environment(\.auv3ControlsTheme) var theme
   @State private var displayName: String = ""
   private var value: Binding<String>
   @FocusState private var isFocused
+  private let dismiss: (Bool) -> Void
 
-  init(value: Binding<String>) {
+  init(value: Binding<String>, dismiss: @escaping (Bool) -> Void) {
     self.value = value
+    self.dismiss = dismiss
   }
 
   var body: some View {
@@ -24,7 +28,7 @@ struct CustomValueEditorView: View {
       .textFieldStyle(.roundedBorder)
 #if os(iOS)
       .keyboardType(.decimalPad)
-      .onSubmit { dismiss(accepted: true) }
+      .onSubmit { dismiss(true) }
 #endif
       .focused($isFocused)
       .lineLimit(1)
@@ -36,16 +40,11 @@ struct CustomValueEditorView: View {
         displayName = valueEditorInfo?.displayName ?? "???"
       }
   }
-
-  private func dismiss(accepted: Bool) {
-    if var valueEditorInfo {
-      // Communicate the change to the knob -- the knob is responsible for setting the shared value to nil.
-      valueEditorInfo.action = .dismissed(accepted ? value.wrappedValue : nil)
-      $valueEditorInfo.withLock { $0 = valueEditorInfo }
-    }
-  }
 }
 
+/**
+ Presents a custom SwiftUI alert-like modal view with a TextField to edit the value of a KnobFeature.
+ */
 struct CustomValueEditorHost: ViewModifier {
   @Shared(.valueEditorInfo) var valueEditorInfo
   @State private var value: String = ""
@@ -62,7 +61,7 @@ struct CustomValueEditorHost: ViewModifier {
         }
       }
       .customAlert(isPresented: $isEditing) {
-        CustomValueEditorView(value: $value)
+        CustomValueEditorView(value: $value, dismiss: dismiss)
       } actions: {
         MultiButton {
           Button {

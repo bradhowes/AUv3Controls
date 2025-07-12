@@ -3,35 +3,6 @@ import Sharing
 import SwiftUI
 
 /**
- Shared state that defines the KnobFeature value that is currently being edited.
- */
-struct ValueEditorInfo: Equatable, Sendable {
-
-  /**
-   The state of the editor view:
-
-   * presentied -- the editor view is presented to the user
-   * dismissed(String?) -- the editor view was dismissed by the user. If associated value is not nil then user
-   accepted the new value.
-   */
-  enum Action: Equatable {
-    case presented
-    case dismissed(String?)
-  }
-
-  let id: UInt64
-  let displayName: String
-  let value: String
-  var action: Action = .presented
-}
-
-extension SharedKey where Self == InMemoryKey<ValueEditorInfo?>.Default {
-  static var valueEditorInfo: Self {
-    Self[.inMemory("valueEditorInfo"), default: nil]
-  }
-}
-
-/**
  Presents a custom SwiftUI alert-like modal view with a TextField to edit the value of a KnobFeature.
  */
 struct ValueEditorHost: ViewModifier {
