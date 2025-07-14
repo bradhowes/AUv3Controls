@@ -1,3 +1,5 @@
+#if SUPPORT_CUSTOM_ALERT
+
 import ComposableArchitecture
 import CustomAlert
 import SwiftUI
@@ -91,3 +93,5 @@ extension View {
     modifier(CustomValueEditorHost())
   }
 }
+
+#endif

@@ -217,7 +217,11 @@ struct EnvelopeViewPreview: PreviewProvider {
             .border(theme.controlForegroundColor)
         }
       }
+#if SUPPORT_CUSTOM_ALERT
       .knobCustomValueEditorHost()
+#else
+      .knobNativeValueEditorHost()
+#endif
     }
   }
 }

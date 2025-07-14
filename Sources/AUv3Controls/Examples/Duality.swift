@@ -121,7 +121,11 @@ struct DualityView: View {
             }
           }
         }
+#if SUPPORT_CUSTOM_ALERT
         .knobCustomValueEditorHost()
+#else
+        .knobNativeValueEditorHost()
+#endif
         .padding()
 
         GroupBox(label: Label("Mock MIDI", systemImage: "pianokeys")) {
