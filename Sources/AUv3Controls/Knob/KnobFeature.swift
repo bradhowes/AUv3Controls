@@ -80,9 +80,7 @@ public struct KnobFeature {
     @Shared(.valueEditorInfo) var valueEditorInfo
     @ObservationStateIgnored var observerToken: AUParameterObserverToken?
 
-    public var value: Double {
-      get { normValueTransform.normToValue(control.track.norm) }
-    }
+    public var value: Double { normValueTransform.normToValue(control.track.norm) }
 
     /**
      Initialze reducer with values from AUParameter definition.

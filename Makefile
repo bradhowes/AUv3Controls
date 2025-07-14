@@ -2,7 +2,7 @@ PLATFORM_IOS = iOS Simulator,name=iPad mini (A17 Pro)
 PLATFORM_MACOS = macOS
 PLATFORM_TVOS = tvOS Simulator,name=Apple TV 4K (3rd generation) (at 1080p)
 TARGET = AUv3Controls
-BUILD_FLAGS = -quiet -skipMacroValidation -skipPackagePluginValidation
+BUILD_FLAGS = -skipMacroValidation -skipPackagePluginValidation -scheme $(TARGET)
 WORKSPACE = $(PWD)/.workspace
 XCCOV = xcrun xccov view --report --only-targets
 
@@ -29,62 +29,29 @@ coverage-tvos: test-tvos
 
 test: test-ios test-macos test-tvos
 
-test-ios: build-ios
-	xcodebuild test-without-building \
+test-ios: lint
+	set -o pipefail && xcodebuild test \
+		$(BUILD_FLAGS) -enableCodeCoverage YES \
 		-clonedSourcePackagesDirPath "$(WORKSPACE)" \
-		-scheme $(TARGET) \
 		-derivedDataPath "$(PWD)/.DerivedData-ios" \
 		-destination platform="$(PLATFORM_IOS)" \
-		-enableCodeCoverage YES
+		| xcbeautify --renderer github-actions
 
-test-macos: build-macos
-	xcodebuild test-without-building \
+test-macos: lint
+	set -o pipefail && xcodebuild test \
+		$(BUILD_FLAGS) -enableCodeCoverage YES \
 		-clonedSourcePackagesDirPath "$(WORKSPACE)" \
-		-scheme $(TARGET) \
 		-derivedDataPath "$(PWD)/.DerivedData-macos" \
 		-destination platform="$(PLATFORM_MACOS)" \
-		-enableCodeCoverage YES
+		| xcbeautify --renderer github-actions
 
-test-tvos: build-tvos
-	xcodebuild test-without-building \
+test-tvos: lint
+	set -o pipefail && xcodebuild test \
+		$(BUILD_FLAGS) -enableCodeCoverage YES \
 		-clonedSourcePackagesDirPath "$(WORKSPACE)" \
-		-scheme $(TARGET) \
 		-derivedDataPath "$(PWD)/.DerivedData-tvos" \
 		-destination platform="$(PLATFORM_TVOS)"
-
-build-ios: resolve-deps
-	xcodebuild build-for-testing \
-		$(BUILD_FLAGS) \
-		-clonedSourcePackagesDirPath "$(WORKSPACE)" \
-		-scheme $(TARGET) \
-		-derivedDataPath "$(PWD)/.DerivedData-ios" \
-		-destination platform="$(PLATFORM_IOS)" \
-		-enableCodeCoverage YES
-
-build-macos: resolve-deps
-	xcodebuild build-for-testing \
-		$(BUILD_FLAGS) \
-		-clonedSourcePackagesDirPath "$(WORKSPACE)" \
-		-scheme $(TARGET) \
-		-derivedDataPath "$(PWD)/.DerivedData-macos" \
-		-destination platform="$(PLATFORM_MACOS)" \
-		-enableCodeCoverage YES
-
-build-tvos: resolve-deps
-	xcodebuild build-for-testing \
-		$(BUILD_FLAGS) \
-		-clonedSourcePackagesDirPath "$(WORKSPACE)" \
-		-scheme $(TARGET) \
-		-derivedDataPath "$(PWD)/.DerivedData-tvos" \
-		-destination platform="$(PLATFORM_TVOS)" \
-		-enableCodeCoverage YES
-
-resolve-deps: lint
-	xcodebuild \
-		$(BUILD_FLAGS) \
-		-resolvePackageDependencies \
-		-clonedSourcePackagesDirPath "$(WORKSPACE)" \
-		-scheme $(TARGET)
+		| xcbeautify --renderer github-actions
 
 lint: clean
 	@if command -v swiftlint; then swiftlint; fi
@@ -102,6 +69,4 @@ clean:
 	rm -rf "$(PWD)/.DerivedData-macos" "$(PWD)/.DerivedData-ios" "$(PWD)/.DerivedData-tvos" "$(WORKSPACE)" \
 	"$(PWD)/docs"
 
-.PHONY: test test-ios test-macos test-tvos coverage percentage
-
-
+.PHONY: test test-ios test-macos test-tvos coverage percentage lint
