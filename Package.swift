@@ -5,11 +5,6 @@ import PackageDescription
 // Set to `true` to depend on CustomAlert package
 let useCustomAlert: Trait = .init(name: "useCustomAlert", description: "Use CustomAlert package")
 
-let swiftSettings: [SwiftSetting] = [
-  .swiftLanguageMode(.v6),
-  .define("SUPPORT_CUSTOM_ALERT", .when(traits: [useCustomAlert.name]))
-]
-
 let package = Package(
   name: "AUv3Controls",
   platforms: [
@@ -27,9 +22,7 @@ let package = Package(
     .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", from: "1.18.0"),
     .package(url: "https://github.com/apple/swift-async-algorithms", from: "1.0.4"),
     .package(url: "https://github.com/apple/swift-docc-plugin", from: "1.0.0"),
-    .package(url: "https://github.com/divadretlaw/CustomAlert.git", from: "4.1.0", traits: [
-      .init(name: useCustomAlert.name)
-    ])
+    .package(url: "https://github.com/divadretlaw/CustomAlert.git", from: "4.1.0")
   ],
   targets: [
     .target(
