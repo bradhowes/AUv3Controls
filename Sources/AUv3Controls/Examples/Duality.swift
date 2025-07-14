@@ -121,7 +121,7 @@ struct DualityView: View {
             }
           }
         }
-#if SUPPORT_CUSTOM_ALERT
+#if useCustomAlert
         .knobCustomValueEditorHost()
 #else
         .knobNativeValueEditorHost()

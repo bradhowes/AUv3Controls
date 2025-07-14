@@ -359,7 +359,7 @@ struct KnobViewPreview: PreviewProvider {
           Text("Go to 100")
         }
       }
-#if SUPPORT_CUSTOM_ALERT
+#if useCustomAlert
       .knobCustomValueEditorHost()
 #else
       .knobNativeValueEditorHost()

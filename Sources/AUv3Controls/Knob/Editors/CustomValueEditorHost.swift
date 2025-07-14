@@ -1,4 +1,4 @@
-#if SUPPORT_CUSTOM_ALERT
+#if useCustomAlert
 
 import ComposableArchitecture
 import CustomAlert
