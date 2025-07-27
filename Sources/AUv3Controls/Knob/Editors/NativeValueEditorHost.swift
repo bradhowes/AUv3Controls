@@ -16,7 +16,7 @@ struct NativeValueEditorHost: ViewModifier {
     content
       .onChange(of: valueEditorInfo) {
         if let valueEditorInfo,
-           case let .presented = valueEditorInfo.action {
+           case .presented = valueEditorInfo.action {
           value = valueEditorInfo.value
           isEditing = true
         } else {
