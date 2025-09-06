@@ -69,16 +69,16 @@ public struct KnobFeature {
 
   @ObservableState
   public struct State: Equatable {
-    let id: UInt64
-    let parameter: AUParameter?
-    let normValueTransform: NormValueTransform
-    let valueObservationCancelId: String?
-    let displayName: String
-    var control: ControlFeature.State
-    var scrollToDestination: UInt64?
+    public let id: UInt64
+    public let parameter: AUParameter?
+    public let normValueTransform: NormValueTransform
+    public let valueObservationCancelId: String?
+    public let displayName: String
+    public var control: ControlFeature.State
+    public var scrollToDestination: UInt64?
 
     @Shared(.valueEditorInfo) var valueEditorInfo
-    @ObservationStateIgnored var observerToken: AUParameterObserverToken?
+    @ObservationStateIgnored public var observerToken: AUParameterObserverToken?
 
     public var value: Double { normValueTransform.normToValue(control.track.norm) }
 

@@ -22,7 +22,7 @@ public struct TrackFeature {
 
   @ObservableState
   public struct State: Equatable {
-    var norm: Double
+    public var norm: Double
 
     public init(norm: Double) {
       self.norm = norm

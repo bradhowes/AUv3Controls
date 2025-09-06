@@ -26,10 +26,11 @@ public struct TitleFeature {
 
   @ObservableState
   public struct State: Equatable {
-    let displayName: String
-    @ObservationStateIgnored var dragActive: Bool = false
-    var formattedValue: String?
-    var showingValue: Bool { formattedValue != nil }
+    public let displayName: String
+    @ObservationStateIgnored
+    public var dragActive: Bool = false
+    public var formattedValue: String?
+    public var showingValue: Bool { formattedValue != nil }
 
     public init(displayName: String) {
       self.displayName = displayName
