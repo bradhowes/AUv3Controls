@@ -44,7 +44,9 @@ public extension AUValue {
 }
 
 #if hasFeature(RetroactiveAttribute)
+#if compiler(<6.2)
 extension AUParameterObserverToken: @retroactive @unchecked Sendable {}
+#endif
 extension AUParameter: @retroactive @unchecked Sendable {}
 #else
 extension AUParameterObserverToken: @unchecked Sendable {}
