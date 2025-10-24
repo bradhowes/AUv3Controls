@@ -326,7 +326,7 @@ struct KnobViewPreview: PreviewProvider {
         KnobView(store: store)
           .frame(width: 140, height: 140)
           .padding([.top, .bottom], 16)
-        Text("observerdValueChanged:")
+        Text("observedValueChanged:")
         Button {
           store.send(.observedValueChanged(0.0))
         } label: {

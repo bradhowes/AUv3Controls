@@ -1,7 +1,6 @@
 // Copyright © 2025 Brad Howes. All rights reserved.
 
 import AVFoundation
-import Clocks
 import ComposableArchitecture
 import Foundation
 import SwiftUI
@@ -44,7 +43,6 @@ public struct TitleFeature {
     case valueDisplayTimerFired
   }
 
-  @Dependency(\.continuousClock) var clock
   @Dependency(\.mainQueue) var mainQueue
 
   public var body: some Reducer<State, Action> {
