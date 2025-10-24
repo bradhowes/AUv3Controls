@@ -50,7 +50,7 @@ public struct KnobFeature {
    - parameter formatter: the value formatter to use when displaying numeric values as text
    - parameter normValueTransform: the ``NormValueTransform`` to use to convert between user values and normalized
    values in range [0-1].
-   - parameter debounceDuration: the number of seconds to wait for another value before processing a value from  an
+   - parameter debounceMilliseconds: the duration to wait for another value before processing a value from an
    AUParameter.
    - parameter parameterValueChanged: closure invoked when control receives a value from AUParameter. Only used by
    tests.

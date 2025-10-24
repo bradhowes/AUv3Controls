@@ -1,8 +1,9 @@
 # ``AUv3Controls``
 
-SwiftUI knob and toggle controls for use with AUv3 components. Built with [The Composable Architecture
-(TCA)](https://github.com/pointfreeco/swift-composable-architecture) for Swift by
-[Point-Free](https://www.pointfree.co).
+SwiftUI knob and toggle controls for use with AUv3 component displays. 
+
+Built with [The Composable Architecture (TCA)](https://github.com/pointfreeco/swift-composable-architecture) for Swift
+by [Point-Free](https://www.pointfree.co).
 
 ## Additional Resources
 
