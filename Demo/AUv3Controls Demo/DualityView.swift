@@ -125,7 +125,13 @@ struct DualityView: View {
               ToggleView(store: store2) { Text(store2.displayName) }
             }
           }
-        }.auv3ControlsTheme(mockAUv3.theme)
+        }
+        .auv3ControlsTheme(mockAUv3.theme)
+#if useCustomAlert
+        .knobCustomValueEditorHost()
+#else
+        .knobNativeValueEditorHost()
+#endif
         GroupBox(label: Label("Mock MIDI", systemImage: "pianokeys")) {
           Slider(value: mockAUv3.binding(to: mockAUv3.param3.address, with: $slider3), in: mockAUv3.param3.range)
           HStack {

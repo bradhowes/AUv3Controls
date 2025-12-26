@@ -217,6 +217,11 @@ struct EnvelopeViews: View {
           .border(theme.controlForegroundColor)
       }
     }
+#if useCustomAlert
+    .knobCustomValueEditorHost()
+#else
+    .knobNativeValueEditorHost()
+#endif
   }
 }
 
