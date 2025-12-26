@@ -8,6 +8,8 @@ import SwiftUI
 struct ValueEditorHost: ViewModifier {
   @Shared(.valueEditorInfo) var valueEditorInfo
   @Environment(\.auv3ControlsTheme) var theme
+  @Environment(\.colorScheme) var colorScheme
+
   @FocusState private var focusState: Bool
   @State private var value: String = ""
   private var isEditing: Bool { valueEditorInfo?.action == .presented }
@@ -34,7 +36,6 @@ struct ValueEditorHost: ViewModifier {
 
   @ViewBuilder
   private func valueEditor(_ info: ValueEditorInfo) -> some View {
-    @Environment(\.auv3ControlsTheme) var theme
     VStack(spacing: 24) {
       Text(info.displayName)
         .font(.headline)
@@ -54,7 +55,7 @@ struct ValueEditorHost: ViewModifier {
     }
     .padding(16)
     .frame(width: 240)
-    .background(Color.white)
+    .background(colorScheme == .dark ? theme.editorDarkBackgroundColor : theme.editorLightBackgroundColor)
     .cornerRadius(20)
     .overlay(
       RoundedRectangle(cornerRadius: 20)

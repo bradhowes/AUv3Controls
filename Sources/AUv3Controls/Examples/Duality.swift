@@ -124,7 +124,7 @@ struct DualityView: View {
 #if useCustomAlert
         .knobCustomValueEditorHost()
 #else
-        .knobNativeValueEditorHost()
+        .knobValueEditorHost()
 #endif
         .padding()
 

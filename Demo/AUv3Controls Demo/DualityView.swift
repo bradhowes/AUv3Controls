@@ -130,7 +130,8 @@ struct DualityView: View {
 #if useCustomAlert
         .knobCustomValueEditorHost()
 #else
-        .knobNativeValueEditorHost()
+        // .knobNativeValueEditorHost()
+        .knobValueEditorHost()
 #endif
         GroupBox(label: Label("Mock MIDI", systemImage: "pianokeys")) {
           Slider(value: mockAUv3.binding(to: mockAUv3.param3.address, with: $slider3), in: mockAUv3.param3.range)

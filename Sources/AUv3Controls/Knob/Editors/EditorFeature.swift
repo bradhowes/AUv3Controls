@@ -67,6 +67,7 @@ struct EditorView: View {
   @Bindable private var store: StoreOf<EditorFeature>
   @FocusState private var focus: EditorFeature.State.Field?
   @Environment(\.auv3ControlsTheme) private var theme
+  @Environment(\.colorScheme) private var colorScheme
 
   init(store: StoreOf<EditorFeature>) {
     self.store = store
@@ -85,7 +86,7 @@ struct EditorView: View {
       .padding(.init(top: 2, leading: 0, bottom: 4, trailing: 0))
       .background {
         RoundedRectangle(cornerRadius: 8)
-          .fill(theme.editorBackgroundColor)
+          .fill(colorScheme == .dark ? theme.editorDarkBackgroundColor : theme.editorLightBackgroundColor)
           .stroke(.gray, lineWidth: 1)
       }
       .bind($store.focus, to: $focus)
