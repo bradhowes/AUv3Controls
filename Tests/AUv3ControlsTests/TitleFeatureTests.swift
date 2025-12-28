@@ -15,6 +15,7 @@ private final class Context {
   let clock = TestClock()
   let config = KnobConfig.default
   let mainQueue = DispatchQueue.test
+  let theme = Theme()
 
   lazy var test = TestStore(initialState: .init(displayName: param.displayName)) {
     TitleFeature(formatter: KnobValueFormatter.general(1...4))
@@ -47,11 +48,11 @@ final class TitleFeatureTests: XCTestCase {
     await ctx.test.send(.valueChanged(12.34)) { state in
       state.formattedValue = "12.34"
     }
-    await ctx.clock.advance(by: .milliseconds(ctx.config.controlShowValueMilliseconds) / 2.0)
+    await ctx.clock.advance(by: .milliseconds(ctx.config.showValueMilliseconds) / 2.0)
     await ctx.test.send(.valueChanged(56.78)) { state in
       state.formattedValue = "56.78"
     }
-    await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.controlShowValueMilliseconds))
+    await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.showValueMilliseconds))
     await ctx.test.receive(.valueDisplayTimerFired) {
       $0.formattedValue = nil
     }
@@ -64,7 +65,7 @@ final class TitleFeatureTests: XCTestCase {
       state.formattedValue = "12.34"
     }
     await ctx.clock.run()
-    await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.controlShowValueMilliseconds))
+    await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.showValueMilliseconds))
     await ctx.test.receive(.valueDisplayTimerFired) { state in
       state.formattedValue = nil
     }
@@ -72,11 +73,12 @@ final class TitleFeatureTests: XCTestCase {
 
   @MainActor
   func testTapped() async {
+
     let ctx = Context()
     await ctx.test.send(.valueChanged(12.34)) { state in
       state.formattedValue = "12.34"
     }
-    await ctx.test.send(.titleTapped) { state in
+    await ctx.test.send(.titleTapped(ctx.theme)) { state in
       state.formattedValue = nil
     }
     // Nothing should be running now.

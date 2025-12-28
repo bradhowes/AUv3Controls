@@ -7,7 +7,7 @@ final class ThemeTests: XCTestCase {
 
   func testInit() {
     var theme = Theme()
-    XCTAssertEqual(Color(hex: "333333"), theme.controlBackgroundColor)
+    XCTAssertEqual(.gray, theme.controlBackgroundColor)
     XCTAssertEqual(16.0, theme.controlIndicatorLength)
 
     theme.controlIndicatorLength = 12.34

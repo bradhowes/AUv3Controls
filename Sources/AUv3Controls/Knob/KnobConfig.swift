@@ -4,15 +4,13 @@ import AVFoundation
 import SwiftUI
 
 /**
- Shabby attempt at isolating customizations for a `KnobFeature`. Right now there is a 1-1 relationship between this and
- an AUParameter instance. Appearance configuration has been split out into a separate `Theme` class, but there are
- still too many details here that would be better shared across `KnobFeature` instances.
+ Global settings for all `KnobFeature` instances.
  */
 public struct KnobConfig: Equatable, Sendable {
   public static let `default` = KnobConfig()
 
   /// How long to show the value in the knob's label
-  public let controlShowValueMilliseconds: Int
+  public let showValueMilliseconds: Int
 
   /**
    Amount of time to wait with no more AUParameter changes before emitting the last one in the async stream of
@@ -26,7 +24,7 @@ public struct KnobConfig: Equatable, Sendable {
     showValueDuration: Int = 1250,
     debounceDuration: Int = 10
   ) {
-    self.controlShowValueMilliseconds = showValueDuration
+    self.showValueMilliseconds = showValueDuration
     self.debounceMilliseconds = debounceDuration
   }
 }

@@ -5,7 +5,6 @@ import ComposableArchitecture
 import SwiftUI
 
 class MockAUv3 {
-  let theme: Theme
   let config: KnobConfig
 
   let paramTree: AUParameterTree
@@ -19,7 +18,6 @@ class MockAUv3 {
   private var bindings: [AUParameterAddress: Binding<Double>] = [:]
 
   init() {
-    self.theme = Theme()
     self.config = KnobConfig()
     let param1 = AUParameterTree.createBoolean(withIdentifier: "Retrigger", name: "Retrigger", address: 1)
     self.param1 = param1
@@ -82,15 +80,19 @@ class MockAUv3 {
 struct DualityView: View {
   let mockAUv3: MockAUv3
 
-  @State var store1: StoreOf<ToggleFeature>
-  @State var store2: StoreOf<ToggleFeature>
-  @State var store3: StoreOf<KnobFeature>
-  @State var store4: StoreOf<KnobFeature>
+  @State private var store1: StoreOf<ToggleFeature>
+  @State private var store2: StoreOf<ToggleFeature>
+  @State private var store3: StoreOf<KnobFeature>
+  @State private var store4: StoreOf<KnobFeature>
 
-  @State var toggle1: Bool = false
-  @State var toggle2: Bool = false
-  @State var slider3: Double = 0.0
-  @State var slider4: Double = 0.0
+  @State private var toggle1: Bool = false
+  @State private var toggle2: Bool = false
+  @State private var slider3: Double = 0.0
+  @State private var slider4: Double = 0.0
+
+  @Environment(\.colorScheme) private var colorScheme
+
+  private let theme = Theme()
 
   init() {
     let mockAUv3 = MockAUv3()
@@ -123,6 +125,8 @@ struct DualityView: View {
         }
 #if useCustomAlert
         .knobCustomValueEditorHost()
+#elseif useNativeAlet
+        .knobNativeValueEditorHost()
 #else
         .knobValueEditorHost()
 #endif
@@ -172,6 +176,7 @@ struct DualityView: View {
       }
       .navigationTitle(Text("Duality"))
     }
+    .auv3ControlsTheme(theme)
   }
 }
 

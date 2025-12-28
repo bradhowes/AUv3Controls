@@ -2,6 +2,12 @@
 
 import SwiftUI
 
+#if canImport(UIKit)
+import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
+
 // Source: https://stackoverflow.com/a/56874327/629836
 
 extension Color {
@@ -61,6 +67,43 @@ extension Color {
 
     self.init(.sRGB, red: argb.red.normalized, green: argb.green.normalized, blue: argb.blue.normalized,
               opacity: argb.alpha.normalized)
+  }
+}
+
+extension Color {
+
+  /**
+   Look for a color asset with a given name, resulting in `None` if the named asset was not found.
+
+   - parameter named: the name to look for
+   - parameter bundle: where to look for the asset
+   */
+  init?(named name: String, bundle: Bundle = .main) {
+#if canImport(UIKit)
+    guard let color = UIColor(named: name, in: bundle, compatibleWith: nil) else {
+      return nil
+    }
+    self = .init(color)
+#elseif canImport(AppKit)
+    guard let color = NSColor(named: NSColor.Name(name), bundle: bundle) else {
+      return nil
+    }
+    self = .init(color)
+#else
+    return nil
+#endif
+    print("Color", self.description)
+  }
+
+  /// Convenience boolean check for existence of a color asset.
+  static func assetExists(named name: String, bundle: Bundle = .main) -> Bool {
+#if canImport(UIKit)
+    return UIColor(named: name, in: bundle, compatibleWith: nil) != nil
+#elseif canImport(AppKit)
+    return NSColor(named: NSColor.Name(name), bundle: bundle) != nil
+#else
+    return false
+#endif
   }
 }
 

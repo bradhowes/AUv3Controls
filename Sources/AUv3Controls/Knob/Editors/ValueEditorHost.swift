@@ -7,9 +7,6 @@ import SwiftUI
  */
 struct ValueEditorHost: ViewModifier {
   @Shared(.valueEditorInfo) var valueEditorInfo
-  @Environment(\.auv3ControlsTheme) var theme
-  @Environment(\.colorScheme) var colorScheme
-
   @FocusState private var focusState: Bool
   @State private var value: String = ""
   private var isEditing: Bool { valueEditorInfo?.action == .presented }
@@ -39,23 +36,27 @@ struct ValueEditorHost: ViewModifier {
     VStack(spacing: 24) {
       Text(info.displayName)
         .font(.headline)
-        .foregroundStyle(theme.textColor)
-      TextField("New Value", text: $value)
-        .clearButton(text: $value, offset: 4)
-        .textFieldStyle(.roundedBorder)
-#if os(iOS)
-        .keyboardType(.decimalPad)
-#endif
-        .focused($focusState)
+        .foregroundStyle(info.theme.textColor)
+      DecimalTextField(value: $value, focusState: $focusState)
         .onSubmit { dismiss(accepted: true) }
       HStack(spacing: 24) {
-        Button("Cancel", role: .cancel) { dismiss(accepted: false) }
-        Button("OK") { dismiss(accepted: true) }
+        Button {
+          dismiss(accepted: false)
+        } label: {
+          Text("Cancel")
+            .foregroundStyle(info.theme.editorCancelButtonColor)
+        }
+        Button {
+          dismiss(accepted: true)
+        } label: {
+          Text("OK")
+            .foregroundStyle(info.theme.editorOKButtonColor)
+        }
       }
     }
     .padding(16)
     .frame(width: 240)
-    .background(colorScheme == .dark ? theme.editorDarkBackgroundColor : theme.editorLightBackgroundColor)
+    .background(info.theme.editorBackgroundColor)
     .cornerRadius(20)
     .overlay(
       RoundedRectangle(cornerRadius: 20)

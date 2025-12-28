@@ -5,6 +5,8 @@ import PackageDescription
 // Set to `true` to depend on CustomAlert package. SPM traits do not seem to let us skip depending on a
 // package.
 let useCustomAlert = false
+// Set to `true` to use native alert prompt for value editing
+let useNativeAlert = false
 
 let packageDependencies: [Package.Dependency] = [
   .package(url: "https://github.com/pointfreeco/swift-composable-architecture", from: "1.20.0"),

@@ -194,12 +194,17 @@ struct EnvelopeView: View {
 }
 
 struct EnvelopeViews: View {
-  var body: some View {
-    var theme = Theme()
+
+  private var theme: Theme {
+    var theme = Theme(prefix: "envelopes")
     theme.controlTrackStrokeStyle = StrokeStyle(lineWidth: 5, lineCap: .round)
     theme.controlValueStrokeStyle = StrokeStyle(lineWidth: 3, lineCap: .round)
     theme.toggleOnIndicatorSystemName = "arrowtriangle.down.fill"
     theme.toggleOffIndicatorSystemName = "arrowtriangle.down"
+    return theme
+  }
+
+  var body: some View {
 
     let vol = EnvelopeFeature(parameterBase: 100)
     let mod = EnvelopeFeature(parameterBase: 200)
@@ -213,15 +218,17 @@ struct EnvelopeViews: View {
       ScrollView(.horizontal) {
         EnvelopeView(store: Store(initialState: mod.state) { mod }, title: "Mod")
           .padding(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
-          .environment(\.auv3ControlsTheme, theme)
           .border(theme.controlForegroundColor)
       }
     }
 #if useCustomAlert
     .knobCustomValueEditorHost()
-#else
+#elseif useNativeAlet
     .knobNativeValueEditorHost()
+#else
+    .knobValueEditorHost()
 #endif
+    .auv3ControlsTheme(theme)
   }
 }
 

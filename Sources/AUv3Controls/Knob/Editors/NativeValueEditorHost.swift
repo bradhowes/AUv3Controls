@@ -41,11 +41,13 @@ struct NativeValueEditorHost: ViewModifier {
           dismiss(accepted: true)
         } label: {
           Text("OK")
+            .foregroundStyle(valueEditorInfo!.theme.editorOKButtonColor)
         }
         Button(role: .cancel) {
           dismiss(accepted: false)
         } label: {
           Text("Cancel")
+            .foregroundStyle(valueEditorInfo!.theme.editorCancelButtonColor)
         }
       }
 #endif
@@ -60,11 +62,13 @@ struct NativeValueEditorHost: ViewModifier {
               dismiss(accepted: false)
             } label: {
               Text("Cancel")
+                .foregroundStyle(valueEditorInfo!.theme.editorCancelButtonColor)
             }
             Button {
               dismiss(accepted: true)
             } label: {
               Text("OK")
+                .foregroundStyle(valueEditorInfo!.theme.editorOKButtonColor)
             }
           }
         }

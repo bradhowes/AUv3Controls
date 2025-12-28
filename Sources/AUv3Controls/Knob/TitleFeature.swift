@@ -13,11 +13,10 @@ import SwiftUI
 public struct TitleFeature {
   let formatter: any KnobValueFormattingProvider
   let showValueMilliseconds: Int
-  let showValueCancelId = "ShowValueCancelId[\(UUID().uuidString)]"
 
   public init(
     formatter: any KnobValueFormattingProvider,
-    showValueMilliseconds: Int = KnobConfig.default.controlShowValueMilliseconds
+    showValueMilliseconds: Int = KnobConfig.default.showValueMilliseconds
   ) {
     self.formatter = formatter
     self.showValueMilliseconds = showValueMilliseconds
@@ -30,6 +29,7 @@ public struct TitleFeature {
     public var dragActive: Bool = false
     public var formattedValue: String?
     public var showingValue: Bool { formattedValue != nil }
+    public let showValueCancelId = "ShowValueCancelId[\(UUID().uuidString)]"
 
     public init(displayName: String) {
       self.displayName = displayName
@@ -38,7 +38,7 @@ public struct TitleFeature {
 
   public enum Action: Equatable, Sendable {
     case dragActive(Bool)
-    case titleTapped
+    case titleTapped(Theme)
     case valueChanged(Double)
     case valueDisplayTimerFired
   }
@@ -61,23 +61,34 @@ private extension TitleFeature {
 
   func dragActive(_ state: inout State, value: Bool) -> Effect<Action> {
     state.dragActive = value
-    return value ? .none : startTitleTimerEffect(&state)
+    return value ? .none : startTitleTimerEffect2(&state)
   }
 
   func showTitleEffect(state: inout State) -> Effect<Action> {
     state.formattedValue = nil
-    return .cancel(id: showValueCancelId)
+    return .cancel(id: state.showValueCancelId)
   }
 
   func showValueEffect(state: inout State, value: Double) -> Effect<Action> {
     state.formattedValue = formatter.forDisplay(value)
-    return state.dragActive ? .none : startTitleTimerEffect(&state)
+    return state.dragActive ? .none : startTitleTimerEffect2(&state)
   }
 
-  func startTitleTimerEffect(_ state: inout State) -> Effect<Action> {
+  func startTitleTimerEffect1(_ state: inout State) -> Effect<Action> {
+    return .run { [showValueMilliseconds] send in
+      try await Task.sleep(for: .milliseconds(showValueMilliseconds))
+      if !Task.isCancelled {
+        await send(.valueDisplayTimerFired, animation: .linear)
+      }
+    }.cancellable(id: state.showValueCancelId, cancelInFlight: true)
+  }
+
+  func startTitleTimerEffect2(_ state: inout State) -> Effect<Action> {
     return .run { send in
-      await send(.valueDisplayTimerFired, animation: .linear)
-    }.debounce(id: showValueCancelId, for: .milliseconds(showValueMilliseconds), scheduler: mainQueue)
+      if !Task.isCancelled {
+        await send(.valueDisplayTimerFired, animation: .linear)
+      }
+    }.debounce(id: state.showValueCancelId, for: .milliseconds(showValueMilliseconds), scheduler: mainQueue)
   }
 }
 
@@ -120,7 +131,7 @@ public struct TitleView: View {
     .animation(.smooth, value: store.formattedValue)
     .onTapGesture(count: 1) {
       withAnimation {
-        _ = store.send(.titleTapped)
+        _ = store.send(.titleTapped(theme))
       }
     }
   }
@@ -141,5 +152,6 @@ struct TitleViewPreview: PreviewProvider {
       TitleView(store: store)
         .task { store.send(.valueChanged(1.24), animation: .linear) }
     }
+    .knobValueEditorHost()
   }
 }

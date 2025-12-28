@@ -13,7 +13,7 @@ struct ValueEditorInfo: Equatable, Sendable {
   /**
    The state of the editor view:
 
-   * presentied -- the editor view is presented to the user
+   * presented -- the editor view is presented to the user
    * dismissed(String?) -- the editor view was dismissed by the user. If associated value is not nil then user
    accepted the new value.
    */
@@ -22,10 +22,16 @@ struct ValueEditorInfo: Equatable, Sendable {
     case dismissed(String?)
   }
 
+  /// The ID of the value being edited
   let id: UInt64
+  /// The display name of the value being edited
   let displayName: String
+  /// The current formatted value
   let value: String
+  /// The current action for the editor
   var action: Action = .presented
+  /// The theme to use for the editor view
+  var theme: Theme
 }
 
 extension SharedKey where Self == InMemoryKey<ValueEditorInfo?>.Default {

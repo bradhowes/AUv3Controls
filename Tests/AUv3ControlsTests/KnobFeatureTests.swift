@@ -46,72 +46,79 @@ final class KnobFeatureTests: XCTestCase {
   @MainActor
   func testValueChanged() async {
     let ctx = Context()
-    await ctx.test.send(.control(.track(.dragChanged(0.36)))) { state in
-      state.control.track.norm = 0.3600000000000
-      state.control.title.formattedValue = "36"
+    await ctx.test.send(.track(.dragChanged(0.36))) { state in
+      state.track.norm = 0.3600000000000
+      state.title.formattedValue = "36"
     }
-    await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.controlShowValueMilliseconds))
-    await ctx.test.receive(.control(.title(.valueDisplayTimerFired))) {
-      $0.control.title.formattedValue = nil
+    await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.showValueMilliseconds))
+    await ctx.test.receive(.title(.valueDisplayTimerFired)) {
+      $0.title.formattedValue = nil
     }
-    await ctx.test.send(.control(.track(.dragChanged(0.0)))) { state in
-      state.control.track.norm = 0.0
-      state.control.title.formattedValue = "0"
+    await ctx.test.send(.track(.dragChanged(0.0))) { state in
+      state.track.norm = 0.0
+      state.title.formattedValue = "0"
     }
-    await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.controlShowValueMilliseconds))
-    await ctx.test.receive(.control(.title(.valueDisplayTimerFired))) { state in
-      state.control.title.formattedValue = nil
+    await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.showValueMilliseconds))
+    await ctx.test.receive(.title(.valueDisplayTimerFired)) { state in
+      state.title.formattedValue = nil
     }
     XCTAssertEqual(ctx.changed[1], 2)
   }
 
-//  @MainActor
-//  func testAcceptValidEdit() async {
-//    let ctx = Context()
-//    await ctx.test.send(.control(.track(.dragChanged(0.36)))) { state in
-//      state.control.track.norm = 0.3600000000000000
-//      state.control.title.formattedValue = "36"
-//    }
-//    await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.controlShowValueMilliseconds))
-//    await ctx.test.receive(.control(.title(.valueDisplayTimerFired))) {
-//      $0.control.title.formattedValue = nil
-//    }
-//    await ctx.test.send(.control(.title(.titleTapped))) { state in
-//      state.showingEditor = true
-//      state.editorValue = "36"
-//    }
-//    await ctx.test.send(.editorAccepted("45.678")) { state in
-//      state.control.title.formattedValue = "46"
-//      state.control.track.norm = 0.45677999999999996
-//      state.showingEditor = false
-//    }
-//    await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.controlShowValueMilliseconds))
-//    await ctx.test.receive(.control(.title(.valueDisplayTimerFired))) {
-//      $0.control.title.formattedValue = nil
-//    }
-//    XCTAssertEqual(ctx.changed[1], 2)
-//  }
-//
-//  @MainActor
-//  func testCancelEdit() async {
-//    let ctx = Context()
-//    await ctx.test.send(.control(.track(.dragChanged(0.36)))) { state in
-//      state.control.track.norm = 0.3600000000000000
-//      state.control.title.formattedValue = "36"
-//    }
-//    await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.controlShowValueMilliseconds))
-//    await ctx.test.receive(.control(.title(.valueDisplayTimerFired))) {
-//      $0.control.title.formattedValue = nil
-//    }
-//    await ctx.test.send(.control(.title(.titleTapped))) { state in
-//      state.showingEditor = true
-//      state.editorValue = "36"
-//    }
-//    await ctx.test.send(.editorCancelled) { state in
-//      state.showingEditor = false
-//    }
-//  }
-//
+    @MainActor
+    func testDragChanged() async {
+      let ctx = Context()
+      await ctx.test.send(.track(.dragChanged(0.18))) { state in
+        state.track.norm = 0.18
+        state.title.formattedValue = "18"
+      }
+      await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.showValueMilliseconds))
+      await ctx.test.receive(.title(.valueDisplayTimerFired)) {
+        $0.title.formattedValue = nil
+      }
+      await ctx.test.finish()
+    }
+  
+    @MainActor
+    func testDragEnded() async {
+      let ctx = Context()
+      await ctx.test.send(.track(.dragChanged(0.18))) { state in
+        state.track.norm = 0.180000000000000
+        state.title.formattedValue = "18"
+      }
+      await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.showValueMilliseconds))
+      await ctx.test.receive(.title(.valueDisplayTimerFired)) {
+        $0.title.formattedValue = nil
+      }
+      await ctx.test.send(.track(.dragEnded(0.30))) { state in
+        state.track.norm = 0.3
+      }
+      await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.showValueMilliseconds))
+      await ctx.test.receive(.title(.valueDisplayTimerFired))
+      await ctx.test.finish()
+    }
+
+  @MainActor
+  func testShowEditor() async {
+    let ctx = Context()
+    await ctx.test.send(.track(.dragChanged(0.36))) { state in
+      state.track.norm = 0.3600000000000000
+      state.title.formattedValue = "36"
+    }
+    await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.showValueMilliseconds))
+    await ctx.test.receive(.title(.valueDisplayTimerFired)) {
+      $0.title.formattedValue = nil
+    }
+
+    await ctx.test.send(.title(.titleTapped(ctx.theme))) {
+      $0.$valueEditorInfo.withLock { $0 = ValueEditorInfo(id: ctx.param.address, displayName: ctx.param.displayName, value: "36", theme: ctx.theme) }
+    }
+
+    await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.showValueMilliseconds))
+
+    XCTAssertEqual(ctx.changed[1], 1)
+  }
+
   @MainActor
   func testChangedValue() async throws {
     let ctx = Context()
@@ -126,7 +133,7 @@ final class KnobFeatureTests: XCTestCase {
     let view = MyView(store: ctx.live)
 
     await view.store.send(
-      KnobFeature.Action.control(.track(.dragChanged(0.0)))).finish()
+      KnobFeature.Action.track(.dragChanged(0.3))).finish()
 
     try withSnapshotTesting(record: .failed) {
       try assertSnapshot(matching: view)
@@ -138,7 +145,7 @@ final class KnobFeatureTests: XCTestCase {
     try withDependencies { $0 = .live } operation: {
       let view = KnobViewPreview.previews
       try withSnapshotTesting(record: .failed) {
-        try assertSnapshot(matching: view)
+        try assertSnapshot(matching: view, size: .init(width: 220, height: 800))
       }
     }
   }

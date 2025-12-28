@@ -86,7 +86,7 @@ struct EditorView: View {
       .padding(.init(top: 2, leading: 0, bottom: 4, trailing: 0))
       .background {
         RoundedRectangle(cornerRadius: 8)
-          .fill(colorScheme == .dark ? theme.editorDarkBackgroundColor : theme.editorLightBackgroundColor)
+          .fill(theme.editorBackgroundColor)
           .stroke(.gray, lineWidth: 1)
       }
       .bind($store.focus, to: $focus)

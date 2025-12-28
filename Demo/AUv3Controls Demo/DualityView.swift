@@ -6,7 +6,6 @@ import ComposableArchitecture
 import SwiftUI
 
 class MockAUv3 {
-  let theme: Theme
   let config: KnobConfig
 
   let paramTree: AUParameterTree
@@ -20,7 +19,6 @@ class MockAUv3 {
   private var bindings: [AUParameterAddress: Binding<Double>] = [:]
 
   init() {
-    self.theme = Theme()
     self.config = KnobConfig()
     let param1 = AUParameterTree.createBoolean(withIdentifier: "Retrigger", name: "Retrigger", address: 1)
     self.param1 = param1
@@ -82,7 +80,7 @@ class MockAUv3 {
 
 struct DualityView: View {
   let mockAUv3: MockAUv3
-
+  
   @State var store1: StoreOf<ToggleFeature>
   @State var store2: StoreOf<ToggleFeature>
   @State var store3: StoreOf<KnobFeature>
@@ -95,12 +93,15 @@ struct DualityView: View {
 
   @FocusState var focused: String?
 
+  @Environment(\.colorScheme) private var colorScheme
+
+  private let theme = Theme(prefix: "duality", bundle: Bundle.main)
+
   init() {
     let mockAUv3 = MockAUv3()
     self.mockAUv3 = mockAUv3
     self.store1 = .init(initialState: ToggleFeature.State(parameter: mockAUv3.param1)) { ToggleFeature() }
     self.store2 = .init(initialState: ToggleFeature.State(parameter: mockAUv3.param2)) { ToggleFeature() }
-
     self.store3 = .init(initialState: KnobFeature.State(parameter: mockAUv3.param3)) {
       KnobFeature(parameter: mockAUv3.param3)
     }
@@ -126,11 +127,11 @@ struct DualityView: View {
             }
           }
         }
-        .auv3ControlsTheme(mockAUv3.theme)
 #if useCustomAlert
         .knobCustomValueEditorHost()
+#elseif useNativeAlet
+        .knobNativeValueEditorHost()
 #else
-        // .knobNativeValueEditorHost()
         .knobValueEditorHost()
 #endif
         GroupBox(label: Label("Mock MIDI", systemImage: "pianokeys")) {
@@ -177,6 +178,7 @@ struct DualityView: View {
       }
       .navigationTitle(Text("Duality"))
     }
+    .auv3ControlsTheme(theme)
   }
 }
 

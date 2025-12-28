@@ -9,7 +9,6 @@ import SwiftUI
  */
 struct CustomValueEditorView: View {
   @Shared(.valueEditorInfo) var valueEditorInfo
-  @Environment(\.auv3ControlsTheme) var theme
   @State private var displayName: String = ""
   private var value: Binding<String>
   @FocusState private var isFocused
@@ -69,11 +68,13 @@ struct CustomValueEditorHost: ViewModifier {
             dismiss(accepted: true)
           } label: {
             Text("OK")
+              .foregroundStyle(valueEditorInfo!.theme.editorOKButtonColor)
           }
           Button(role: .cancel) {
             dismiss(accepted: false)
           } label: {
             Text("Cancel")
+              .foregroundStyle(valueEditorInfo!.theme.editorCancelButtonColor)
           }
         }
       }

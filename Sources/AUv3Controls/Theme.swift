@@ -4,7 +4,9 @@ import AudioUnit
 import SwiftUI
 
 /// Shared attributes for controls that represents some theme of an app/view.
-public struct Theme: Sendable {
+public struct Theme: Sendable, Equatable {
+  public let bundle: Bundle?
+  public let prefix: String
   /// The width of the standard knob value editor. This is wide enough with the given font settings
   /// to show 20000.123456789
   public let controlEditorWidth: Double = 140
@@ -19,15 +21,59 @@ public struct Theme: Sendable {
    */
   public let touchSensitivity: Double
   /// The background color to use when drawing the control
-  public var controlBackgroundColor: Color
+  public var controlBackgroundColor: Color {
+    Self.taggedColor(
+      .controlBackgroundColor,
+      in: bundle,
+      prefix: prefix,
+      default: .gray
+    )
+  }
   /// The foreground color to use when drawing the control
-  public var controlForegroundColor: Color
+  public var controlForegroundColor: Color {
+    Self.taggedColor(
+      .controlForegroundColor,
+      in: bundle,
+      prefix: prefix,
+      default: .orange
+    )
+  }
   /// The color of any text components of the control
-  public var textColor: Color
+  public var textColor: Color {
+    Self.taggedColor(
+      .textColor,
+      in: bundle,
+      prefix: prefix,
+      default: .orange
+    )
+  }
   /// The background color to use for the value editor box
-  public var editorDarkBackgroundColor: Color = Color(hex: "303030")!
-  /// The background color to use for the value editor box
-  public var editorLightBackgroundColor: Color = Color(hex: "C0C0C0")!
+  public var editorBackgroundColor: Color {
+    Self.taggedColor(
+      .editorBackgroundColor,
+      in: bundle,
+      prefix: prefix,
+      default: .gray
+    )
+  }
+  /// The color to use for the Cancel button in the editor box
+  public var editorCancelButtonColor: Color {
+    Self.taggedColor(
+      .editorCancelButtonColor,
+      in: bundle,
+      prefix: prefix,
+      default: .yellow
+    )
+  }
+    /// The color to use for the OK button in the editor box
+  public var editorOKButtonColor: Color {
+    Self.taggedColor(
+      .editorOKButtonColor,
+      in: bundle,
+      prefix: prefix,
+      default: .yellow
+    )
+  }
   /// The font to use for any text components of the control
   public var font: Font = .callout
   /// The indicator to use for a toggle control when the value is `true`
@@ -107,6 +153,7 @@ public struct Theme: Sendable {
    - parameter controlValueStrokeStyle the stroke style to use when drawing the value track of a knob
    */
   public init(
+    prefix: String = "",
     bundle: Bundle? = nil,
     controlTrackStrokeStyle: StrokeStyle = .init(lineWidth: 10.0, lineCap: .round),
     controlValueStrokeStyle: StrokeStyle = .init(lineWidth: 10.0, lineCap: .round),
@@ -119,11 +166,8 @@ public struct Theme: Sendable {
     touchSensitivity: Double = 2.0,
     maxChangeRegionWidthPercentage: Double = 0.1
   ) {
-    self.controlBackgroundColor = Self.color(.controlBackgroundColor, from: bundle,
-                                             default: .init(hex: "333333") ?? .gray)
-    self.controlForegroundColor = Self.color(.controlForegroundColor, from: bundle,
-                                             default: .init(hex: "FF9500") ?? .orange)
-    self.textColor = Self.color(.textColor, from: bundle, default: .init(hex: "C08000") ?? .orange)
+    self.bundle = bundle
+    self.prefix = prefix
     self.controlTrackStrokeStyle = controlTrackStrokeStyle
     self.controlValueStrokeStyle = controlValueStrokeStyle
     self.controlIndicatorLength = max(controlValueStrokeStyle.lineWidth / 2, controlIndicatorLength)
@@ -144,34 +188,29 @@ private extension Theme {
   enum ColorTag: String {
     case controlBackgroundColor
     case controlForegroundColor
+    case editorBackgroundColor
+    case editorCancelButtonColor
+    case editorOKButtonColor
     case textColor
   }
 
-  static func color(_ tag: ColorTag, from bundle: Bundle?, default: Color) -> Color {
-    bundle != nil ? Color(tag.rawValue, bundle: bundle) : `default`
+  static func colorAssetName(prefix: String, tag: ColorTag) -> String {
+    return (prefix.isEmpty ? prefix : prefix + "_") + tag.rawValue
+  }
+
+  static func taggedColor(_ tag: ColorTag, in bundle: Bundle?, prefix: String, default: Color) -> Color {
+    guard let bundle = bundle else { return `default` }
+    return Color(named: colorAssetName(prefix: prefix, tag: tag), bundle: bundle) ?? `default`
   }
 
   func color(tag: ColorTag) -> Color {
     switch tag {
-    case .controlForegroundColor: return controlForegroundColor.disabled
-    case .controlBackgroundColor: return controlBackgroundColor.disabled
-    case .textColor: return textColor.disabled
-    }
-  }
-
-  func disabled(tag: ColorTag) -> Color {
-    color(tag: tag).disabled
-  }
-}
-
-extension Color {
-
-  var disabled: Color {
-    @Environment(\.colorScheme) var colorScheme
-    if #available(iOS 18.0, macOS 15.0, *) {
-      return self.mix(with: colorScheme == .dark ? .black : .white, by: 0.5)
-    } else {
-      return self.mix_shim(with: colorScheme == .dark ? .black : .white, by: 0.5)
+    case .controlBackgroundColor: return controlBackgroundColor
+    case .controlForegroundColor: return controlForegroundColor
+    case .editorBackgroundColor: return editorBackgroundColor
+    case .editorCancelButtonColor: return editorCancelButtonColor
+    case .editorOKButtonColor: return editorOKButtonColor
+    case .textColor: return textColor
     }
   }
 }
@@ -179,22 +218,5 @@ extension Color {
 extension Theme {
   public func endTrim(for norm: Double) -> Double {
     Angle(radians: norm * controlIndicatorStartEndSpanRadians + controlIndicatorStartAngle.radians).normalized
-  }
-}
-
-extension Theme: Equatable {
-  public static func == (lhs: Theme, rhs: Theme) -> Bool {
-    lhs.controlBackgroundColor == rhs.controlBackgroundColor &&
-    lhs.controlForegroundColor == rhs.controlForegroundColor &&
-    lhs.textColor == rhs.textColor &&
-    lhs.font == rhs.font &&
-    lhs.toggleOnIndicatorSystemName == rhs.toggleOnIndicatorSystemName &&
-    lhs.toggleOffIndicatorSystemName == rhs.toggleOffIndicatorSystemName &&
-    lhs.controlTrackStrokeStyle == rhs.controlTrackStrokeStyle &&
-    lhs.controlValueStrokeStyle == rhs.controlValueStrokeStyle &&
-    lhs.controlTitleGap == rhs.controlTitleGap &&
-    lhs.controlIndicatorLength == rhs.controlIndicatorLength &&
-    lhs.controlIndicatorStartAngle == rhs.controlIndicatorStartAngle &&
-    lhs.controlIndicatorEndAngle == rhs.controlIndicatorEndAngle
   }
 }
