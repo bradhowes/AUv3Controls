@@ -143,14 +143,22 @@ public typealias NativeColor = NSColor
 
 public extension NativeColor {
 
+  var inRGBColorSpace: NativeColor {
+#if os(macOS)
+    return self.usingColorSpace(.sRGB) ?? self
+#else
+    return self
+#endif
+  }
+
   func mix(with target: NativeColor, amount: CGFloat) -> Self {
     var r1: CGFloat = 0, g1: CGFloat = 0, b1: CGFloat = 0, a1: CGFloat = 0
     var r2: CGFloat = 0, g2: CGFloat = 0, b2: CGFloat = 0, a2: CGFloat = 0
 
-    guard let us = self.usingColorSpace(.sRGB) else { return self }
+    let us = self.inRGBColorSpace
     us.getRed(&r1, green: &g1, blue: &b1, alpha: &a1)
 
-    guard let tgt = target.usingColorSpace(.sRGB) else { return self }
+    let tgt = target.inRGBColorSpace
     tgt.getRed(&r2, green: &g2, blue: &b2, alpha: &a2)
 
     return Self(
