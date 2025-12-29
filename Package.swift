@@ -5,8 +5,8 @@ import PackageDescription
 let package = Package(
   name: "AUv3Controls",
   platforms: [
-    .iOS(.v17),
-    .macOS(.v14)
+    .iOS(.v18),
+    .macOS(.v15)
   ],
   products: [
     .library(
@@ -26,7 +26,7 @@ let package = Package(
       dependencies: [
         .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
         .product(name: "AsyncAlgorithms", package: "swift-async-algorithms"),
-        .product(name: "CustomAlert", package: "CustomAlert")
+        .product(name: "CustomAlert", package: "CustomAlert", condition: .when(platforms: [.iOS]))
       ],
       exclude: ["Examples/README.md", "Knob/README.md", "Toggle/README.md"],
       resources: [.process("Resources/Assets.xcassets")],

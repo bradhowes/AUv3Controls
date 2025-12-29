@@ -168,7 +168,7 @@ struct DualityView: View {
       .navigationTitle(Text("Duality"))
     }
     .auv3ControlsTheme(theme)
-    .knobValueEditor(.customPrompt)
+    .knobValueEditor()
   }
 }
 

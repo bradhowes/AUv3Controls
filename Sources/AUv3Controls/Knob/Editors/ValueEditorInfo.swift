@@ -99,17 +99,31 @@ extension SharedKey where Self == InMemoryKey<ValueEditorInfo?>.Default {
 public enum ValueEditorKind {
   case `default`
   case nativePrompt
+#if os(iOS)
   case customPrompt
+#endif
+
+#if os(iOS)
+  public static var defaultValue: Self {
+    return .customPrompt
+  }
+#else
+  public static var defaultValue: Self {
+    return .nativePrompt
+  }
+#endif
 }
 
 extension View {
 
   @ViewBuilder
-  public func knobValueEditor(_ kind: ValueEditorKind = .customPrompt) -> some View {
+  public func knobValueEditor(_ kind: ValueEditorKind = .defaultValue) -> some View {
     switch kind {
     case .default: modifier(ValueEditorHost())
     case .nativePrompt: modifier(NativeValueEditorHost())
+#if os(iOS)
     case .customPrompt: modifier(CustomValueEditorHost())
+#endif
     }
   }
 }

@@ -9,22 +9,28 @@ public struct NumericValueEditing: ViewModifier {
 
   @Binding private var value: String
   private let valueEditorInfo: ValueEditorInfo
+#if os(iOS)
   private let keyboardType: UIKeyboardType
+#endif
 
   init(value: Binding<String>, valueEditorInfo: ValueEditorInfo) {
     self._value = value
     self.valueEditorInfo = valueEditorInfo
 
+#if os(iOS)
     self.keyboardType = switch (valueEditorInfo.decimalAllowed, valueEditorInfo.signAllowed) {
     case (.none, .none): .numberPad
     case (.allowed, .none): .decimalPad
     default: .numbersAndPunctuation
     }
+#endif
   }
 
   public func body(content: Content) -> some View {
     content
+#if os(iOS)
       .keyboardType(keyboardType)
+#endif
 //      .onReceive(NotificationCenter.default.publisher(for: UITextField.textDidBeginEditingNotification)) { obj in
 //        print("notification")
 //        if let textField = obj.object as? UITextField {
