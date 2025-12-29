@@ -15,69 +15,23 @@ public struct Theme: Sendable, Equatable {
   /// Duration of the animation when changing between value and title in control label
   public let controlChangeAnimationDuration: TimeInterval = 0.35
   /**
-   How much travel is need to change the knob from `minimumValue` to `maximumValue`.
+   How much travel is needed to change the knob from `minimumValue` to `maximumValue`.
    By default this is 2x the `controlSize` value. Setting it to 4 will require 4x the `controlSize` distance
    to go from `minimumValue` to `maximumValue`, thus making it more sensitive in general.
    */
   public let touchSensitivity: Double
   /// The background color to use when drawing the control
-  public var controlBackgroundColor: Color {
-    taggedColor(
-      .controlBackgroundColor,
-      in: bundle,
-      prefix: prefix,
-      // defaults: Color.gray.lighterDarker(by: 0.4)
-      defaults: [
-        Color.gray.mix_shim(with: Color.white, by: 0.5),
-        Color.black.mix_shim(with: Color.white, by: 0.2)
-      ]
-    )
-  }
+  public var controlBackgroundColor: Color = .clear
   /// The foreground color to use when drawing the control
-  public var controlForegroundColor: Color {
-    taggedColor(
-      .controlForegroundColor,
-      in: bundle,
-      prefix: prefix,
-      default: Color.orange // .lighterDarker(by: 0.4)
-    )
-  }
+  public var controlForegroundColor: Color = .clear
   /// The color of any text components of the control
-  public var textColor: Color {
-    taggedColor(
-      .textColor,
-      in: bundle,
-      prefix: prefix,
-      default: Color.orange.mix_shim(with: Color.black, by: 0.15)
-    )
-  }
+  public var textColor: Color = .clear
   /// The background color to use for the value editor box
-  public var editorBackgroundColor: Color {
-    taggedColor(
-      .editorBackgroundColor,
-      in: bundle,
-      prefix: prefix,
-      defaults: Color.gray.lighterDarker(by: 0.70)
-    )
-  }
+  public var editorBackgroundColor: Color = .clear
   /// The color to use for the Cancel button in the editor box
-  public var editorCancelButtonColor: Color {
-    taggedColor(
-      .editorCancelButtonColor,
-      in: bundle,
-      prefix: prefix,
-      default: Color.blue
-    )
-  }
+  public var editorCancelButtonColor: Color = .clear
   /// The color to use for the OK button in the editor box
-  public var editorOKButtonColor: Color {
-    taggedColor(
-      .editorOKButtonColor,
-      in: bundle,
-      prefix: prefix,
-      default: Color.blue
-    )
-  }
+  public var editorOKButtonColor: Color = .clear
   /// The font to use for any text components of the control
   public var font: Font = .callout
   /// The indicator to use for a toggle control when the value is `true`
@@ -154,10 +108,18 @@ public struct Theme: Sendable, Equatable {
   /**
    Initialize instance.
 
+   - parameter colorScheme the value from `@WEnvironment(\.colorScheme)` to use for color selection
    - parameter prefix a string to prepend to predefined asset names
    - parameter bundle the Bundle to use for assets
    - parameter controlTrackStrokeStyle the stroke style to use when drawing the background track of a knob
    - parameter controlValueStrokeStyle the stroke style to use when drawing the value track of a knob
+   - parameter controlIndicatorLength the length of the indicator line
+   - parameter controlTitleGap padding between the control arcs and the title
+   - parameter controlIndicatorStartAngle the start angle of the control arc
+   - parameter controlIndicatorEndAngle the end angle of the control arc
+   - parameter font the font to use for the title and value displays
+   - parameter touchSensitivity multiples of control height necessary to change the value from `minimumValue` to `maximumValue`
+   - parameter maxChangeRegionWidthPercentage fraction of control width that will operate with max `touchSensitivity`
    */
   public init(
     colorScheme: ColorScheme = .light,
@@ -170,7 +132,6 @@ public struct Theme: Sendable, Equatable {
     controlIndicatorStartAngle: Angle = Angle(degrees: 40.0),
     controlIndicatorEndAngle: Angle = Angle(degrees: 320.0),
     font: Font = .callout,
-    parameterValueChanged: ((AUParameterAddress) -> Void)? = nil,
     touchSensitivity: Double = 2.0,
     maxChangeRegionWidthPercentage: Double = 0.1
   ) {
@@ -189,12 +150,25 @@ public struct Theme: Sendable, Equatable {
     self.controlIndicatorEndAngle = controlIndicatorEndAngle
     self.controlIndicatorStartAngleNormalized = controlIndicatorStartAngle.normalized
     self.controlIndicatorEndAngleNormalized = controlIndicatorEndAngle.normalized
+
+    self.controlBackgroundColor = taggedColor(
+      .controlBackgroundColor,
+      defaults: [
+        Color.gray.mix(with: Color.white, by: 0.5),
+        Color.black.mix(with: Color.white, by: 0.2)
+      ]
+    )
+    self.controlForegroundColor = taggedColor(.controlForegroundColor, default: Color.orange)
+    self.textColor = taggedColor(.textColor, default: Color.orange.mix(with: Color.black, by: 0.15))
+    self.editorBackgroundColor = taggedColor(.editorBackgroundColor, defaults: Color.gray.lighterDarker(by: 0.70))
+    self.editorCancelButtonColor = taggedColor(.editorCancelButtonColor, default: Color.blue)
+    self.editorOKButtonColor = taggedColor(.editorOKButtonColor, default: Color.blue)
   }
 }
 
-private extension Theme {
+extension Theme {
 
-  enum ColorTag: String {
+  public enum ColorTag: String {
     case controlBackgroundColor
     case controlForegroundColor
     case editorBackgroundColor
@@ -203,21 +177,21 @@ private extension Theme {
     case textColor
   }
 
-  func colorAssetName(prefix: String, tag: ColorTag) -> String {
-    return (prefix.isEmpty ? prefix : prefix + "_") + tag.rawValue
-  }
-
-  func taggedColor(_ tag: ColorTag, in bundle: Bundle?, prefix: String, default: Color) -> Color {
+  public func taggedColor(_ tag: ColorTag, default: Color) -> Color {
     guard let bundle = bundle else { return `default` }
     return Color(named: colorAssetName(prefix: prefix, tag: tag), bundle: bundle) ?? `default`
   }
 
-  func taggedColor(_ tag: ColorTag, in bundle: Bundle?, prefix: String, defaults: [Color]) -> Color {
+  public func taggedColor(_ tag: ColorTag, defaults: [Color]) -> Color {
     guard let bundle = bundle else { return defaults[colorScheme == .light ? 0 : 1] }
     return Color(named: colorAssetName(prefix: prefix, tag: tag), bundle: bundle) ?? defaults[colorScheme == .light ? 0 : 1]
   }
 
-  func color(tag: ColorTag) -> Color {
+  private func colorAssetName(prefix: String, tag: ColorTag) -> String {
+    return (prefix.isEmpty ? prefix : prefix + "_") + tag.rawValue
+  }
+
+  private func color(tag: ColorTag) -> Color {
     switch tag {
     case .controlBackgroundColor: return controlBackgroundColor
     case .controlForegroundColor: return controlForegroundColor
@@ -230,6 +204,7 @@ private extension Theme {
 }
 
 extension Theme {
+
   public func endTrim(for norm: Double) -> Double {
     Angle(radians: norm * controlIndicatorStartEndSpanRadians + controlIndicatorStartAngle.radians).normalized
   }
@@ -238,14 +213,14 @@ extension Theme {
 extension Color {
   func darkerLighter(by amount: Double) -> [Color] {
     [
-      self.mix_shim(with: .black, by: amount),
-      self.mix_shim(with: .white, by: amount)
+      self.mix(with: .black, by: amount),
+      self.mix(with: .white, by: amount)
     ]
   }
   func lighterDarker(by amount: Double) -> [Color] {
     [
-      self.mix_shim(with: .white, by: amount),
-      self.mix_shim(with: .black, by: amount)
+      self.mix(with: .white, by: amount),
+      self.mix(with: .black, by: amount)
     ]
   }
 }

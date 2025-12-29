@@ -165,26 +165,31 @@ struct EnvelopeFeature {
 
 struct EnvelopeView: View {
   @Bindable private var store: StoreOf<EnvelopeFeature>
-  let title: String
-
   @Environment(\.colorScheme) private var colorScheme
-
-  private var theme: Theme {
-    var theme = Theme()
-    theme.controlTrackStrokeStyle = StrokeStyle(lineWidth: 5, lineCap: .round)
-    theme.controlValueStrokeStyle = StrokeStyle(lineWidth: 3, lineCap: .round)
-    theme.toggleOnIndicatorSystemName = "arrowtriangle.down.fill"
-    theme.toggleOffIndicatorSystemName = "arrowtriangle.down"
-    return theme
-  }
+  private let title: String
 
   init(store: StoreOf<EnvelopeFeature>, title: String) {
     self.store = store
     self.title = title
   }
 
+  private func theme() -> Theme {
+    var theme = Theme(colorScheme: colorScheme)
+    theme.controlTrackStrokeStyle = StrokeStyle(lineWidth: 5, lineCap: .round)
+    theme.controlValueStrokeStyle = StrokeStyle(lineWidth: 3, lineCap: .round)
+
+    if self.title == "Mod" {
+      theme.controlForegroundColor = theme.taggedColor(.controlForegroundColor, default: .red)
+      theme.textColor = theme.taggedColor(.textColor, default: Color.red.mix(with: Color.black, by: 0.15))
+      theme.toggleOnIndicatorSystemName = "arrowtriangle.down.fill"
+      theme.toggleOffIndicatorSystemName = "arrowtriangle.down"
+    }
+
+    return theme
+  }
+
   var body: some View {
-    EffectsContainer(
+    NamedKnobCollectionContainer(
       enabled: store.enabled.isOn,
       title: title,
       onOff: ToggleView(store: store.scope(state: \.enabled, action: \.enabled)),
@@ -199,6 +204,7 @@ struct EnvelopeView: View {
         KnobView(store: store.scope(state: \.release, action: \.release))
       }
     }
+    .auv3ControlsTheme(theme())
   }
 }
 
@@ -207,16 +213,6 @@ struct EnvelopeViewPreview: PreviewProvider {
   static var previews: some View {
     let vol = EnvelopeFeature(parameterBase: 100)
     let mod = EnvelopeFeature(parameterBase: 200)
-    @Environment(\.colorScheme) var colorScheme
-
-    var theme: Theme {
-      var theme = Theme()
-      theme.controlTrackStrokeStyle = StrokeStyle(lineWidth: 5, lineCap: .round)
-      theme.controlValueStrokeStyle = StrokeStyle(lineWidth: 3, lineCap: .round)
-      theme.toggleOnIndicatorSystemName = "arrowtriangle.down.fill"
-      theme.toggleOffIndicatorSystemName = "arrowtriangle.down"
-      return theme
-    }
 
     return NavigationStack {
       VStack {
@@ -231,6 +227,5 @@ struct EnvelopeViewPreview: PreviewProvider {
       }
       .knobValueEditor()
     }
-    .auv3ControlsTheme(theme)
   }
 }

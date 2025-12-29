@@ -19,9 +19,11 @@ extension Color {
    - 6-characters (24-bit RGB) with 8 bits per channel
    - 8-characters (32-bit ARGB) with 8 bits per each channel
 
+   Skips prefixes "0x" or "#" when parsing.
+
    - parameter hex: the color specification to decode
    */
-  public init?(hex: String) {
+  init?(hex: String) {
     self.init(hex: Substring(hex))
   }
 
@@ -32,9 +34,11 @@ extension Color {
    - 6-characters (24-bit RGB) with 8 bits per RGB channel
    - 8-characters (32-bit ARGB) with 8 bits per RGB channel + alpha
 
+   Skips prefixes "0x" or "#" when parsing.
+
    - parameter hex: the color specification to decode
    */
-  public init?(hex: Substring) {
+  init?(hex: Substring) {
 
     func dropPrefix(_ hex: Substring) -> Substring {
       var hex = hex
@@ -92,10 +96,14 @@ extension Color {
 #else
     return nil
 #endif
-    print("Color", self.description)
   }
 
-  /// Convenience boolean check for existence of a color asset.
+  /**
+   Look for a color asset with a given name, returning `true` if found.
+
+   - parameter named: the name to look for
+   - parameter bundle: where to look for the asset
+   */
   static func assetExists(named name: String, bundle: Bundle = .main) -> Bool {
 #if canImport(UIKit)
     return UIColor(named: name, in: bundle, compatibleWith: nil) != nil
@@ -105,16 +113,6 @@ extension Color {
     return false
 #endif
   }
-}
-
-extension String {
-
-  /**
-   Attempt to parse string contents as a color specification
-
-   - returns: Color instance if contents is a valid color specification
-   */
-  public var color: Color? { Color(hex: self) }
 }
 
 private extension UInt8 {
@@ -136,14 +134,14 @@ private struct ARGB {
 }
 
 #if canImport(UIKit)
-public typealias NativeColor = UIColor
+typealias NativeColor = UIColor
 #elseif canImport(AppKit)
-public typealias NativeColor = NSColor
+typealias NativeColor = NSColor
 #endif
 
-public extension NativeColor {
+extension NativeColor {
 
-  var inRGBColorSpace: NativeColor {
+  private var inRGBColorSpace: NativeColor {
 #if os(macOS)
     return self.usingColorSpace(.sRGB) ?? self
 #else
@@ -151,27 +149,35 @@ public extension NativeColor {
 #endif
   }
 
-  func mix(with target: NativeColor, amount: CGFloat) -> Self {
+  /**
+   Mix with another color to generate a new one
+
+   - parameter rhs: the other color to mix with
+   - parameter fraction: how much of the other color to mix with (0.0-1.0)
+   - returns: new `Color` instance
+   */
+  func mix(with rhs: NativeColor, by fraction: CGFloat) -> Self {
     var r1: CGFloat = 0, g1: CGFloat = 0, b1: CGFloat = 0, a1: CGFloat = 0
     var r2: CGFloat = 0, g2: CGFloat = 0, b2: CGFloat = 0, a2: CGFloat = 0
 
     let us = self.inRGBColorSpace
     us.getRed(&r1, green: &g1, blue: &b1, alpha: &a1)
 
-    let tgt = target.inRGBColorSpace
+    let tgt = rhs.inRGBColorSpace
     tgt.getRed(&r2, green: &g2, blue: &b2, alpha: &a2)
 
     return Self(
-      red: r1 * (1.0 - amount) + r2 * amount,
-      green: g1 * (1.0 - amount) + g2 * amount,
-      blue: b1 * (1.0 - amount) + b2 * amount,
+      red: r1 * (1.0 - fraction) + r2 * fraction,
+      green: g1 * (1.0 - fraction) + g2 * fraction,
+      blue: b1 * (1.0 - fraction) + b2 * fraction,
       alpha: a1
     )
   }
 }
 
-public extension Color {
-  func mix_shim(with target: Color, by amount: CGFloat) -> Color {
-    Color(NativeColor(self).mix(with: NativeColor(target), amount: amount))
+extension Color {
+
+  func mix(with rhs: Color, by fraction: CGFloat) -> Color {
+    Color(NativeColor(self).mix(with: NativeColor(rhs), by: fraction))
   }
 }

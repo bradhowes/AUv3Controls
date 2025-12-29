@@ -7,7 +7,7 @@ import SwiftUI
 /**
  Presents a custom SwiftUI alert-like modal view with a TextField to edit the value of a KnobFeature.
  */
-struct CustomValueEditorHost: ViewModifier {
+struct CustomValueEditor: ViewModifier {
   @Shared(.valueEditorInfo) var valueEditorInfo
   @State private var value: String = ""
   @State private var isEditing: Bool = false
@@ -99,8 +99,8 @@ private struct AlertContent: View {
 }
 
 extension View {
-  public func knobCustomValueEditorHost() -> some View {
-    modifier(CustomValueEditorHost())
+  public func knobCustomValueEditor() -> some View {
+    modifier(CustomValueEditor())
   }
 }
 

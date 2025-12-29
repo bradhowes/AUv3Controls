@@ -5,7 +5,7 @@ import SwiftUI
 /**
  View modifier that adds a 'clear' button that removes all text from a text field and also gives it focus.
  */
-struct ClearButton: ViewModifier {
+struct ClearButtonViewModifier: ViewModifier {
   var text: Binding<String>
   var offset: CGFloat
 
@@ -24,7 +24,7 @@ struct ClearButton: ViewModifier {
 
 extension TextField {
   func clearButton(text: Binding<String>, offset: CGFloat) -> some View {
-    modifier(ClearButton(text: text, offset: offset))
+    modifier(ClearButtonViewModifier(text: text, offset: offset))
   }
 }
 

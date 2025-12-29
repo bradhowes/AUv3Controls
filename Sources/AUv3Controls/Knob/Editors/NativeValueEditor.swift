@@ -6,7 +6,7 @@ import SwiftUI
 /**
  Presents a native SwiftUI alert with a TextField to edit the value of a KnobFeature.
  */
-struct NativeValueEditorHost: ViewModifier {
+struct NativeValueEditor: ViewModifier {
   @Shared(.valueEditorInfo) var valueEditorInfo
   @State private var value: String = ""
   @State private var isEditing: Bool = false
@@ -89,7 +89,7 @@ struct NativeValueEditorHost: ViewModifier {
 }
 
 extension View {
-  public func knobNativeValueEditorHost() -> some View {
-    modifier(NativeValueEditorHost())
+  public func knobNativeValueEditor() -> some View {
+    modifier(NativeValueEditor())
   }
 }

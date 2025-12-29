@@ -4,7 +4,7 @@ import Foundation
 
 extension UUID {
   // From https://gist.github.com/xsleonard/b28573142215e25858bebb9ba907829c
-  public var asUInt64: UInt64 {
+  var asUInt64: UInt64 {
     let bytes = self.uuid
     let first = (UInt64(bytes.0) << (8 * 0) |
        UInt64(bytes.1) << (8 * 1) |
