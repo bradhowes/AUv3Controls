@@ -221,14 +221,8 @@ struct EnvelopeViews: View {
           .border(theme.controlForegroundColor)
       }
     }
-#if useCustomAlert
-    .knobCustomValueEditorHost()
-#elseif useNativeAlet
-    .knobNativeValueEditorHost()
-#else
-    .knobValueEditorHost()
-#endif
     .auv3ControlsTheme(theme)
+    .knobValueEditor()
   }
 }
 

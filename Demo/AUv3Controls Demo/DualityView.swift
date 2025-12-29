@@ -112,73 +112,68 @@ struct DualityView: View {
 
   var body: some View {
     NavigationStack {
-      VStack {
-        GroupBox(label: Label("AUv3Controls", systemImage: "waveform")) {
-          VStack(spacing: 24) {
-            HStack(spacing: 18) {
-              KnobView(store: store3)
-              KnobView(store: store4)
+      ScrollView {
+        VStack {
+          GroupBox(label: Label("AUv3Controls", systemImage: "waveform")) {
+            VStack(spacing: 24) {
+              HStack(spacing: 18) {
+                KnobView(store: store3)
+                KnobView(store: store4)
+              }
+              .frame(height: 120)
+              .offset(y: 12)
+              VStack(alignment: .leading, spacing: 12) {
+                ToggleView(store: store1) { Text(store1.displayName) }
+                ToggleView(store: store2) { Text(store2.displayName) }
+              }
             }
-            .frame(height: 120)
-            .offset(y: 12)
-            VStack(alignment: .leading, spacing: 12) {
-              ToggleView(store: store1) { Text(store1.displayName) }
-              ToggleView(store: store2) { Text(store2.displayName) }
+          }
+          GroupBox(label: Label("Mock MIDI", systemImage: "pianokeys")) {
+            Slider(value: mockAUv3.binding(to: mockAUv3.param3.address, with: $slider3), in: mockAUv3.param3.range)
+            HStack {
+              Button {
+                mockAUv3.param3.setValue(10.0, originator: nil)
+              } label: {
+                Text("Min")
+              }
+              Spacer()
+              Text("Volume: \(String(format: "%6.2f", slider3))")
+              Spacer()
+              Button {
+                mockAUv3.param3.setValue(20_000.0, originator: nil)
+              } label: {
+                Text("Max")
+              }
+            }
+            Slider(value: mockAUv3.binding(to: mockAUv3.param4.address, with: $slider4), in: mockAUv3.param4.range)
+            HStack {
+              Button {
+                mockAUv3.param4.setValue(-50.0, originator: nil)
+              } label: {
+                Text("Min")
+              }
+              Spacer()
+              Text("Pan: \(String(format: "%6.2f", slider4))")
+              Spacer()
+              Button {
+                mockAUv3.param4.setValue(50.0, originator: nil)
+              } label: {
+                Text("Max")
+              }
+            }
+            Toggle(isOn: mockAUv3.binding(to: mockAUv3.param1.address, with: $toggle1)) {
+              Text("Retrigger")
+            }
+            Toggle(isOn: mockAUv3.binding(to: mockAUv3.param2.address, with: $toggle2)) {
+              Text("Monophonic")
             }
           }
         }
-#if useCustomAlert
-        .knobCustomValueEditorHost()
-#elseif useNativeAlet
-        .knobNativeValueEditorHost()
-#else
-        .knobValueEditorHost()
-#endif
-        GroupBox(label: Label("Mock MIDI", systemImage: "pianokeys")) {
-          Slider(value: mockAUv3.binding(to: mockAUv3.param3.address, with: $slider3), in: mockAUv3.param3.range)
-          HStack {
-            Button {
-              mockAUv3.param3.setValue(10.0, originator: nil)
-            } label: {
-              Text("Min")
-            }
-            Spacer()
-            Text("Volume: \(String(format: "%6.2f", slider3))")
-            Spacer()
-            Button {
-              mockAUv3.param3.setValue(20_000.0, originator: nil)
-            } label: {
-              Text("Max")
-            }
-          }
-          Slider(value: mockAUv3.binding(to: mockAUv3.param4.address, with: $slider4), in: mockAUv3.param4.range)
-          HStack {
-            Button {
-              mockAUv3.param4.setValue(-50.0, originator: nil)
-            } label: {
-              Text("Min")
-            }
-            Spacer()
-            Text("Pan: \(String(format: "%6.2f", slider4))")
-            Spacer()
-            Button {
-              mockAUv3.param4.setValue(50.0, originator: nil)
-            } label: {
-              Text("Max")
-            }
-          }
-          Toggle(isOn: mockAUv3.binding(to: mockAUv3.param1.address, with: $toggle1)) {
-            Text("Retrigger")
-          }
-          Toggle(isOn: mockAUv3.binding(to: mockAUv3.param2.address, with: $toggle2)) {
-            Text("Monophonic")
-          }
-        }
-        .padding()
       }
       .navigationTitle(Text("Duality"))
     }
     .auv3ControlsTheme(theme)
+    .knobValueEditor()
   }
 }
 
