@@ -29,18 +29,12 @@ struct NativeValueEditorHost: ViewModifier {
           TextField("New Value", text: $value)
             // .clearButton(text: $value, offset: 14)
             // .textFieldStyle(.roundedBorder)
-            .keyboardType(.numbersAndPunctuation)
             .focused($focusState)
             .numericValueEditing(value: $value, valueEditorInfo: valueEditorInfo)
             .onSubmit { dismiss(accepted: true) }
-//            .onAppear {
-//              focusState = true
-//            }
-//            .onReceive(NotificationCenter.default.publisher(for: UITextField.textDidBeginEditingNotification)) { obj in
-//              if let textField = obj.object as? UITextField {
-//                textField.selectedTextRange = textField.textRange(from: textField.beginningOfDocument, to: textField.endOfDocument)
-//              }
-//            }
+            .onAppear {
+              focusState = true
+            }
           Button {
             dismiss(accepted: true)
           } label: {
