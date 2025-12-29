@@ -14,11 +14,14 @@ struct CustomValueEditorHost: ViewModifier {
   @State private var dismissAction: ((Bool) -> Void)? = nil
 
   private var alertConfig: CustomAlertConfiguration {
+    var config: CustomAlertConfiguration
     if #available(iOS 26, *) {
-      return .liquidGlass
+      config = .liquidGlass
     } else {
-      return .classic
+      config = .classic
     }
+    config = config.alert { $0.titleColor(.gray) }
+    return config.button { $0.tintColor(valueEditorInfo?.theme.textColor ?? .blue) }
   }
 
   func body(content: Content) -> some View {
@@ -43,13 +46,11 @@ struct CustomValueEditorHost: ViewModifier {
             dismissAction?(true)
           } label: {
             Text("OK")
-              .foregroundStyle(valueEditorInfo?.theme.editorOKButtonColor ?? .blue)
           }
           Button(role: .cancel) {
             dismissAction?(false)
           } label: {
             Text("Cancel")
-              .foregroundStyle(valueEditorInfo?.theme.editorCancelButtonColor ?? .blue)
           }
         }
       }
@@ -84,6 +85,7 @@ private struct AlertContent: View {
       .focused($isFocused)
       .numericValueEditing(value: $value, valueEditorInfo: valueEditorInfo)
       .font(.body)
+      .foregroundColor(valueEditorInfo.theme.textColor)
       .padding(4)
       .background {
         RoundedRectangle(cornerRadius: 8)

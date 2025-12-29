@@ -26,7 +26,11 @@ public struct Theme: Sendable, Equatable {
       .controlBackgroundColor,
       in: bundle,
       prefix: prefix,
-      defaults: Color.gray.lighterDarker(by: 0.4)
+      // defaults: Color.gray.lighterDarker(by: 0.4)
+      defaults: [
+        Color.gray.mix_shim(with: Color.white, by: 0.5),
+        Color.black.mix_shim(with: Color.white, by: 0.2)
+      ]
     )
   }
   /// The foreground color to use when drawing the control
@@ -35,7 +39,7 @@ public struct Theme: Sendable, Equatable {
       .controlForegroundColor,
       in: bundle,
       prefix: prefix,
-      defaults: Color.orange.lighterDarker(by: 0.4)
+      default: Color.orange // .lighterDarker(by: 0.4)
     )
   }
   /// The color of any text components of the control
@@ -44,7 +48,7 @@ public struct Theme: Sendable, Equatable {
       .textColor,
       in: bundle,
       prefix: prefix,
-      defaults: Color.orange.darkerLighter(by: 0.4)
+      default: Color.orange.mix_shim(with: Color.black, by: 0.15)
     )
   }
   /// The background color to use for the value editor box
