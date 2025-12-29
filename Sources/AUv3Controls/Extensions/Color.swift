@@ -147,8 +147,11 @@ public extension NativeColor {
     var r1: CGFloat = 0, g1: CGFloat = 0, b1: CGFloat = 0, a1: CGFloat = 0
     var r2: CGFloat = 0, g2: CGFloat = 0, b2: CGFloat = 0, a2: CGFloat = 0
 
-    getRed(&r1, green: &g1, blue: &b1, alpha: &a1)
-    target.getRed(&r2, green: &g2, blue: &b2, alpha: &a2)
+    guard let us = self.usingColorSpace(.sRGB) else { return self }
+    us.getRed(&r1, green: &g1, blue: &b1, alpha: &a1)
+
+    guard let tgt = target.usingColorSpace(.sRGB) else { return self }
+    tgt.getRed(&r2, green: &g2, blue: &b2, alpha: &a2)
 
     return Self(
       red: r1 * (1.0 - amount) + r2 * amount,
