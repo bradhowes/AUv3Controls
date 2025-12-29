@@ -3,12 +3,14 @@ import Sharing
 import SwiftUI
 
 /**
- Presents a custom SwiftUI alert-like modal view with a TextField to edit the value of a KnobFeature.
+ Presents a custom SwiftUI alert-like modal view with a TextField to edit the value of a KnobFeature. Used for experimentation.
+ It lacks some functionality that is provided by CustomAlert package.
  */
 struct ValueEditorHost: ViewModifier {
   @Shared(.valueEditorInfo) var valueEditorInfo
   @FocusState private var focusState: Bool
   @State private var value: String = ""
+
   private var isEditing: Bool { valueEditorInfo?.action == .presented }
 
   func body(content: Content) -> some View {
@@ -16,11 +18,10 @@ struct ValueEditorHost: ViewModifier {
       .disabled(isEditing)
       .overlay {
         if isEditing {
-          Color.black.opacity(0.15)
-            .cornerRadius(10)
+          Color.black.opacity(0.1)
+            .ignoresSafeArea()
         }
       }
-      .clipped()
       .overlay(isEditing ? valueEditor(valueEditorInfo!) : nil)
       .animation(.default, value: isEditing)
       .onChange(of: isEditing) {
@@ -31,26 +32,30 @@ struct ValueEditorHost: ViewModifier {
       }
   }
 
-  @ViewBuilder
   private func valueEditor(_ info: ValueEditorInfo) -> some View {
-    VStack(spacing: 24) {
+    VStack(spacing: 20) {
       Text(info.displayName)
         .font(.headline)
         .foregroundStyle(info.theme.textColor)
-      DecimalTextField(value: $value, focusState: $focusState)
+      TextField("New Value", text: $value)
+        .clearButton(text: $value, offset: 4)
+        .textFieldStyle(.roundedBorder)
+        .focused($focusState)
+        .numericValueEditing(value: $value, valueEditorInfo: info)
         .onSubmit { dismiss(accepted: true) }
-      HStack(spacing: 24) {
-        Button {
-          dismiss(accepted: false)
-        } label: {
-          Text("Cancel")
-            .foregroundStyle(info.theme.editorCancelButtonColor)
-        }
+      HStack(spacing: 32) {
         Button {
           dismiss(accepted: true)
         } label: {
           Text("OK")
             .foregroundStyle(info.theme.editorOKButtonColor)
+            .bold()
+        }
+        Button {
+          dismiss(accepted: false)
+        } label: {
+          Text("Cancel")
+            .foregroundStyle(info.theme.editorCancelButtonColor)
         }
       }
     }
@@ -71,11 +76,5 @@ struct ValueEditorHost: ViewModifier {
       valueEditorInfo.action = .dismissed(accepted ? value : nil)
       $valueEditorInfo.withLock { $0 = valueEditorInfo }
     }
-  }
-}
-
-extension View {
-  public func knobValueEditorHost() -> some View {
-    modifier(ValueEditorHost())
   }
 }

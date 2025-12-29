@@ -229,13 +229,7 @@ struct EnvelopeViewPreview: PreviewProvider {
             .padding(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
         }
       }
-#if useCustomAlert
-      .knobCustomValueEditorHost()
-#elseif useNativeAlet
-      .knobNativeValueEditorHost()
-#else
-      .knobValueEditorHost()
-#endif
+      .knobValueEditor()
     }
     .auv3ControlsTheme(theme)
   }

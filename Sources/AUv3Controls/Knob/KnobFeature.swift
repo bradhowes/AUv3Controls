@@ -241,7 +241,9 @@ private extension KnobFeature {
         id: state.id,
         displayName: state.displayName,
         value: formatter.forEditing(value),
-        theme: theme
+        theme: theme,
+        decimalAllowed: .allowed,
+        signAllowed: normValueTransform.minimumValue < 0.0 ? .allowed : .none
       )
     }
     return .none
@@ -393,13 +395,7 @@ struct KnobViewPreview: PreviewProvider {
           Text("Go to 100")
         }
       }
-#if useCustomAlert
-      .knobCustomValueEditorHost()
-#elseif useNativeAlert
-      .knobNativeValueEditorHost()
-#else
-      .knobValueEditorHost()
-#endif
+      .knobValueEditor()
     }
   }
 }

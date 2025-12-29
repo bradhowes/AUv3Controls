@@ -123,15 +123,6 @@ struct DualityView: View {
             }
           }
         }
-#if useCustomAlert
-        .knobCustomValueEditorHost()
-#elseif useNativeAlet
-        .knobNativeValueEditorHost()
-#else
-        .knobValueEditorHost()
-#endif
-        .padding()
-
         GroupBox(label: Label("Mock MIDI", systemImage: "pianokeys")) {
           Slider(value: mockAUv3.binding(to: mockAUv3.param3.address, with: $slider3), in: mockAUv3.param3.range)
           HStack {
@@ -177,6 +168,7 @@ struct DualityView: View {
       .navigationTitle(Text("Duality"))
     }
     .auv3ControlsTheme(theme)
+    .knobValueEditor(.customPrompt)
   }
 }
 

@@ -111,7 +111,16 @@ final class KnobFeatureTests: XCTestCase {
     }
 
     await ctx.test.send(.title(.titleTapped(ctx.theme))) {
-      $0.$valueEditorInfo.withLock { $0 = ValueEditorInfo(id: ctx.param.address, displayName: ctx.param.displayName, value: "36", theme: ctx.theme) }
+      $0.$valueEditorInfo.withLock {
+        $0 = ValueEditorInfo(
+          id: ctx.param.address,
+          displayName: ctx.param.displayName,
+          value: "36",
+          theme: ctx.theme,
+          decimalAllowed: .allowed,
+          signAllowed: ctx.param.minValue < 0.0 ? .allowed : .none
+        )
+      }
     }
 
     await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.showValueMilliseconds))

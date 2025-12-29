@@ -4,9 +4,9 @@ import AudioUnit
 import Foundation
 
 public struct NormValueTransform: Equatable {
-  private let minimumValue: Double
-  private let maximumValue: Double
-  private let logScale: Bool
+  public let minimumValue: Double
+  public let maximumValue: Double
+  public let logScale: Bool
 
   public init(parameter: AUParameter) {
     self.minimumValue = Double(parameter.minValue)

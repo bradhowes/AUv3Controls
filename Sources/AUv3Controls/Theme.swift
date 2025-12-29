@@ -22,56 +22,56 @@ public struct Theme: Sendable, Equatable {
   public let touchSensitivity: Double
   /// The background color to use when drawing the control
   public var controlBackgroundColor: Color {
-    Self.taggedColor(
+    taggedColor(
       .controlBackgroundColor,
       in: bundle,
       prefix: prefix,
-      default: .gray
+      defaults: Color.gray.lighterDarker(by: 0.4)
     )
   }
   /// The foreground color to use when drawing the control
   public var controlForegroundColor: Color {
-    Self.taggedColor(
+    taggedColor(
       .controlForegroundColor,
       in: bundle,
       prefix: prefix,
-      default: .orange
+      defaults: Color.orange.lighterDarker(by: 0.4)
     )
   }
   /// The color of any text components of the control
   public var textColor: Color {
-    Self.taggedColor(
+    taggedColor(
       .textColor,
       in: bundle,
       prefix: prefix,
-      default: .orange
+      defaults: Color.orange.darkerLighter(by: 0.4)
     )
   }
   /// The background color to use for the value editor box
   public var editorBackgroundColor: Color {
-    Self.taggedColor(
+    taggedColor(
       .editorBackgroundColor,
       in: bundle,
       prefix: prefix,
-      default: .gray
+      defaults: Color.gray.lighterDarker(by: 0.70)
     )
   }
   /// The color to use for the Cancel button in the editor box
   public var editorCancelButtonColor: Color {
-    Self.taggedColor(
+    taggedColor(
       .editorCancelButtonColor,
       in: bundle,
       prefix: prefix,
-      default: .yellow
+      default: Color.blue
     )
   }
-    /// The color to use for the OK button in the editor box
+  /// The color to use for the OK button in the editor box
   public var editorOKButtonColor: Color {
-    Self.taggedColor(
+    taggedColor(
       .editorOKButtonColor,
       in: bundle,
       prefix: prefix,
-      default: .yellow
+      default: Color.blue
     )
   }
   /// The font to use for any text components of the control
@@ -145,14 +145,18 @@ public struct Theme: Sendable, Equatable {
    */
   public let maxChangeRegionWidthPercentage: Double
 
+  private let colorScheme: ColorScheme
+
   /**
    Initialize instance.
 
+   - parameter prefix a string to prepend to predefined asset names
    - parameter bundle the Bundle to use for assets
    - parameter controlTrackStrokeStyle the stroke style to use when drawing the background track of a knob
    - parameter controlValueStrokeStyle the stroke style to use when drawing the value track of a knob
    */
   public init(
+    colorScheme: ColorScheme = .light,
     prefix: String = "",
     bundle: Bundle? = nil,
     controlTrackStrokeStyle: StrokeStyle = .init(lineWidth: 10.0, lineCap: .round),
@@ -166,6 +170,7 @@ public struct Theme: Sendable, Equatable {
     touchSensitivity: Double = 2.0,
     maxChangeRegionWidthPercentage: Double = 0.1
   ) {
+    self.colorScheme = colorScheme
     self.bundle = bundle
     self.prefix = prefix
     self.controlTrackStrokeStyle = controlTrackStrokeStyle
@@ -194,13 +199,18 @@ private extension Theme {
     case textColor
   }
 
-  static func colorAssetName(prefix: String, tag: ColorTag) -> String {
+  func colorAssetName(prefix: String, tag: ColorTag) -> String {
     return (prefix.isEmpty ? prefix : prefix + "_") + tag.rawValue
   }
 
-  static func taggedColor(_ tag: ColorTag, in bundle: Bundle?, prefix: String, default: Color) -> Color {
+  func taggedColor(_ tag: ColorTag, in bundle: Bundle?, prefix: String, default: Color) -> Color {
     guard let bundle = bundle else { return `default` }
     return Color(named: colorAssetName(prefix: prefix, tag: tag), bundle: bundle) ?? `default`
+  }
+
+  func taggedColor(_ tag: ColorTag, in bundle: Bundle?, prefix: String, defaults: [Color]) -> Color {
+    guard let bundle = bundle else { return defaults[colorScheme == .light ? 0 : 1] }
+    return Color(named: colorAssetName(prefix: prefix, tag: tag), bundle: bundle) ?? defaults[colorScheme == .light ? 0 : 1]
   }
 
   func color(tag: ColorTag) -> Color {
@@ -218,5 +228,45 @@ private extension Theme {
 extension Theme {
   public func endTrim(for norm: Double) -> Double {
     Angle(radians: norm * controlIndicatorStartEndSpanRadians + controlIndicatorStartAngle.radians).normalized
+  }
+}
+
+extension Color {
+  func darkerLighter(by amount: Double) -> [Color] {
+    [
+      self.mix_shim(with: .black, by: amount),
+      self.mix_shim(with: .white, by: amount)
+    ]
+  }
+  func lighterDarker(by amount: Double) -> [Color] {
+    [
+      self.mix_shim(with: .white, by: amount),
+      self.mix_shim(with: .black, by: amount)
+    ]
+  }
+}
+
+#Preview {
+  @Previewable @Environment(\.colorScheme) var colorScheme
+  let theme = Theme(colorScheme: colorScheme)
+  VStack {
+    ZStack {
+      VStack {
+        Text("controlBackgroundColor")
+          .foregroundStyle(theme.controlBackgroundColor)
+        Text("controlForegroundColor")
+          .foregroundStyle(theme.controlForegroundColor)
+        Text("textColor")
+          .foregroundStyle(theme.textColor)
+        Text("editorBackgroundColor")
+          .foregroundStyle(theme.editorBackgroundColor)
+        Text("editorCancelButtonColor")
+          .foregroundStyle(theme.editorCancelButtonColor)
+          .background(theme.editorBackgroundColor)
+        Text("editorOKButtonColor")
+          .foregroundStyle(theme.editorOKButtonColor)
+          .background(theme.editorBackgroundColor)
+      }
+    }
   }
 }

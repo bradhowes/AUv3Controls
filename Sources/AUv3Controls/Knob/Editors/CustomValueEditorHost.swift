@@ -1,46 +1,6 @@
-#if useCustomAlert
-
 import ComposableArchitecture
 import CustomAlert
 import SwiftUI
-
-/**
- A custom SwiftUI alert-like modal view with a TextField to edit the value of a KnobFeature.
- */
-struct CustomValueEditorView: View {
-  @Shared(.valueEditorInfo) var valueEditorInfo
-  @State private var displayName: String = ""
-  private var value: Binding<String>
-  @FocusState private var isFocused
-  private let dismiss: (Bool) -> Void
-
-  init(value: Binding<String>, dismiss: @escaping (Bool) -> Void) {
-    self.value = value
-    self.dismiss = dismiss
-  }
-
-  var body: some View {
-    Text(displayName)
-      .font(.system(size: 18))
-      .foregroundStyle(theme.textColor)
-    TextField("New Value", text: value)
-      .clearButton(text: value, offset: 8)
-      .textFieldStyle(.roundedBorder)
-#if os(iOS)
-      .keyboardType(.decimalPad)
-      .onSubmit { dismiss(true) }
-#endif
-      .focused($isFocused)
-      .lineLimit(1)
-      .multilineTextAlignment(.leading)
-      .font(.body)
-      .padding(8)
-      .onAppear {
-        isFocused = true
-        displayName = valueEditorInfo?.displayName ?? "???"
-      }
-  }
-}
 
 /**
  Presents a custom SwiftUI alert-like modal view with a TextField to edit the value of a KnobFeature.
@@ -49,43 +9,88 @@ struct CustomValueEditorHost: ViewModifier {
   @Shared(.valueEditorInfo) var valueEditorInfo
   @State private var value: String = ""
   @State private var isEditing: Bool = false
+  @State private var dismissAction: ((Bool) -> Void)? = nil
+
+  private var alertConfig: CustomAlertConfiguration {
+    if #available(iOS 26, *) {
+      return .liquidGlass
+    } else {
+      return .classic
+    }
+  }
 
   func body(content: Content) -> some View {
     content
       .onChange(of: valueEditorInfo) {
         if let valueEditorInfo {
-          isEditing = true
+          isEditing = valueEditorInfo.action == .presented
           value = valueEditorInfo.value
+          dismissAction = { accepted in self.dismiss(accepted: accepted) }
         } else {
           isEditing = false
+          dismissAction = nil
         }
       }
-      .customAlert(isPresented: $isEditing) {
-        CustomValueEditorView(value: $value, dismiss: dismiss)
+      .customAlert(valueEditorInfo?.displayName ?? "", isPresented: $isEditing) {
+        if let valueEditorInfo {
+          AlertContent(value: $value, valueEditorInfo: valueEditorInfo, dismissAction: dismissAction)
+        }
       } actions: {
         MultiButton {
           Button {
-            dismiss(accepted: true)
+            dismissAction?(true)
           } label: {
             Text("OK")
-              .foregroundStyle(valueEditorInfo!.theme.editorOKButtonColor)
+              .foregroundStyle(valueEditorInfo?.theme.editorOKButtonColor ?? .blue)
           }
           Button(role: .cancel) {
-            dismiss(accepted: false)
+            dismissAction?(false)
           } label: {
             Text("Cancel")
-              .foregroundStyle(valueEditorInfo!.theme.editorCancelButtonColor)
+              .foregroundStyle(valueEditorInfo?.theme.editorCancelButtonColor ?? .blue)
           }
         }
       }
+      .configureCustomAlert(alertConfig)
   }
 
   private func dismiss(accepted: Bool) {
-    if var valueEditorInfo {
-      // Communicate the change to the knob -- the knob is responsible for setting the shared value to nil.
-      valueEditorInfo.action = .dismissed(accepted ? value : nil)
-      $valueEditorInfo.withLock { $0 = valueEditorInfo }
-    }
+    // Communicate the change to the knob -- the knob is responsible for setting the shared value to nil.
+    $valueEditorInfo.withLock { $0?.action = .dismissed(accepted ? value : nil) }
+  }
+}
+
+/**
+ Custom view that contains the TextField -- necessary to get field focusing to work properly.
+ */
+private struct AlertContent: View {
+  @Binding private var value: String
+  private let valueEditorInfo: ValueEditorInfo
+  private let dismissAction: ((Bool) -> Void)?
+  @FocusState private var isFocused
+
+  init(value: Binding<String>, valueEditorInfo: ValueEditorInfo, dismissAction: ((Bool) -> Void)?) {
+    self._value = value
+    self.valueEditorInfo = valueEditorInfo
+    self.dismissAction = dismissAction
+    self.isFocused = isFocused
+  }
+
+  var body: some View {
+    TextField("New Value", text: $value)
+      .clearButton(text: $value, offset: 8)
+      .focused($isFocused)
+      .numericValueEditing(value: $value, valueEditorInfo: valueEditorInfo)
+      .font(.body)
+      .padding(4)
+      .background {
+        RoundedRectangle(cornerRadius: 8)
+          .fill(Color(uiColor: .systemBackground))
+      }
+      .onSubmit { dismissAction?(true) }
+      .onAppear {
+        isFocused = true
+      }
   }
 }
 
@@ -94,5 +99,3 @@ extension View {
     modifier(CustomValueEditorHost())
   }
 }
-
-#endif

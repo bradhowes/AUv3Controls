@@ -152,6 +152,6 @@ struct TitleViewPreview: PreviewProvider {
       TitleView(store: store)
         .task { store.send(.valueChanged(1.24), animation: .linear) }
     }
-    .knobValueEditorHost()
+    .knobValueEditor()
   }
 }

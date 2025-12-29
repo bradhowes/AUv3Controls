@@ -25,50 +25,57 @@ struct NativeValueEditorHost: ViewModifier {
       }
 #if os(iOS)
       .alert(valueEditorInfo?.displayName ?? "???", isPresented: $isEditing) {
-        TextField("New Value", text: $value)
-          .keyboardType(.decimalPad)
-          .focused($focusState)
-          .onSubmit { dismiss(accepted: true) }
-          .onAppear {
-            focusState = true
+        if let valueEditorInfo {
+          TextField("New Value", text: $value)
+            // .clearButton(text: $value, offset: 14)
+            // .textFieldStyle(.roundedBorder)
+            .keyboardType(.numbersAndPunctuation)
+            .focused($focusState)
+            .numericValueEditing(value: $value, valueEditorInfo: valueEditorInfo)
+            .onSubmit { dismiss(accepted: true) }
+//            .onAppear {
+//              focusState = true
+//            }
+//            .onReceive(NotificationCenter.default.publisher(for: UITextField.textDidBeginEditingNotification)) { obj in
+//              if let textField = obj.object as? UITextField {
+//                textField.selectedTextRange = textField.textRange(from: textField.beginningOfDocument, to: textField.endOfDocument)
+//              }
+//            }
+          Button {
+            dismiss(accepted: true)
+          } label: {
+            Text("OK")
+              .foregroundStyle(valueEditorInfo.theme.editorOKButtonColor)
           }
-          .onReceive(NotificationCenter.default.publisher(for: UITextField.textDidBeginEditingNotification)) { obj in
-            if let textField = obj.object as? UITextField {
-              textField.selectedTextRange = textField.textRange(from: textField.beginningOfDocument, to: textField.endOfDocument)
-            }
+          Button(role: .cancel) {
+            dismiss(accepted: false)
+          } label: {
+            Text("Cancel")
+              .foregroundStyle(valueEditorInfo.theme.editorCancelButtonColor)
           }
-        Button {
-          dismiss(accepted: true)
-        } label: {
-          Text("OK")
-            .foregroundStyle(valueEditorInfo!.theme.editorOKButtonColor)
-        }
-        Button(role: .cancel) {
-          dismiss(accepted: false)
-        } label: {
-          Text("Cancel")
-            .foregroundStyle(valueEditorInfo!.theme.editorCancelButtonColor)
         }
       }
 #endif
 #if os(macOS)
       .sheet(isPresented: $isEditing) {
         VStack(spacing: 16) {
-          Text(valueEditorInfo?.displayName ?? "???")
-          TextField("", text: $value)
-            .onSubmit { dismiss(accepted: true) }
-          HStack(spacing: 24) {
-            Button(role: .cancel) {
-              dismiss(accepted: false)
-            } label: {
-              Text("Cancel")
-                .foregroundStyle(valueEditorInfo!.theme.editorCancelButtonColor)
-            }
-            Button {
-              dismiss(accepted: true)
-            } label: {
-              Text("OK")
-                .foregroundStyle(valueEditorInfo!.theme.editorOKButtonColor)
+          if let valueEditorInfo {
+            Text(valueEditorInfo.displayName)
+            TextField("", text: $value)
+              .onSubmit { dismiss(accepted: true) }
+            HStack(spacing: 32) {
+              Button {
+                dismiss(accepted: true)
+              } label: {
+                Text("OK")
+                  .foregroundStyle(valueEditorInfo.theme.editorOKButtonColor)
+              }
+              Button(role: .cancel) {
+                dismiss(accepted: false)
+              } label: {
+                Text("Cancel")
+                  .foregroundStyle(valueEditorInfo.theme.editorCancelButtonColor)
+              }
             }
           }
         }

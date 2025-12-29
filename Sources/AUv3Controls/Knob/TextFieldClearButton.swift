@@ -44,7 +44,7 @@ private struct Demo: View {
 #if os(iOS)
         .textInputAutocapitalization(.never)
 #endif
-        .textFieldStyle(.roundedBorder)
+        // .textFieldStyle(.roundedBorder)
         .focused($displayNameFieldIsFocused)
         .disableAutocorrection(true)
     }
