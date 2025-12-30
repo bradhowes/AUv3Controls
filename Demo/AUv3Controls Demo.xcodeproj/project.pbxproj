@@ -17,10 +17,8 @@
 		BD2F12D82B0175C400E5D0CE /* AUv3Controls_DemoUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD2F12D72B0175C400E5D0CE /* AUv3Controls_DemoUITestsLaunchTests.swift */; };
 		BD2F12E62B0175ED00E5D0CE /* AUv3Controls in Frameworks */ = {isa = PBXBuildFile; productRef = BD2F12E52B0175ED00E5D0CE /* AUv3Controls */; };
 		BD2F12E92B0176F800E5D0CE /* AUv3Controls in Frameworks */ = {isa = PBXBuildFile; productRef = BD2F12E82B0176F800E5D0CE /* AUv3Controls */; };
-		BD4F94E02C8E09C100E5BA37 /* EnvelopeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD4F94DF2C8E09C100E5BA37 /* EnvelopeView.swift */; };
 		BD7A93512CFA03C300B848BB /* AUv3Controls in Frameworks */ = {isa = PBXBuildFile; productRef = BD7A93502CFA03C300B848BB /* AUv3Controls */; };
 		BDEB90542E19C37000BF16B5 /* SwiftUIIntrospect in Frameworks */ = {isa = PBXBuildFile; productRef = BDEB90532E19C37000BF16B5 /* SwiftUIIntrospect */; };
-		BDEC132A2B95790600789D13 /* DualityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD2F12BB2B0175C300E5D0CE /* DualityView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -43,7 +41,6 @@
 /* Begin PBXFileReference section */
 		BD2F12B62B0175C300E5D0CE /* AUv3Controls Demo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "AUv3Controls Demo.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		BD2F12B92B0175C300E5D0CE /* AUv3Controls_DemoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AUv3Controls_DemoApp.swift; sourceTree = "<group>"; };
-		BD2F12BB2B0175C300E5D0CE /* DualityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DualityView.swift; sourceTree = "<group>"; };
 		BD2F12BD2B0175C400E5D0CE /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		BD2F12BF2B0175C400E5D0CE /* AUv3Controls_Demo.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AUv3Controls_Demo.entitlements; sourceTree = "<group>"; };
 		BD2F12C12B0175C400E5D0CE /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
@@ -52,7 +49,6 @@
 		BD2F12D12B0175C400E5D0CE /* AUv3Controls DemoUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "AUv3Controls DemoUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		BD2F12D52B0175C400E5D0CE /* AUv3Controls_DemoUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AUv3Controls_DemoUITests.swift; sourceTree = "<group>"; };
 		BD2F12D72B0175C400E5D0CE /* AUv3Controls_DemoUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AUv3Controls_DemoUITestsLaunchTests.swift; sourceTree = "<group>"; };
-		BD4F94DF2C8E09C100E5BA37 /* EnvelopeView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EnvelopeView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -110,8 +106,6 @@
 			isa = PBXGroup;
 			children = (
 				BD2F12B92B0175C300E5D0CE /* AUv3Controls_DemoApp.swift */,
-				BD2F12BB2B0175C300E5D0CE /* DualityView.swift */,
-				BD4F94DF2C8E09C100E5BA37 /* EnvelopeView.swift */,
 				BD2F12BD2B0175C400E5D0CE /* Assets.xcassets */,
 				BD2F12BF2B0175C400E5D0CE /* AUv3Controls_Demo.entitlements */,
 				BD2F12C02B0175C400E5D0CE /* Preview Content */,
@@ -286,8 +280,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BDEC132A2B95790600789D13 /* DualityView.swift in Sources */,
-				BD4F94E02C8E09C100E5BA37 /* EnvelopeView.swift in Sources */,
 				BD2F12BA2B0175C300E5D0CE /* AUv3Controls_DemoApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
