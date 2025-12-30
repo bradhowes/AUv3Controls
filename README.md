@@ -30,7 +30,8 @@ The other control is a toggle -- [ToggleFeature][toggle]. It simply offers a boo
 ![][knob-demo]
 
 * Vertical dragging changes the value of the knob
-* Moving horizontally away from the center of the knob will increase resolution of vertical movements allowing for finer adjustments to the knob's value
+* Moving horizontally away from the center of the knob will increase resolution of vertical movements allowing for finer 
+adjustments to the knob's value
 * Touching the title will show an editor to allow typing a value
 
 The toggle view just works on boolean values:
@@ -119,4 +120,4 @@ folder.
 [knob-demo]: media/knob.gif?raw=true
 [toggle-demo]: media/toggle.gif?raw=true
 [envelopes]: media/envelopes.gif?raw=true
-[demo-code]: https://github.com/bradhowes/AUv3Controls/blob/8edceeaa665f5094000ed89eff8fd5d66f4a0943/Sources/AUv3Controls/Examples/Envelope.swift#L166
+[demo-code]: https://github.com/bradhowes/AUv3Controls/blob/88cabbe24566d955c3b3322fb63796ede795267c/Sources/AUv3Controls/Examples/Envelope.swift#L220

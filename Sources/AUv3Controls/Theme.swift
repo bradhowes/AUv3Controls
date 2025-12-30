@@ -161,8 +161,8 @@ public struct Theme: Sendable, Equatable {
     self.controlForegroundColor = taggedColor(.controlForegroundColor, default: Color.orange)
     self.textColor = taggedColor(.textColor, default: Color.orange.mix(with: Color.black, by: 0.15))
     self.editorBackgroundColor = taggedColor(.editorBackgroundColor, defaults: Color.gray.lighterDarker(by: 0.70))
-    self.editorCancelButtonColor = taggedColor(.editorCancelButtonColor, default: Color.blue)
-    self.editorOKButtonColor = taggedColor(.editorOKButtonColor, default: Color.blue)
+    self.editorCancelButtonColor = taggedColor(.editorCancelButtonColor, default: self.textColor)
+    self.editorOKButtonColor = taggedColor(.editorOKButtonColor, default: self.textColor)
   }
 }
 

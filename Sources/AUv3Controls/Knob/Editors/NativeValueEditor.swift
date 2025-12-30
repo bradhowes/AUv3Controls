@@ -119,7 +119,7 @@ struct ThemedButtonStyle: ButtonStyle {
     configuration.label
       .font(.headline)
       .padding(10)
-      .foregroundColor(theme.textColor)
+      .foregroundColor(theme.color(tag: tag))
       .background(configuration.isPressed ? pressedColor : backgroundColor)
       .cornerRadius(5)
   }
