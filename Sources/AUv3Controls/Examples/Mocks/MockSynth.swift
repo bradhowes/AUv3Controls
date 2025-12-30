@@ -3,15 +3,17 @@
 import AVFoundation
 import SwiftUI
 
-class MockAUv3 {
+class MockSynth {
   let paramTree: AUParameterTree
 
-  let retrigger: AUParameter // boolean parameter
-  let monophonic: AUParameter // boolean parameter
+  // Duality parameters
+  let retrigger: AUParameter
+  let monophonic: AUParameter
 
-  let frequency: AUParameter // float parameter
-  let pan: AUParameter // float parameter
+  let frequency: AUParameter
+  let pan: AUParameter
 
+  // Amp envelope parameters
   let ampDelay: AUParameter
   let ampAttack: AUParameter
   let ampHold: AUParameter
@@ -19,6 +21,7 @@ class MockAUv3 {
   let ampSustain: AUParameter
   let ampRelease: AUParameter
 
+  // Mod envelope parameters
   let modDelay: AUParameter
   let modAttack: AUParameter
   let modHold: AUParameter
@@ -31,16 +34,11 @@ class MockAUv3 {
   private var bindings: [AUParameterAddress: Binding<Double>] = [:]
 
   init() {
-    let retrigger = AUParameterTree.createBoolean(withIdentifier: "Retrigger", name: "Retrigger", address: 1)
-    self.retrigger = retrigger
-    let monophonic = AUParameterTree.createBoolean(withIdentifier: "Monophonic", name: "Monophonic", address: 2)
-    self.monophonic = monophonic
-
-    let frequency = AUParameterTree.createFloat(withIdentifier: "Frequency", name: "Frequency", address: 3,
-                                             range: 10...20_000, unit: .hertz, logScale: true)
-    self.frequency = frequency
-    let pan = AUParameterTree.createFloat(withIdentifier: "Pan", name: "Pan", address: 4, range: -50...50)
-    self.pan = pan
+    retrigger = AUParameterTree.createBoolean(withIdentifier: "Retrigger", name: "Retrigger", address: 1)
+    monophonic = AUParameterTree.createBoolean(withIdentifier: "Monophonic", name: "Monophonic", address: 2)
+    frequency = AUParameterTree.createFloat(withIdentifier: "Frequency", name: "Frequency", address: 3, range: 10...20_000,
+                                            unit: .hertz, logScale: true)
+    pan = AUParameterTree.createFloat(withIdentifier: "Pan", name: "Pan", address: 4, range: -50...50)
 
     var parameterBase: AUParameterAddress = 100
     ampDelay = AUParameterTree.createParameter(

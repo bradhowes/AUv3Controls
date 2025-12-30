@@ -5,12 +5,12 @@ import SwiftUI
 extension View {
 
   @ViewBuilder
-  public func knobValueEditor(_ kind: ValueEditorKind = .defaultValue) -> some View {
-    switch kind {
-    case .nativePrompt: modifier(NativeValueEditor())
-#if os(iOS)
-    case .customPrompt: modifier(CustomValueEditor())
+  public func knobValueEditor() -> some View {
+#if os(macOS)
+    modifier(NativeValueEditor())
 #endif
-    }
+#if os(iOS)
+    modifier(CustomValueEditor())
+#endif
   }
 }

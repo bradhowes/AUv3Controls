@@ -103,7 +103,7 @@ struct EnvelopeView: View {
 
 struct AmpEnvelopeView: View {
   @Environment(\.auv3ControlsTheme) private var theme
-  let mockAUv3: MockAUv3
+  let synth: MockSynth
 
   var body: some View {
     ScrollView(.horizontal) {
@@ -111,12 +111,12 @@ struct AmpEnvelopeView: View {
         title: "Amp",
         store: Store(
           initialState: EnvelopeFeature.State(
-            delay: mockAUv3.ampDelay,
-            attack: mockAUv3.ampAttack,
-            hold: mockAUv3.ampHold,
-            decay: mockAUv3.ampDecay,
-            sustain: mockAUv3.ampSustain,
-            release: mockAUv3.ampRelease
+            delay: synth.ampDelay,
+            attack: synth.ampAttack,
+            hold: synth.ampHold,
+            decay: synth.ampDecay,
+            sustain: synth.ampSustain,
+            release: synth.ampRelease
           )
         ) {
           EnvelopeFeature()
@@ -130,7 +130,7 @@ struct AmpEnvelopeView: View {
 
 struct ModEnvelopeView: View {
   @Environment(\.auv3ControlsTheme) private var theme
-  let mockAUv3: MockAUv3
+  let synth: MockSynth
 
   var body: some View {
     ScrollView(.horizontal) {
@@ -138,12 +138,12 @@ struct ModEnvelopeView: View {
         title: "Mod",
         store: Store(
           initialState: EnvelopeFeature.State(
-            delay: mockAUv3.modDelay,
-            attack: mockAUv3.modAttack,
-            hold: mockAUv3.modHold,
-            decay: mockAUv3.modDecay,
-            sustain: mockAUv3.modSustain,
-            release: mockAUv3.modRelease
+            delay: synth.modDelay,
+            attack: synth.modAttack,
+            hold: synth.modHold,
+            decay: synth.modDecay,
+            sustain: synth.modSustain,
+            release: synth.modRelease
           )
         ) {
           EnvelopeFeature()
@@ -156,7 +156,7 @@ struct ModEnvelopeView: View {
 }
 
 public struct EnvelopeViews: View {
-  private let mockAUv3: MockAUv3
+  private let synth = MockSynth()
   @Environment(\.colorScheme) private var colorScheme
 
   private func theme(title: String) -> Theme {
@@ -177,16 +177,11 @@ public struct EnvelopeViews: View {
     return theme
   }
 
-  public init() {
-    let mockAUv3 = MockAUv3()
-    self.mockAUv3 = mockAUv3
-  }
-
   public var body: some View {
     VStack {
-      AmpEnvelopeView(mockAUv3: mockAUv3)
+      AmpEnvelopeView(synth: synth)
         .auv3ControlsTheme(theme(title: "Amp"))
-      ModEnvelopeView(mockAUv3: mockAUv3)
+      ModEnvelopeView(synth: synth)
         .auv3ControlsTheme(theme(title: "Mod"))
     }
     .knobValueEditor()

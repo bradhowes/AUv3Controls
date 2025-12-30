@@ -97,20 +97,3 @@ extension SharedKey where Self == InMemoryKey<ValueEditorInfo?>.Default {
     Self[.inMemory("valueEditorInfo"), default: nil]
   }
 }
-
-public enum ValueEditorKind {
-  case nativePrompt
-#if os(iOS)
-  case customPrompt
-#endif
-
-#if os(iOS)
-  public static var defaultValue: Self {
-    return .customPrompt
-  }
-#else
-  public static var defaultValue: Self {
-    return .nativePrompt
-  }
-#endif
-}

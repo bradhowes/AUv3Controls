@@ -1,6 +1,6 @@
 # Examples
 
-This folder contains two Swift previews that do much of what is found in the demo application.
+This folder contains two Swift previews that are also the basis for the views in the demo application.
 
 ## Duality View
 

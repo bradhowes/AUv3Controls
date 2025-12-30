@@ -174,4 +174,47 @@ final class DualityTests: XCTestCase {
 
     await ctx.floatStore.finish()
   }
+
+  @MainActor
+  func testShowEditor() async throws {
+    let ctx = Context()
+
+    @Shared(.valueEditorInfo) var valueEditorInfo
+
+    _ = await ctx.floatStore.withExhaustivity(.off) {
+      await ctx.floatStore.send(.task)
+    }
+
+    await ctx.floatStore.send(.setValue(1.23)) {
+      $0.track.norm = 0.0123
+      $0.title.formattedValue = "1.23"
+    }
+
+    await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.showValueMilliseconds))
+
+    $valueEditorInfo.withLock {
+      $0 = ValueEditorInfo(
+        id: 2,
+        displayName: "Release",
+        value: "1.23",
+        theme: ctx.theme,
+        decimalAllowed: .allowed,
+        signAllowed: .allowed
+      )
+    }
+
+    await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.showValueMilliseconds))
+
+    await ctx.floatStore.receive(.title(.valueDisplayTimerFired)) {
+      $0.title.formattedValue = nil
+    }
+
+    
+    await ctx.floatStore.send(.stopValueObservation) {
+      $0.observerToken = nil
+      $0.title.formattedValue = nil
+    }
+
+    await ctx.floatStore.finish()
+  }
 }

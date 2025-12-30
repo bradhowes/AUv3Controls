@@ -5,7 +5,7 @@ import ComposableArchitecture
 import SwiftUI
 
 public struct DualityView: View {
-  private let mockAUv3: MockAUv3
+  private let synth = MockSynth()
 
   @State private var retrigger: StoreOf<ToggleFeature>
   @State private var monophonic: StoreOf<ToggleFeature>
@@ -20,12 +20,10 @@ public struct DualityView: View {
   @Environment(\.colorScheme) private var colorScheme
 
   public init() {
-    let mockAUv3 = MockAUv3()
-    self.mockAUv3 = mockAUv3
-    self.retrigger = .init(initialState: ToggleFeature.State(parameter: mockAUv3.retrigger)) { ToggleFeature() }
-    self.monophonic = .init(initialState: ToggleFeature.State(parameter: mockAUv3.monophonic)) { ToggleFeature() }
-    self.frequency = .init(initialState: KnobFeature.State(parameter: mockAUv3.frequency)) { KnobFeature() }
-    self.pan = .init(initialState: KnobFeature.State(parameter: mockAUv3.pan)) { KnobFeature() }
+    retrigger = .init(initialState: ToggleFeature.State(parameter: synth.retrigger)) { ToggleFeature() }
+    monophonic = .init(initialState: ToggleFeature.State(parameter: synth.monophonic)) { ToggleFeature() }
+    frequency = .init(initialState: KnobFeature.State(parameter: synth.frequency)) { KnobFeature() }
+    pan = .init(initialState: KnobFeature.State(parameter: synth.pan)) { KnobFeature() }
   }
 
   public var body: some View {
@@ -45,10 +43,10 @@ public struct DualityView: View {
           }
         }
         GroupBox(label: Label("Mock MIDI", systemImage: "pianokeys")) {
-          Slider(value: mockAUv3.binding(to: mockAUv3.frequency.address, with: $frequencySlider), in: mockAUv3.frequency.range)
+          Slider(value: synth.binding(to: synth.frequency.address, with: $frequencySlider), in: synth.frequency.range)
           HStack {
             Button {
-              mockAUv3.frequency.setValue(10.0, originator: nil)
+              synth.frequency.setValue(10.0, originator: nil)
             } label: {
               Text("Min")
             }
@@ -56,15 +54,15 @@ public struct DualityView: View {
             Text("Volume: \(String(format: "%6.2f", frequencySlider))")
             Spacer()
             Button {
-              mockAUv3.frequency.setValue(20_000.0, originator: nil)
+              synth.frequency.setValue(20_000.0, originator: nil)
             } label: {
               Text("Max")
             }
           }
-          Slider(value: mockAUv3.binding(to: mockAUv3.pan.address, with: $panSlider), in: mockAUv3.pan.range)
+          Slider(value: synth.binding(to: synth.pan.address, with: $panSlider), in: synth.pan.range)
           HStack {
             Button {
-              mockAUv3.pan.setValue(-50.0, originator: nil)
+              synth.pan.setValue(-50.0, originator: nil)
             } label: {
               Text("Min")
             }
@@ -72,15 +70,15 @@ public struct DualityView: View {
             Text("Pan: \(String(format: "%6.2f", panSlider))")
             Spacer()
             Button {
-              mockAUv3.pan.setValue(50.0, originator: nil)
+              synth.pan.setValue(50.0, originator: nil)
             } label: {
               Text("Max")
             }
           }
-          Toggle(isOn: mockAUv3.binding(to: mockAUv3.retrigger.address, with: $retriggerToggle)) {
+          Toggle(isOn: synth.binding(to: synth.retrigger.address, with: $retriggerToggle)) {
             Text("Retrigger")
           }
-          Toggle(isOn: mockAUv3.binding(to: mockAUv3.monophonic.address, with: $monophonicToggle)) {
+          Toggle(isOn: synth.binding(to: synth.monophonic.address, with: $monophonicToggle)) {
             Text("Monophonic")
           }
         }

@@ -1,3 +1,5 @@
+#if os(macOS)
+
 import Combine
 import ComposableArchitecture
 import Sharing
@@ -23,34 +25,6 @@ struct NativeValueEditor: ViewModifier {
           isEditing = false
         }
       }
-#if os(iOS)
-      .alert(valueEditorInfo?.displayName ?? "???", isPresented: $isEditing) {
-        if let valueEditorInfo {
-          TextField("New Value", text: $value)
-            // .clearButton(text: $value, offset: 14)
-            // .textFieldStyle(.roundedBorder)
-            .focused($focusState)
-            .numericValueEditing(value: $value, valueEditorInfo: valueEditorInfo)
-            .onSubmit { dismiss(accepted: true) }
-            .onAppear {
-              focusState = true
-            }
-          Button {
-            dismiss(accepted: true)
-          } label: {
-            Text("OK")
-              .foregroundStyle(valueEditorInfo.theme.editorOKButtonColor)
-          }
-          Button(role: .cancel) {
-            dismiss(accepted: false)
-          } label: {
-            Text("Cancel")
-              .foregroundStyle(valueEditorInfo.theme.editorCancelButtonColor)
-          }
-        }
-      }
-#endif
-#if os(macOS)
       .sheet(isPresented: $isEditing) {
         VStack(spacing: 16) {
           if let valueEditorInfo {
@@ -83,7 +57,6 @@ struct NativeValueEditor: ViewModifier {
           focusState = true
         }
       }
-#endif
   }
 
   private func dismiss(accepted: Bool) {
@@ -124,3 +97,5 @@ struct ThemedButtonStyle: ButtonStyle {
       .cornerRadius(5)
   }
 }
+
+#endif

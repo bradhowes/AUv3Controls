@@ -31,13 +31,6 @@ public struct NumericValueEditing: ViewModifier {
 #if os(iOS)
       .keyboardType(keyboardType)
 #endif
-//      .onReceive(NotificationCenter.default.publisher(for: UITextField.textDidBeginEditingNotification)) { obj in
-//        print("notification")
-//        if let textField = obj.object as? UITextField {
-//          print("is textField")
-//          textField.selectedTextRange = textField.textRange(from: textField.beginningOfDocument, to: textField.endOfDocument)
-//        }
-//      }
       .onChange(of: value) { oldValue, newValue in
         if !valueEditorInfo.isValid(newValue) {
           value = oldValue
