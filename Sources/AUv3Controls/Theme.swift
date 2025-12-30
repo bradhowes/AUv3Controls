@@ -191,7 +191,7 @@ extension Theme {
     return (prefix.isEmpty ? prefix : prefix + "_") + tag.rawValue
   }
 
-  private func color(tag: ColorTag) -> Color {
+  public func color(tag: ColorTag) -> Color {
     switch tag {
     case .controlBackgroundColor: return controlBackgroundColor
     case .controlForegroundColor: return controlForegroundColor

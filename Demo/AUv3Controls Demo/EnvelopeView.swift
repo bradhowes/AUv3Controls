@@ -166,23 +166,7 @@ struct EnvelopeFeature {
 
 struct EnvelopeView: View {
   @Bindable private var store: StoreOf<EnvelopeFeature>
-  @Environment(\.colorScheme) private var colorScheme
   let title: String
-
-  private func theme() -> Theme {
-    var theme = Theme(colorScheme: colorScheme)
-    theme.controlTrackStrokeStyle = StrokeStyle(lineWidth: 5, lineCap: .round)
-    theme.controlValueStrokeStyle = StrokeStyle(lineWidth: 3, lineCap: .round)
-
-    if self.title == "Mod" {
-      theme.controlForegroundColor = theme.taggedColor(.controlForegroundColor, default: .red)
-      theme.textColor = theme.taggedColor(.textColor, default: Color.red.mix(with: Color.black, by: 0.15))
-      theme.toggleOnIndicatorSystemName = "arrowtriangle.down.fill"
-      theme.toggleOffIndicatorSystemName = "arrowtriangle.down"
-    }
-
-    return theme
-  }
 
   init(store: StoreOf<EnvelopeFeature>, title: String) {
     self.store = store
@@ -205,39 +189,60 @@ struct EnvelopeView: View {
         KnobView(store: store.scope(state: \.release, action: \.release))
       }
     }
-    .auv3ControlsTheme(theme())
+  }
+}
+
+struct AmpEnvelopeView: View {
+  @Environment(\.auv3ControlsTheme) private var theme
+  let vol = EnvelopeFeature(parameterBase: 100)
+
+  var body: some View {
+    ScrollView(.horizontal) {
+      EnvelopeView(store: Store(initialState: vol.state) { vol }, title: "Amp")
+        .padding(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
+        .border(theme.controlForegroundColor)
+    }
+  }
+}
+
+struct ModEnvelopeView: View {
+  @Environment(\.auv3ControlsTheme) private var theme
+  let mod = EnvelopeFeature(parameterBase: 200)
+
+  var body: some View {
+    ScrollView(.horizontal) {
+      EnvelopeView(store: Store(initialState: mod.state) { mod }, title: "Mod")
+        .padding(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
+        .border(theme.controlForegroundColor)
+    }
   }
 }
 
 struct EnvelopeViews: View {
+  @Environment(\.colorScheme) private var colorScheme
 
-  private var theme: Theme {
-    var theme = Theme(prefix: "envelopes")
+  private func theme(title: String) -> Theme {
+    var theme = Theme(colorScheme: colorScheme)
     theme.controlTrackStrokeStyle = StrokeStyle(lineWidth: 5, lineCap: .round)
     theme.controlValueStrokeStyle = StrokeStyle(lineWidth: 3, lineCap: .round)
-    theme.toggleOnIndicatorSystemName = "arrowtriangle.down.fill"
-    theme.toggleOffIndicatorSystemName = "arrowtriangle.down"
+
+    if title == "Mod" {
+      theme.controlForegroundColor = theme.taggedColor(.controlForegroundColor, default: .red)
+      theme.textColor = theme.taggedColor(.textColor, default: Color.red.mix(with: Color.black, by: 0.15))
+      theme.toggleOnIndicatorSystemName = "arrowtriangle.down.fill"
+      theme.toggleOffIndicatorSystemName = "arrowtriangle.down"
+    }
+
     return theme
   }
 
   var body: some View {
-
-    let vol = EnvelopeFeature(parameterBase: 100)
-    let mod = EnvelopeFeature(parameterBase: 200)
-
-    return VStack {
-      ScrollView(.horizontal) {
-        EnvelopeView(store: Store(initialState: vol.state) { vol }, title: "Amp")
-          .padding(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
-          .border(theme.controlForegroundColor)
-      }
-      ScrollView(.horizontal) {
-        EnvelopeView(store: Store(initialState: mod.state) { mod }, title: "Mod")
-          .padding(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
-          .border(theme.controlForegroundColor)
-      }
+    VStack {
+      AmpEnvelopeView()
+        .auv3ControlsTheme(theme(title: "Amp"))
+      ModEnvelopeView()
+        .auv3ControlsTheme(theme(title: "Mod"))
     }
-    .auv3ControlsTheme(theme)
     .knobValueEditor()
   }
 }

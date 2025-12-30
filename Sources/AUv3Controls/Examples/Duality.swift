@@ -5,8 +5,6 @@ import ComposableArchitecture
 import SwiftUI
 
 class MockAUv3 {
-  let config: KnobConfig
-
   let paramTree: AUParameterTree
   let param1: AUParameter // boolean parameter
   let param2: AUParameter // boolean parameter
@@ -18,7 +16,6 @@ class MockAUv3 {
   private var bindings: [AUParameterAddress: Binding<Double>] = [:]
 
   init() {
-    self.config = KnobConfig()
     let param1 = AUParameterTree.createBoolean(withIdentifier: "Retrigger", name: "Retrigger", address: 1)
     self.param1 = param1
     let param2 = AUParameterTree.createBoolean(withIdentifier: "Monophonic", name: "Monophonic", address: 2)

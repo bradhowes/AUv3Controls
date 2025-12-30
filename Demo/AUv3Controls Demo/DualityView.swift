@@ -6,8 +6,6 @@ import ComposableArchitecture
 import SwiftUI
 
 class MockAUv3 {
-  let config: KnobConfig
-
   let paramTree: AUParameterTree
   let param1: AUParameter // boolean parameter
   let param2: AUParameter // boolean parameter
@@ -19,13 +17,18 @@ class MockAUv3 {
   private var bindings: [AUParameterAddress: Binding<Double>] = [:]
 
   init() {
-    self.config = KnobConfig()
     let param1 = AUParameterTree.createBoolean(withIdentifier: "Retrigger", name: "Retrigger", address: 1)
     self.param1 = param1
     let param2 = AUParameterTree.createBoolean(withIdentifier: "Monophonic", name: "Monophonic", address: 2)
     self.param2 = param2
-    let param3 = AUParameterTree.createFloat(withIdentifier: "Frequency", name: "Frequency", address: 3,
-                                             range: 10...20_000, unit: .hertz, logScale: true)
+    let param3 = AUParameterTree.createFloat(
+      withIdentifier: "Frequency",
+      name: "Frequency",
+      address: 3,
+      range: 10...20_000,
+      unit: .hertz,
+      logScale: true
+    )
     self.param3 = param3
     let param4 = AUParameterTree.createFloat(withIdentifier: "Pan", name: "Pan", address: 4, range: -50...50)
     self.param4 = param4
@@ -90,8 +93,6 @@ struct DualityView: View {
   @State var toggle2: Bool = false
   @State var slider3: Double = 0.0
   @State var slider4: Double = 0.0
-
-  @FocusState var focused: String?
 
   @Environment(\.colorScheme) private var colorScheme
 

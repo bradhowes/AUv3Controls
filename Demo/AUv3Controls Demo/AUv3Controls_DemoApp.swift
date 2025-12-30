@@ -11,13 +11,7 @@ import SwiftUI
 @main
 struct AUv3Controls_DemoApp: App {
   var body: some Scene {
-    var theme = Theme()
-    theme.controlTrackStrokeStyle = StrokeStyle(lineWidth: 5, lineCap: .round)
-    theme.controlValueStrokeStyle = StrokeStyle(lineWidth: 3, lineCap: .round)
-    theme.toggleOnIndicatorSystemName = "arrowtriangle.down.fill"
-    theme.toggleOffIndicatorSystemName = "arrowtriangle.down"
-
-    return WindowGroup {
+    WindowGroup {
       TabView {
         DualityView()
           .padding()

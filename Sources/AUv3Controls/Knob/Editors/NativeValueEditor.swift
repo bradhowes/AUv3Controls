@@ -55,26 +55,33 @@ struct NativeValueEditor: ViewModifier {
         VStack(spacing: 16) {
           if let valueEditorInfo {
             Text(valueEditorInfo.displayName)
-            TextField("", text: $value)
+              .foregroundStyle(valueEditorInfo.theme.textColor)
+            TextField("New Value", text: $value)
+              .focused($focusState)
+              .numericValueEditing(value: $value, valueEditorInfo: valueEditorInfo)
+              .font(.body)
               .onSubmit { dismiss(accepted: true) }
             HStack(spacing: 32) {
               Button {
                 dismiss(accepted: true)
               } label: {
                 Text("OK")
-                  .foregroundStyle(valueEditorInfo.theme.editorOKButtonColor)
               }
+              .themedButton(valueEditorInfo.theme, tag: .editorOKButtonColor)
               Button(role: .cancel) {
                 dismiss(accepted: false)
               } label: {
                 Text("Cancel")
-                  .foregroundStyle(valueEditorInfo.theme.editorCancelButtonColor)
               }
+              .themedButton(valueEditorInfo.theme, tag: .editorCancelButtonColor)
             }
           }
         }
         .padding(16)
         .frame(maxWidth: 200)
+        .onAppear {
+          focusState = true
+        }
       }
 #endif
   }
@@ -91,5 +98,29 @@ struct NativeValueEditor: ViewModifier {
 extension View {
   public func knobNativeValueEditor() -> some View {
     modifier(NativeValueEditor())
+  }
+}
+
+// Derived from https://stackoverflow.com/a/58423631/629836
+
+extension View {
+  func themedButton(_ theme: Theme, tag: Theme.ColorTag) -> some View {
+    self.buttonStyle(ThemedButtonStyle(theme: theme, tag: tag))
+  }
+}
+
+struct ThemedButtonStyle: ButtonStyle {
+  let theme: Theme
+  let tag: Theme.ColorTag
+  let backgroundColor: Color = .white.mix(with: .black, by: 0.7)
+  let pressedColor: Color = .white.mix(with: .black, by: 0.5)
+
+  func makeBody(configuration: Self.Configuration) -> some View {
+    configuration.label
+      .font(.headline)
+      .padding(10)
+      .foregroundColor(theme.textColor)
+      .background(configuration.isPressed ? pressedColor : backgroundColor)
+      .cornerRadius(5)
   }
 }
