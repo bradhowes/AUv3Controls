@@ -17,15 +17,15 @@ private final class Context {
   let mainQueue = DispatchQueue.test
   let theme = Theme()
 
-  lazy var test = TestStore(initialState: .init(displayName: param.displayName)) {
-    TitleFeature(formatter: KnobValueFormatter.general(1...4))
+  lazy var test = TestStore(initialState: .init(displayName: param.displayName, formatter: KnobValueFormatter.general(1...4))) {
+    TitleFeature()
   } withDependencies: {
     $0.continuousClock = clock
     $0.mainQueue = mainQueue.eraseToAnyScheduler()
   }
 
-  lazy var live = Store(initialState: .init(displayName: param.displayName)) {
-    TitleFeature(formatter: KnobValueFormatter.general(1...4))
+  lazy var live = Store(initialState: .init(displayName: param.displayName, formatter: KnobValueFormatter.general(1...4))) {
+    TitleFeature()
   } withDependencies: {
     $0.continuousClock = ImmediateClock()
     $0.mainQueue = DispatchQueue.main.eraseToAnyScheduler()
@@ -97,10 +97,17 @@ final class TitleFeatureTests: XCTestCase {
       }
     }
     
-    let view = MyView(config: ctx.config, store: Store(initialState: .init(displayName: ctx.param.displayName)) {
-        TitleFeature(formatter: KnobValueFormatter.general(1...2))
-    })
-
+    let view = MyView(
+      config: ctx.config,
+      store: Store(
+        initialState: .init(
+          displayName: ctx.param.displayName,
+          formatter: KnobValueFormatter.general(1...2)
+        )
+      ) {
+        TitleFeature()
+      }
+    )
     try withSnapshotTesting(record: .failed) {
       try assertSnapshot(matching: view)
     }

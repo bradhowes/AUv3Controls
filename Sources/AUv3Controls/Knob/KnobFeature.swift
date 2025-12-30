@@ -9,69 +9,19 @@ import SwiftUI
 /**
  A modern rotary knob that shows and controls the floating-point value of an associated AUParameter.
 
- The knob control consists of three child features:
+ The knob control consists of two child features:
 
  - circular indicator representing the current value and that reponds to touch/nouse drags for value changes
  (``TrackFeature``)
  - title label that shows the name of the control and that temporarily shows the current value when it changes
  (``TitleFeature``)
- - value editor that appears when tapping/mouse clicking on the title
- (``EditorFeature``)
 
- On iOS platforms, the editor will replace the knob control while it is active. On macOS, the editor appears as a modal
- dialog. The functionality is the same otherwise.
  */
 @Reducer
 public struct KnobFeature {
-  /// Formatters to use in the knob presentations
-  let formatter: any KnobValueFormattingProvider
-  /// Value transformations to/from a normalized value
-  let normValueTransform: NormValueTransform
-  /// Delay to wait for new internal value change events before emitting one.
-  let debounceMilliseconds: Int
-  /// Duration to show new value in title before reverting to showing title
-  let showValueMilliseconds: Int
 
   // Only used for unit tests
-  private let parameterValueChanged: ((AUParameterAddress) -> Void)?
-
-  /**
-   Create feature based on a AUParameter definition.
-
-   - parameter parameter: the AUParameter to use
-   */
-  public init(parameter: AUParameter) {
-    self.formatter = KnobValueFormatter.for(parameter.unit)
-    self.normValueTransform = .init(parameter: parameter)
-    self.debounceMilliseconds = KnobConfig.default.debounceMilliseconds
-    self.showValueMilliseconds = KnobConfig.default.showValueMilliseconds
-    self.parameterValueChanged = nil
-  }
-
-  /**
-   Create feature that is not based on an AUParameter.
-
-   - parameter formatter: the value formatter to use when displaying numeric values as text
-   - parameter normValueTransform: the ``NormValueTransform`` to use to convert between user values and normalized
-   values in range [0-1].
-   - parameter debounceMilliseconds: the duration to wait for another value before processing a value from an
-   AUParameter.
-   - parameter parameterValueChanged: closure invoked when control receives a value from AUParameter. Only used by
-   tests.
-   */
-  public init(
-    formatter: any KnobValueFormattingProvider,
-    normValueTransform: NormValueTransform,
-    debounceMilliseconds: Int = KnobConfig.default.debounceMilliseconds,
-    showValueMilliseconds: Int = KnobConfig.default.showValueMilliseconds,
-    parameterValueChanged: ((AUParameterAddress) -> Void)? = nil
-  ) {
-    self.formatter = formatter
-    self.normValueTransform = normValueTransform
-    self.debounceMilliseconds = debounceMilliseconds
-    self.showValueMilliseconds = showValueMilliseconds
-    self.parameterValueChanged = parameterValueChanged
-  }
+  var parameterValueChanged: ((AUParameterAddress) -> Void)?
 
   @ObservableState
   public struct State: Equatable {
@@ -84,6 +34,11 @@ public struct KnobFeature {
     public var title: TitleFeature.State
     public var scrollToDestination: UInt64?
 
+    @ObservationStateIgnored
+    public let normValueTransform: NormValueTransform
+    @ObservationStateIgnored
+    public let formatter: KnobValueFormatter
+
     @Shared(.valueEditorInfo) var valueEditorInfo
     @ObservationStateIgnored public var observerToken: AUParameterObserverToken?
 
@@ -91,15 +46,22 @@ public struct KnobFeature {
      Initialze reducer with values from AUParameter definition.
 
      - parameter parameter: the `AUParameter` to use
+     - parameter formatter: optional KnobValueFormatter to use
      */
-    public init(parameter: AUParameter) {
-      let normValueTransform: NormValueTransform = .init(parameter: parameter)
+    public init(parameter: AUParameter, formatter: KnobValueFormatter? = nil) {
       self.id = parameter.address
       self.parameter = parameter
       self.valueObservationCancelId = "valueObservationCancelId[AUParameter: \(parameter.address)])"
       self.displayName = parameter.displayName
-      self.title = .init(displayName: parameter.displayName)
-      self.track = .init(norm: normValueTransform.valueToNorm(Double(parameter.value)))
+
+      let normValueTransform = NormValueTransform(parameter: parameter)
+      self.normValueTransform = normValueTransform
+
+      let formatter = formatter ?? KnobValueFormatter.for(parameter.unit)
+      self.formatter = formatter
+
+      self.title = .init(displayName: parameter.displayName, formatter: formatter)
+      self.track = .init(normValueTransform: normValueTransform, norm: normValueTransform.valueToNorm(Double(parameter.value)))
     }
 
     /**
@@ -123,12 +85,15 @@ public struct KnobFeature {
         maximumValue: maximumValue,
         logScale: logarithmic
       )
+      self.normValueTransform = normValueTransform
+      let formatter = KnobValueFormatter.general()
+      self.formatter = formatter
       self.id = UUID().asUInt64
       self.parameter = nil
       self.valueObservationCancelId = nil
       self.displayName = displayName
-      self.track = .init(norm: normValueTransform.valueToNorm(value))
-      self.title = .init(displayName: displayName)
+      self.track = .init(normValueTransform: normValueTransform, norm: normValueTransform.valueToNorm(value))
+      self.title = .init(displayName: displayName, formatter: formatter)
     }
   }
 
@@ -148,8 +113,8 @@ public struct KnobFeature {
   public var body: some Reducer<State, Action> {
     BindingReducer()
 
-    Scope(state: \.track, action: \.track) { TrackFeature(normValueTransform: normValueTransform) }
-    Scope(state: \.title, action: \.title) { TitleFeature(formatter: formatter, showValueMilliseconds: showValueMilliseconds ) }
+    Scope(state: \.track, action: \.track) { TrackFeature() }
+    Scope(state: \.title, action: \.title) { TitleFeature() }
 
     Reduce { state, action in
       switch action {
@@ -175,7 +140,7 @@ private extension KnobFeature {
     state.$valueEditorInfo.withLock { $0 = nil }
     if let value,
        let editorValue = Double(value) {
-      let newValue = normValueTransform.normToValue(normValueTransform.valueToNorm(editorValue))
+      let newValue = state.normValueTransform.normToValue(state.normValueTransform.valueToNorm(editorValue))
       return .merge(
         setParameterEffect(state: state, value: newValue, cause: .value),
         valueChanged(&state, value: newValue)
@@ -235,22 +200,22 @@ private extension KnobFeature {
   }
 
   func showEditor(_ state: inout State, theme: Theme) -> Effect<Action> {
-    let value = normValueTransform.normToValue(state.track.norm)
+    let value = state.normValueTransform.normToValue(state.track.norm)
     state.$valueEditorInfo.withLock {
       $0 = .init(
         id: state.id,
         displayName: state.displayName,
-        value: formatter.forEditing(value),
+        value: state.formatter.forEditing(value),
         theme: theme,
         decimalAllowed: .allowed,
-        signAllowed: normValueTransform.minimumValue < 0.0 ? .allowed : .none
+        signAllowed: state.normValueTransform.minimumValue < 0.0 ? .allowed : .none
       )
     }
     return .none
   }
 
   func showValue(_ state: inout State) -> Effect<Action> {
-    let value = normValueTransform.normToValue(state.track.norm)
+    let value = state.normValueTransform.normToValue(state.track.norm)
     return reduce(into: &state, action: .title(.valueChanged(value)))
   }
 
@@ -265,7 +230,7 @@ private extension KnobFeature {
     let stream: AsyncStream<AUValue>
     (state.observerToken, stream) = parameter.startObserving()
 
-    return .run { [duration = debounceMilliseconds] send in
+    return .run { [duration = KnobConfig.default.debounceMilliseconds] send in
       if Task.isCancelled { return }
       for await value in stream.debounce(for: .milliseconds(duration)) {
         if Task.isCancelled { break }
@@ -295,7 +260,7 @@ private extension KnobFeature {
   }
 
   func trackChanged(_ state: inout State, action: TrackFeature.Action) -> Effect<Action> {
-    let value = normValueTransform.normToValue(state.track.norm)
+    let value = state.normValueTransform.normToValue(state.track.norm)
     return setParameterEffect(state: state, value: value, cause: action.cause)
   }
 
@@ -352,9 +317,7 @@ struct KnobViewPreview: PreviewProvider {
     valueStrings: nil,
     dependentParameters: nil
   )
-  static var store = Store(initialState: KnobFeature.State(parameter: param)) {
-    KnobFeature(formatter: KnobValueFormatter.general(), normValueTransform: .init(parameter: param))
-  }
+  static var store = Store(initialState: KnobFeature.State(parameter: param)) { KnobFeature() }
 
   static var previews: some View {
     NavigationStack {

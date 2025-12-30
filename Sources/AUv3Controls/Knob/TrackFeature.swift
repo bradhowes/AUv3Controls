@@ -14,17 +14,14 @@ import SwiftUI
  */
 @Reducer
 public struct TrackFeature {
-  let normValueTransform: NormValueTransform
-
-  public init(normValueTransform: NormValueTransform) {
-    self.normValueTransform = normValueTransform
-  }
 
   @ObservableState
   public struct State: Equatable {
     public var norm: Double
+    public let normValueTransform: NormValueTransform
 
-    public init(norm: Double) {
+    public init(normValueTransform: NormValueTransform, norm: Double) {
+      self.normValueTransform = normValueTransform
       self.norm = norm
     }
   }
@@ -53,7 +50,7 @@ public struct TrackFeature {
       switch action {
       case let .dragStarted(value), let .dragChanged(value), let .dragEnded(value), let .normChanged(value):
         return normChanged(&state, norm: value)
-      case let .valueChanged(value): return normChanged(&state, norm: normValueTransform.valueToNorm(value))
+      case let .valueChanged(value): return normChanged(&state, norm: state.normValueTransform.valueToNorm(value))
       case .viewTapped: return .none
       }
     }
@@ -202,9 +199,8 @@ struct TrackViewPreview: PreviewProvider {
     dependentParameters: nil
   )
   static let config = KnobConfig()
-  @State static var store = Store(
-    initialState: TrackFeature.State(norm: 0.5)) {
-    TrackFeature(normValueTransform: .init(parameter: param))
+  @State static var store = Store(initialState: TrackFeature.State(normValueTransform: .init(parameter: param), norm: 0.5)) {
+    TrackFeature()
   }
 
   static var previews: some View {

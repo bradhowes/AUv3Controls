@@ -4,21 +4,10 @@ import AudioToolbox
 import Foundation
 
 /**
- General protocol for formatting a parameter value, whether for display or for editing. The former may have a suffix
- attached to the formatted value while the latter never does.
- */
-public protocol KnobValueFormattingProvider: Equatable {
-
-  func forDisplay(_ value: Double) -> String
-
-  func forEditing(_ value: Double) -> String
-}
-
-/**
  Value formatters for a knob when it needs to show the current setting. This is a bit convoluted in order to support
  the case where we want different units depending on the value being formatted, such as `frequency` or `seconds`.
  */
-public struct KnobValueFormatter: Equatable, Sendable, KnobValueFormattingProvider {
+public struct KnobValueFormatter: Equatable, Sendable {
 
   struct Formatter: Equatable {
     let formatter: FloatingPointFormatStyle<Double>

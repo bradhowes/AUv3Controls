@@ -11,16 +11,6 @@ import SwiftUI
  */
 @Reducer
 public struct TitleFeature {
-  let formatter: any KnobValueFormattingProvider
-  let showValueMilliseconds: Int
-
-  public init(
-    formatter: any KnobValueFormattingProvider,
-    showValueMilliseconds: Int = KnobConfig.default.showValueMilliseconds
-  ) {
-    self.formatter = formatter
-    self.showValueMilliseconds = showValueMilliseconds
-  }
 
   @ObservableState
   public struct State: Equatable {
@@ -31,8 +21,12 @@ public struct TitleFeature {
     public var showingValue: Bool { formattedValue != nil }
     public let showValueCancelId = "ShowValueCancelId[\(UUID().uuidString)]"
 
-    public init(displayName: String) {
+    @ObservationStateIgnored
+    public let formatter: KnobValueFormatter
+
+    public init(displayName: String, formatter: KnobValueFormatter) {
       self.displayName = displayName
+      self.formatter = formatter
     }
   }
 
@@ -70,17 +64,8 @@ private extension TitleFeature {
   }
 
   func showValueEffect(state: inout State, value: Double) -> Effect<Action> {
-    state.formattedValue = formatter.forDisplay(value)
+    state.formattedValue = state.formatter.forDisplay(value)
     return state.dragActive ? .none : startTitleTimerEffect2(&state)
-  }
-
-  func startTitleTimerEffect1(_ state: inout State) -> Effect<Action> {
-    return .run { [showValueMilliseconds] send in
-      try await Task.sleep(for: .milliseconds(showValueMilliseconds))
-      if !Task.isCancelled {
-        await send(.valueDisplayTimerFired, animation: .linear)
-      }
-    }.cancellable(id: state.showValueCancelId, cancelInFlight: true)
   }
 
   func startTitleTimerEffect2(_ state: inout State) -> Effect<Action> {
@@ -88,7 +73,7 @@ private extension TitleFeature {
       if !Task.isCancelled {
         await send(.valueDisplayTimerFired, animation: .linear)
       }
-    }.debounce(id: state.showValueCancelId, for: .milliseconds(showValueMilliseconds), scheduler: mainQueue)
+    }.debounce(id: state.showValueCancelId, for: .milliseconds(KnobConfig.default.showValueMilliseconds), scheduler: mainQueue)
   }
 }
 
@@ -142,8 +127,11 @@ struct TitleViewPreview: PreviewProvider {
                                                      min: 0.0, max: 100.0, unit: .generic, unitName: nil,
                                                      valueStrings: nil, dependentParameters: nil)
   static let theme = Theme()
-  @State static var store = Store(initialState: TitleFeature.State(displayName: param.displayName)) {
-    TitleFeature(formatter: KnobValueFormatter.duration(2...2))
+  @State static var store = Store(initialState: TitleFeature.State(
+    displayName: param.displayName,
+    formatter: KnobValueFormatter.duration(2...2)
+  )) {
+    TitleFeature()
   }
 
   static var previews: some View {

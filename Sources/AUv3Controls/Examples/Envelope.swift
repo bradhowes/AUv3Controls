@@ -6,92 +6,6 @@ import SwiftUI
 
 @Reducer
 struct EnvelopeFeature {
-  let delay: AUParameter
-  let attack: AUParameter
-  let hold: AUParameter
-  let decay: AUParameter
-  let sustain: AUParameter
-  let release: AUParameter
-
-  init(parameterBase: AUParameterAddress) {
-    delay = AUParameterTree.createParameter(
-      withIdentifier: "DELAY",
-      name: "Delay",
-      address: parameterBase + 0,
-      min: 0.0,
-      max: 2.0,
-      unit: .seconds,
-      unitName: nil,
-      flags: [.flag_DisplayLogarithmic],
-      valueStrings: nil,
-      dependentParameters: nil
-    )
-
-    attack = AUParameterTree.createParameter(
-      withIdentifier: "ATTACK",
-      name: "Attack",
-      address: parameterBase + 1,
-      min: 0.0,
-      max: 5.0,
-      unit: .seconds,
-      unitName: nil,
-      flags: [.flag_DisplayLogarithmic],
-      valueStrings: nil,
-      dependentParameters: nil
-    )
-
-    hold = AUParameterTree.createParameter(
-      withIdentifier: "HOLD",
-      name: "Hold",
-      address: parameterBase + 2,
-      min: 0.0,
-      max: 5,
-      unit: .seconds,
-      unitName: nil,
-      flags: [.flag_DisplayLogarithmic],
-      valueStrings: nil,
-      dependentParameters: nil
-    )
-
-    decay = AUParameterTree.createParameter(
-      withIdentifier: "DECAY",
-      name: "Decay",
-      address: parameterBase + 3,
-      min: 0.0,
-      max: 5.0,
-      unit: .seconds,
-      unitName: nil,
-      flags: [.flag_DisplayLogarithmic],
-      valueStrings: nil,
-      dependentParameters: nil
-    )
-
-    sustain = AUParameterTree.createParameter(
-      withIdentifier: "SUSTAIN",
-      name: "Sustain",
-      address: parameterBase + 4,
-      min: 0.0,
-      max: 100.0,
-      unit: .percent,
-      unitName: nil,
-      flags: [],
-      valueStrings: nil,
-      dependentParameters: nil
-    )
-
-    release = AUParameterTree.createParameter(
-      withIdentifier: "RELEASE",
-      name: "Release",
-      address: parameterBase + 5,
-      min: 0.0,
-      max: 10.0,
-      unit: .seconds,
-      unitName: nil,
-      flags: [.flag_DisplayLogarithmic],
-      valueStrings: nil,
-      dependentParameters: nil
-    )
-  }
 
   @ObservableState
   struct State: Equatable {
@@ -123,10 +37,6 @@ struct EnvelopeFeature {
     }
   }
 
-  var state: State {
-    .init(delay: delay, attack: attack, hold: hold, decay: decay, sustain: sustain, release: release)
-  }
-
   enum Action {
     case enabled(ToggleFeature.Action)
     case locked(ToggleFeature.Action)
@@ -141,12 +51,12 @@ struct EnvelopeFeature {
   var body: some ReducerOf<Self> {
     Scope(state: \.enabled, action: \.enabled) { ToggleFeature() }
     Scope(state: \.locked, action: \.locked) { ToggleFeature() }
-    Scope(state: \.delay, action: \.delay) { KnobFeature(parameter: delay) }
-    Scope(state: \.attack, action: \.attack) { KnobFeature(parameter: attack) }
-    Scope(state: \.hold, action: \.hold) { KnobFeature(parameter: hold) }
-    Scope(state: \.decay, action: \.decay) { KnobFeature(parameter: decay) }
-    Scope(state: \.sustain, action: \.sustain) { KnobFeature(parameter: sustain) }
-    Scope(state: \.release, action: \.release) { KnobFeature(parameter: release) }
+    Scope(state: \.delay, action: \.delay) { KnobFeature() }
+    Scope(state: \.attack, action: \.attack) { KnobFeature() }
+    Scope(state: \.hold, action: \.hold) { KnobFeature() }
+    Scope(state: \.decay, action: \.decay) { KnobFeature() }
+    Scope(state: \.sustain, action: \.sustain) { KnobFeature() }
+    Scope(state: \.release, action: \.release) { KnobFeature() }
 
     Reduce { _, action in
       switch action {
@@ -164,12 +74,12 @@ struct EnvelopeFeature {
 }
 
 struct EnvelopeView: View {
-  @Bindable private var store: StoreOf<EnvelopeFeature>
   private let title: String
+  @Bindable private var store: StoreOf<EnvelopeFeature>
 
-  init(store: StoreOf<EnvelopeFeature>, title: String) {
-    self.store = store
+  init(title: String, store: StoreOf<EnvelopeFeature>) {
     self.title = title
+    self.store = store
   }
 
   var body: some View {
@@ -193,31 +103,60 @@ struct EnvelopeView: View {
 
 struct AmpEnvelopeView: View {
   @Environment(\.auv3ControlsTheme) private var theme
-  let vol = EnvelopeFeature(parameterBase: 100)
+  let mockAUv3: MockAUv3
 
   var body: some View {
     ScrollView(.horizontal) {
-      EnvelopeView(store: Store(initialState: vol.state) { vol }, title: "Amp")
-        .padding(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
-        .border(theme.controlForegroundColor)
+      EnvelopeView(
+        title: "Amp",
+        store: Store(
+          initialState: EnvelopeFeature.State(
+            delay: mockAUv3.ampDelay,
+            attack: mockAUv3.ampAttack,
+            hold: mockAUv3.ampHold,
+            decay: mockAUv3.ampDecay,
+            sustain: mockAUv3.ampSustain,
+            release: mockAUv3.ampRelease
+          )
+        ) {
+          EnvelopeFeature()
+        }
+      )
+      .padding(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
+      .border(theme.controlForegroundColor)
     }
   }
 }
 
 struct ModEnvelopeView: View {
   @Environment(\.auv3ControlsTheme) private var theme
-  let mod = EnvelopeFeature(parameterBase: 200)
+  let mockAUv3: MockAUv3
 
   var body: some View {
     ScrollView(.horizontal) {
-      EnvelopeView(store: Store(initialState: mod.state) { mod }, title: "Mod")
-        .padding(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
-        .border(theme.controlForegroundColor)
+      EnvelopeView(
+        title: "Mod",
+        store: Store(
+          initialState: EnvelopeFeature.State(
+            delay: mockAUv3.modDelay,
+            attack: mockAUv3.modAttack,
+            hold: mockAUv3.modHold,
+            decay: mockAUv3.modDecay,
+            sustain: mockAUv3.modSustain,
+            release: mockAUv3.modRelease
+          )
+        ) {
+          EnvelopeFeature()
+        }
+      )
+      .padding(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
+      .border(theme.controlForegroundColor)
     }
   }
 }
 
-struct EnvelopeViews: View {
+public struct EnvelopeViews: View {
+  private let mockAUv3: MockAUv3
   @Environment(\.colorScheme) private var colorScheme
 
   private func theme(title: String) -> Theme {
@@ -238,11 +177,16 @@ struct EnvelopeViews: View {
     return theme
   }
 
-  var body: some View {
+  public init() {
+    let mockAUv3 = MockAUv3()
+    self.mockAUv3 = mockAUv3
+  }
+
+  public var body: some View {
     VStack {
-      AmpEnvelopeView()
+      AmpEnvelopeView(mockAUv3: mockAUv3)
         .auv3ControlsTheme(theme(title: "Amp"))
-      ModEnvelopeView()
+      ModEnvelopeView(mockAUv3: mockAUv3)
         .auv3ControlsTheme(theme(title: "Mod"))
     }
     .knobValueEditor()

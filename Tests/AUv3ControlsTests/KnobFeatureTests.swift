@@ -17,7 +17,7 @@ private final class Context {
   let mainQueue = DispatchQueue.test
 
   lazy var test = TestStore(initialState: .init(parameter: param)) {
-    KnobFeature(formatter: KnobValueFormatter.general(), normValueTransform: .init(parameter: param)) { [weak self] address in
+    KnobFeature() { [weak self] address in
       guard let self else { return }
       changed[address] = changed[address]! + 1
     }
@@ -27,7 +27,7 @@ private final class Context {
   }
 
   lazy var live = Store(initialState: .init(parameter: param)) {
-    KnobFeature(formatter: KnobValueFormatter.general(), normValueTransform: .init(parameter: param))
+    KnobFeature()
   } withDependencies: {
     $0.continuousClock = ImmediateClock()
     $0.mainQueue = DispatchQueue.main.eraseToAnyScheduler()

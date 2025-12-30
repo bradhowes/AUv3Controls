@@ -39,10 +39,13 @@ private final class Context {
     $0.mainQueue = mainQueue.eraseToAnyScheduler()
   }
 
-  lazy var floatStore = TestStore(initialState: KnobFeature.State(
-    parameter: paramTree.parameter(withAddress: 2)!
-  )) {
-    KnobFeature(formatter: KnobValueFormatter.general(1...3), normValueTransform: .init(parameter: floatParam))
+  lazy var floatStore = TestStore(
+    initialState: KnobFeature.State(
+      parameter: paramTree.parameter(withAddress: 2)!,
+      formatter: KnobValueFormatter.general(1...3)
+    )
+  ) {
+    KnobFeature()
   } withDependencies: {
     $0.continuousClock = clock
     $0.mainQueue = mainQueue.eraseToAnyScheduler()

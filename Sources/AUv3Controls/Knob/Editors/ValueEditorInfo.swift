@@ -11,22 +11,24 @@ import SwiftUI
  */
 public struct ValueEditorInfo: Equatable, Sendable {
 
+  /// Flag indicating that decimal point can be entered
   public enum DecimalFlag: Equatable, Sendable {
     case allowed
     case none
   }
 
+  /// Flag indicating that a sign can be entered at start of value
   public enum SignFlag: Equatable, Sendable {
     case allowed
     case none
   }
 
   /**
-   The state of the editor view:
+   The actions of the editor view:
 
    * presented -- the editor view is presented to the user
    * dismissed(String?) -- the editor view was dismissed by the user. If associated value is not nil then user
-   accepted the new value.
+   accepted a new value.
    */
   public enum Action: Equatable, Sendable {
     case presented
