@@ -120,4 +120,4 @@ folder.
 [knob-demo]: media/knob.gif?raw=true
 [toggle-demo]: media/toggle.gif?raw=true
 [envelopes]: media/envelopes.gif?raw=true
-[demo-code]: https://github.com/bradhowes/AUv3Controls/blob/63820c660cb9d4980b32d10e0e4f26c9f7615c03/Sources/AUv3Controls/Examples/Envelope.swift#L220
+[demo-code]: https://github.com/bradhowes/AUv3Controls/blob/2942bb4da342d76d0139d19e224cfdb2c970fba4/Sources/AUv3Controls/Examples/Envelope.swift#L220
