@@ -73,7 +73,7 @@ There are currently six (6) color settings that are configurable:
 
 Each color setting can provide a unique value for the current _color scheme_ of the device (_light_ or _dark_). For
 instance, the default theme defines the `controlBackroundColor` to be `Color.gray.mix(with: Color.white, by: 0.5)` when
-in _light_ mode, but it is set to `Color.black.mix(with: Color.white, by: 0.2)` when in _dark_mode. The color settings
+in _light_ mode, but it is set to `Color.black.mix(with: Color.white, by: 0.2)` when in _dark_ mode. The color settings
 can also provide the same value for both color schemes.
 
 > **NOTE**: for this to work properly, one must create a [Theme][theme] in a SwiftUI view context, and provide the theme
@@ -120,4 +120,4 @@ folder.
 [knob-demo]: media/knob.gif?raw=true
 [toggle-demo]: media/toggle.gif?raw=true
 [envelopes]: media/envelopes.gif?raw=true
-[demo-code]: https://github.com/bradhowes/AUv3Controls/blob/88cabbe24566d955c3b3322fb63796ede795267c/Sources/AUv3Controls/Examples/Envelope.swift#L220
+[demo-code]: https://github.com/bradhowes/AUv3Controls/blob/63820c660cb9d4980b32d10e0e4f26c9f7615c03/Sources/AUv3Controls/Examples/Envelope.swift#L220
