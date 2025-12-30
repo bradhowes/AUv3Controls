@@ -23,14 +23,14 @@ slider. Touching on the knob and moving up or down increases or decreases the va
 know shows the value's name in a text field at the bottom, but when the knob is being manipulated, the text field shows
 the current value. You can see the current value at any time by tapping on the knob.
 
-For precise data entry, the knob can transform into an input editor (``EditorFeature``) where the value can be edited
-and manipulated. Tapping on the name of the knob brings up the editor.
+For precise data entry, one can bring up a value editor by tapping on the knob's title. The parameter value can then be modified
+using a keyboard.
 
-![demo image](media/demo.gif)
+![demo image](demo.gif)
 
 The second custom control (``ToggleFeature``) offers a simple boolean on/off setting.
 
-![](media/toggle.gif)
+![](toggle.gif)
 
 Both controls support customization via ``Theme`` definitions. Themes are set on a SwiftUI view hierarchy using
 the ``/SwiftUICore/EnvironmentValues/auv3ControlsTheme`` view modifier.
@@ -41,7 +41,6 @@ the ``/SwiftUICore/EnvironmentValues/auv3ControlsTheme`` view modifier.
 
 - ``KnobFeature``
 - ``ToggleFeature``
-- ``EditorFeature``
 
 ### Customization
 

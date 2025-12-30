@@ -39,6 +39,8 @@ public struct KnobFeature {
     @Shared(.valueEditorInfo) var valueEditorInfo
     @ObservationStateIgnored public var observerToken: AUParameterObserverToken?
 
+    public var theme: Theme?
+
     /**
      Initialze reducer with values from AUParameter definition.
 
@@ -101,7 +103,7 @@ public struct KnobFeature {
     case performScrollTo(UInt64?)
     case setValue(Double)
     case stopValueObservation
-    case task
+    case task(theme: Theme)
     case title(TitleFeature.Action)
     case track(TrackFeature.Action)
     case valueChanged(Double)
@@ -137,7 +139,7 @@ public struct KnobFeature {
       case .performScrollTo(let id): return scrollTo(&state, id: id)
       case let .setValue(value): return setValue(&state, value: value)
       case .stopValueObservation: return stopObserving(&state)
-      case .task: return startObserving(&state)
+      case .task(theme: let theme): return startObserving(&state, theme: theme)
       case .title(let action): return monitorTitleAction(&state, action: action)
       case .track(let action): return .concatenate(monitorTrackAction(&state, action: action), trackChanged(&state, action: action))
       case .valueChanged(let value): return valueChanged(&state, value: value)
@@ -176,7 +178,15 @@ private extension KnobFeature {
     case .dragEnded: return reduce(into: &state, action: .title(.dragActive(false)))
     case .normChanged(_): return .none
     case .valueChanged(_): return .none
-    case .viewTapped: return showValue(&state)
+    case .viewTapped(let taps):
+      if taps == 1 {
+        return showValue(&state)
+      } else if taps == 2 {
+        if let theme = state.theme {
+          return showEditor(&state, theme: theme)
+        }
+      }
+      return .none
     }
   }
 
@@ -232,7 +242,8 @@ private extension KnobFeature {
     return reduce(into: &state, action: .title(.valueChanged(value)))
   }
 
-  func startObserving(_ state: inout State) -> Effect<Action> {
+  func startObserving(_ state: inout State, theme: Theme) -> Effect<Action> {
+    state.theme = theme
     guard
       let parameter = state.parameter,
       let valueObservationCancelId = state.valueObservationCancelId
@@ -300,7 +311,7 @@ public struct KnobView: View {
       TrackView(store: store.scope(state: \.track, action: \.track))
       TitleView(store: store.scope(state: \.title, action: \.title))
     }
-    .task { await store.send(.task).finish() }
+    .task { await store.send(.task(theme: theme)).finish() }
     .onChange(of: store.valueEditorInfo) {
       if let info = store.valueEditorInfo,
          info.id == store.id,

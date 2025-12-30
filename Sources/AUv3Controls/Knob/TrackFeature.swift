@@ -31,7 +31,7 @@ public struct TrackFeature {
     case dragChanged(Double)
     case dragEnded(Double)
     case valueChanged(Double)
-    case viewTapped
+    case viewTapped(times: Int)
     case normChanged(Double)
 
     var cause: AUParameterAutomationEventType? {
@@ -99,7 +99,10 @@ public struct TrackView: View {
       }
       .contentShape(Circle())
       .onTapGesture(count: 1) {
-        store.send(.viewTapped)
+        store.send(.viewTapped(times: 1))
+      }
+      .onTapGesture(count: 2) {
+        store.send(.viewTapped(times: 2))
       }
       .highPriorityGesture(DragGesture(minimumDistance: 0.1, coordinateSpace: .local)
         .updating($dragState) { currentState, gestureState, _ in

@@ -86,7 +86,7 @@ final class DualityTests: XCTestCase {
   func testRemoteFloatValueChanged() async throws {
     let ctx = Context()
     _ = await ctx.floatStore.withExhaustivity(.off) {
-      await ctx.floatStore.send(.task)
+      await ctx.floatStore.send(.task(theme: ctx.theme))
     }
 
     ctx.floatParam.setValue(0.0, originator: nil)
@@ -142,7 +142,7 @@ final class DualityTests: XCTestCase {
   func testStateSetValue() async throws {
     let ctx = Context()
     _ = await ctx.floatStore.withExhaustivity(.off) {
-      await ctx.floatStore.send(.task)
+      await ctx.floatStore.send(.task(theme: ctx.theme))
     }
 
     await ctx.floatStore.send(.setValue(100.0)) {
@@ -182,7 +182,7 @@ final class DualityTests: XCTestCase {
     @Shared(.valueEditorInfo) var valueEditorInfo
 
     _ = await ctx.floatStore.withExhaustivity(.off) {
-      await ctx.floatStore.send(.task)
+      await ctx.floatStore.send(.task(theme: ctx.theme))
     }
 
     await ctx.floatStore.send(.setValue(1.23)) {
