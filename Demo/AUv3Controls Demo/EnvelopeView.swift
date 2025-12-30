@@ -166,8 +166,23 @@ struct EnvelopeFeature {
 
 struct EnvelopeView: View {
   @Bindable private var store: StoreOf<EnvelopeFeature>
+  @Environment(\.colorScheme) private var colorScheme
   let title: String
-  @Environment(\.auv3ControlsTheme) var theme
+
+  private func theme() -> Theme {
+    var theme = Theme(colorScheme: colorScheme)
+    theme.controlTrackStrokeStyle = StrokeStyle(lineWidth: 5, lineCap: .round)
+    theme.controlValueStrokeStyle = StrokeStyle(lineWidth: 3, lineCap: .round)
+
+    if self.title == "Mod" {
+      theme.controlForegroundColor = theme.taggedColor(.controlForegroundColor, default: .red)
+      theme.textColor = theme.taggedColor(.textColor, default: Color.red.mix(with: Color.black, by: 0.15))
+      theme.toggleOnIndicatorSystemName = "arrowtriangle.down.fill"
+      theme.toggleOffIndicatorSystemName = "arrowtriangle.down"
+    }
+
+    return theme
+  }
 
   init(store: StoreOf<EnvelopeFeature>, title: String) {
     self.store = store
@@ -175,7 +190,7 @@ struct EnvelopeView: View {
   }
 
   var body: some View {
-    EffectsContainer(
+    NamedKnobCollectionContainer(
       enabled: store.enabled.isOn,
       title: title,
       onOff: ToggleView(store: store.scope(state: \.enabled, action: \.enabled)),
@@ -190,6 +205,7 @@ struct EnvelopeView: View {
         KnobView(store: store.scope(state: \.release, action: \.release))
       }
     }
+    .auv3ControlsTheme(theme())
   }
 }
 

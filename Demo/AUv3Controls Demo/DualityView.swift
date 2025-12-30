@@ -95,8 +95,6 @@ struct DualityView: View {
 
   @Environment(\.colorScheme) private var colorScheme
 
-  private let theme = Theme(prefix: "duality", bundle: Bundle.main)
-
   init() {
     let mockAUv3 = MockAUv3()
     self.mockAUv3 = mockAUv3
@@ -172,7 +170,7 @@ struct DualityView: View {
       }
       .navigationTitle(Text("Duality"))
     }
-    .auv3ControlsTheme(theme)
+    .auv3ControlsTheme(.init(colorScheme: colorScheme, prefix: "duality", bundle: Bundle.main))
     .knobValueEditor()
   }
 }
