@@ -227,7 +227,10 @@ struct EnvelopeViews: View {
 
     if title == "Mod" {
       theme.controlForegroundColor = theme.taggedColor(.controlForegroundColor, default: .red)
-      theme.textColor = theme.taggedColor(.textColor, default: Color.red.mix(with: Color.black, by: 0.15))
+      let defaultTextColor = Color.red.mix(with: Color.black, by: 0.15)
+      theme.textColor = theme.taggedColor(.textColor, default: defaultTextColor)
+      theme.editorCancelButtonColor = theme.taggedColor(.editorCancelButtonColor, default: defaultTextColor)
+      theme.editorOKButtonColor = theme.taggedColor(.editorOKButtonColor, default: defaultTextColor)
       theme.toggleOnIndicatorSystemName = "arrowtriangle.down.fill"
       theme.toggleOffIndicatorSystemName = "arrowtriangle.down"
     }
