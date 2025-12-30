@@ -20,9 +20,6 @@ import SwiftUI
 @Reducer
 public struct KnobFeature {
 
-  // Only used for unit tests
-  var parameterValueChanged: ((AUParameterAddress) -> Void)?
-
   @ObservableState
   public struct State: Equatable {
     public let id: UInt64
@@ -108,6 +105,22 @@ public struct KnobFeature {
     case title(TitleFeature.Action)
     case track(TrackFeature.Action)
     case valueChanged(Double)
+  }
+
+  public init() {
+    self.parameterValueChanged = nil
+  }
+
+  // Only used for unit tests
+  private let parameterValueChanged: ((AUParameterAddress) -> Void)?
+
+  /**
+   Intitialize instance (testing only)
+
+   - parameter parameterValueChanged closure to invoke when the parameter value changes.
+   */
+  init(_ parameterValueChanged: ((AUParameterAddress) -> Void)? = nil) {
+    self.parameterValueChanged = parameterValueChanged
   }
 
   public var body: some Reducer<State, Action> {
