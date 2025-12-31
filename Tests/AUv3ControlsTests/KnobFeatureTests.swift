@@ -52,6 +52,8 @@ final class KnobFeatureTests: XCTestCase {
       state.track.norm = 0.3600000000000
       state.title.formattedValue = "36"
     }
+    XCTAssertEqual(ctx.test.state.value, 36.0)
+
     await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.showValueMilliseconds))
     await ctx.test.receive(.title(.valueDisplayTimerFired)) {
       $0.title.formattedValue = nil
@@ -74,6 +76,8 @@ final class KnobFeatureTests: XCTestCase {
         state.track.norm = 0.18
         state.title.formattedValue = "18"
       }
+      XCTAssertEqual(ctx.test.state.value, 18.0)
+
       await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.showValueMilliseconds))
       await ctx.test.receive(.title(.valueDisplayTimerFired)) {
         $0.title.formattedValue = nil
@@ -88,6 +92,7 @@ final class KnobFeatureTests: XCTestCase {
         state.track.norm = 0.180000000000000
         state.title.formattedValue = "18"
       }
+      XCTAssertEqual(ctx.test.state.value, 18.0)
       await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.showValueMilliseconds))
       await ctx.test.receive(.title(.valueDisplayTimerFired)) {
         $0.title.formattedValue = nil
@@ -107,6 +112,7 @@ final class KnobFeatureTests: XCTestCase {
       state.track.norm = 0.3600000000000000
       state.title.formattedValue = "36"
     }
+    XCTAssertEqual(ctx.test.state.value, 36.0)
     await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.showValueMilliseconds))
     await ctx.test.receive(.title(.valueDisplayTimerFired)) {
       $0.title.formattedValue = nil
