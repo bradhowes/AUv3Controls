@@ -15,6 +15,7 @@ private final class Context {
                                               valueStrings: nil, dependentParameters: nil)
   let config = KnobConfig()
   let mainQueue = DispatchQueue.test
+  let tree: AUParameterTree
 
   lazy var test = TestStore(initialState: .init(parameter: param)) {
     KnobFeature() { [weak self] address in
@@ -36,6 +37,7 @@ private final class Context {
   var changed: [AUParameterAddress:Int] = [:]
 
   init() {
+    tree = AUParameterTree.createTree(withChildren: [param])
     changed[1] = 0
     changed[2] = 0
   }
@@ -126,6 +128,54 @@ final class KnobFeatureTests: XCTestCase {
     await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.showValueMilliseconds))
 
     XCTAssertEqual(ctx.changed[1], 1)
+  }
+
+  @MainActor
+  func testShowEditorViaDoubleTap() async {
+    let ctx = Context()
+
+    _ = await ctx.test.withExhaustivity(.off(showSkippedAssertions: false)) {
+      await ctx.test.send(.task(theme: ctx.theme)) {
+        $0.theme = ctx.theme
+      }
+    }
+
+    await ctx.test.send(.track(.dragChanged(0.36))) { state in
+      state.track.norm = 0.3600000000000000
+      state.title.formattedValue = "36"
+    }
+    await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.showValueMilliseconds))
+    await ctx.test.receive(.title(.valueDisplayTimerFired)) {
+      $0.title.formattedValue = nil
+    }
+
+    await ctx.test.send(.track(.viewTapped(times: 2))) {
+      $0.$valueEditorInfo.withLock {
+        $0 = ValueEditorInfo(
+          id: ctx.param.address,
+          displayName: ctx.param.displayName,
+          value: "36",
+          theme: ctx.theme,
+          decimalAllowed: .allowed,
+          signAllowed: ctx.param.minValue < 0.0 ? .allowed : .none
+        )
+      }
+    }
+
+    await ctx.test.send(.stopValueObservation) {
+      $0.observerToken = nil
+    }
+
+    await ctx.test.finish()
+
+    XCTAssertEqual(ctx.changed[1], 1)
+  }
+
+  @MainActor
+  func testLoneStopObservation() async {
+    let ctx = Context()
+    await ctx.test.send(.stopValueObservation)
+    await ctx.test.finish()
   }
 
   @MainActor

@@ -264,23 +264,20 @@ private extension KnobFeature {
   }
 
   func stopObserving(_ state: inout State) -> Effect<Action> {
-    guard
-      let token = state.observerToken,
-      let parameter = state.parameter,
-      let valueObservationCancelId = state.valueObservationCancelId
-    else {
-      return .none
-    }
 
     // This will tear down the AsyncStream since it causes the stream's continuation value to go out of scope. It should also
     // cause the Task created to monitor the stream to stop, but we cancel it anyway just to be safe.
-    parameter.removeParameterObserver(token)
-    state.observerToken = nil
+    if let observerToken = state.observerToken,
+       let parameter = state.parameter {
+      parameter.removeParameterObserver(observerToken)
+      state.observerToken = nil
+    }
 
-    return .merge(
-      .cancel(id: valueObservationCancelId),
-      reduce(into: &state, action: .title(.valueDisplayTimerFired))
-    )
+    if let valueObservationCancelId = state.valueObservationCancelId {
+      return .cancel(id: valueObservationCancelId)
+    }
+
+    return .none
   }
 
   func trackChanged(_ state: inout State, action: TrackFeature.Action) -> Effect<Action> {
