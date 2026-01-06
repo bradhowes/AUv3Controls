@@ -1,4 +1,4 @@
-// swift-tools-version: 6.1
+// swift-tools-version: 6.2
 
 import PackageDescription
 
@@ -30,7 +30,12 @@ let package = Package(
       ],
       exclude: ["Examples/README.md", "Knob/README.md", "Toggle/README.md"],
       resources: [.process("Resources/Assets.xcassets")],
-      swiftSettings: [.swiftLanguageMode(.v6)]
+      swiftSettings: [
+        .swiftLanguageMode(.v6),
+        .enableExperimentalFeature("StrictConcurrency")
+        // AVFAudio / Core Audio causes too many warnings when enabled
+        // .strictMemorySafety()
+      ]
     ),
     .testTarget(
       name: "AUv3ControlsTests",
