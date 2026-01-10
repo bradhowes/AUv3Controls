@@ -98,11 +98,11 @@ public struct TrackView: View {
         controlRadius = height / 2
       }
       .contentShape(Circle())
-      .onTapGesture(count: 1) {
-        store.send(.viewTapped(times: 1))
-      }
       .onTapGesture(count: 2) {
         store.send(.viewTapped(times: 2))
+      }
+      .onTapGesture(count: 1) {
+        store.send(.viewTapped(times: 1))
       }
       .highPriorityGesture(DragGesture(minimumDistance: 0.1, coordinateSpace: .local)
         .updating($dragState) { currentState, gestureState, _ in
@@ -189,6 +189,8 @@ extension Shape {
   }
 }
 
+#if DEBUG
+
 struct TrackViewPreview: PreviewProvider {
   static let param = AUParameterTree.createParameter(
     withIdentifier: "RELEASE",
@@ -233,3 +235,5 @@ struct TrackViewPreview: PreviewProvider {
     }
   }
 }
+
+#endif // DEBUG

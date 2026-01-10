@@ -122,6 +122,8 @@ public struct TitleView: View {
   }
 }
 
+#if DEBUG
+
 struct TitleViewPreview: PreviewProvider {
   static let param = AUParameterTree.createParameter(withIdentifier: "RELEASE", name: "Release", address: 1,
                                                      min: 0.0, max: 100.0, unit: .generic, unitName: nil,
@@ -143,3 +145,5 @@ struct TitleViewPreview: PreviewProvider {
     .knobValueEditor()
   }
 }
+
+#endif // DEBUG

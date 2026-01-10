@@ -51,6 +51,8 @@ private struct Demo: View {
   }
 }
 
+#if DEBUG
+
 struct TextFieldClearButton_Previews: PreviewProvider {
   static var previews: some View {
     Form {
@@ -59,3 +61,5 @@ struct TextFieldClearButton_Previews: PreviewProvider {
     }
   }
 }
+
+#endif

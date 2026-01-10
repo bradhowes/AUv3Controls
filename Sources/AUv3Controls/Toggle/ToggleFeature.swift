@@ -157,6 +157,8 @@ extension ToggleView where Content == EmptyView {
   }
 }
 
+#if DEBUG
+
 struct ToggleViewPreview: PreviewProvider {
   static let param1 = AUParameterTree.createBoolean(withIdentifier: "Retrigger", name: "Retrigger", address: 1)
   static let param2 = AUParameterTree.createBoolean(withIdentifier: "Monophonic", name: "Monophonic", address: 2)
@@ -186,3 +188,5 @@ struct ToggleViewPreview: PreviewProvider {
     }.auv3ControlsTheme(.init())
   }
 }
+
+#endif // DEBUG

@@ -3,7 +3,7 @@
 import AudioToolbox
 import ComposableArchitecture
 
-public extension AUParameterTree {
+extension AUParameterTree {
 
   /**
    Helper function that creates an `AUParameter` for a boolean value.
@@ -13,11 +13,18 @@ public extension AUParameterTree {
    - parameter address: the unique address for the parameter
    - returns: new `AUParameter`
    */
-  static func createBoolean(withIdentifier identifier: String, name: String,
-                            address: AUParameterAddress) -> AUParameter {
-    createParameter(withIdentifier: identifier, name: name, address: address,
-                    min: 0, max: 1, unit: .boolean, unitName: nil, valueStrings: nil,
-                    dependentParameters: nil)
+  public static func createBoolean(withIdentifier identifier: String, name: String, address: AUParameterAddress) -> AUParameter {
+    createParameter(
+      withIdentifier: identifier,
+      name: name,
+      address: address,
+      min: 0,
+      max: 1,
+      unit: .boolean,
+      unitName: nil,
+      valueStrings: nil,
+      dependentParameters: nil
+    )
   }
 
   /**
@@ -32,7 +39,7 @@ public extension AUParameterTree {
    - parameter logScale: if `true`, flag the parameter as using logarithmic scaling
    - returns: new `AUParameter`
    */
-  static func createFloat(
+  public static func createFloat(
     withIdentifier identifier: String,
     name: String,
     address: AUParameterAddress,
@@ -41,8 +48,17 @@ public extension AUParameterTree {
     logScale: Bool = false
   ) -> AUParameter {
     let flags: AudioUnitParameterOptions = logScale ? [.flag_DisplayLogarithmic, .flag_CanRamp] : [.flag_CanRamp]
-    return createParameter(withIdentifier: identifier, name: name, address: address,
-                           min: range.lowerBound, max: range.upperBound, unit: unit, unitName: nil,
-                           flags: flags, valueStrings: nil, dependentParameters: nil)
+    return createParameter(
+      withIdentifier: identifier,
+      name: name,
+      address: address,
+      min: range.lowerBound,
+      max: range.upperBound,
+      unit: unit,
+      unitName: nil,
+      flags: flags,
+      valueStrings: nil,
+      dependentParameters: nil
+    )
   }
 }

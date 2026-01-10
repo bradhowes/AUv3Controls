@@ -41,11 +41,7 @@ public struct KnobValueFormatter: Equatable, Sendable {
   let formatters: [Formatter]
   let proc: Proc
 
-  internal init(
-    _ significantDigits: [ClosedRange<Int>] = [1...3],
-    suffixes: [String] = [""],
-    proc: Proc? = nil
-  ) {
+  init(_ significantDigits: [ClosedRange<Int>] = [1...3], suffixes: [String] = [""], proc: Proc? = nil) {
     let formatters: [Formatter] = zip(significantDigits, suffixes).map { .init(significantDigits: $0.0, suffix: $0.1) }
     self.formatters = formatters
     if let proc {
@@ -116,11 +112,8 @@ public struct KnobValueFormatter: Equatable, Sendable {
    - parameter secondsSigDigits: the number of digits to the right of the decimal point for seconds values
    - returns: new ``KnobValueFormatter``
    */
-  public static func seconds(
-    millisecondsSigDigits: ClosedRange<Int> = 1...3,
-    secondsSigDigits: ClosedRange<Int> = 1...3
-  ) -> Self {
-    return Self([millisecondsSigDigits, secondsSigDigits], suffixes: ["ms", "s"]) { formatters, withSuffix, value in
+  public static func seconds(millisecondsSigDigits: ClosedRange<Int> = 1...3, secondsSigDigits: ClosedRange<Int> = 1...3) -> Self {
+    Self([millisecondsSigDigits, secondsSigDigits], suffixes: ["ms", "s"]) { formatters, withSuffix, value in
       value < 1.0 ?
       formatters[0].format(value * 1000.0, withSuffix: withSuffix) :
       formatters[1].format(value, withSuffix: withSuffix)
@@ -134,11 +127,8 @@ public struct KnobValueFormatter: Equatable, Sendable {
    - parameter kiloSigDigits: the number of digits to the right of the decimal point if value >= 1000
    - returns: a formatter
    */
-  public static func frequency(
-    herzSigDigits: ClosedRange<Int> = 1...2,
-    kiloSigDigits: ClosedRange<Int> = 1...3
-  ) -> Self {
-    return Self([herzSigDigits, kiloSigDigits], suffixes: [" Hz", "kHz"]) { formatters, withSuffix, value in
+  public static func frequency(herzSigDigits: ClosedRange<Int> = 1...2, kiloSigDigits: ClosedRange<Int> = 1...3) -> Self {
+    Self([herzSigDigits, kiloSigDigits], suffixes: [" Hz", "kHz"]) { formatters, withSuffix, value in
       value < 1000.0 ?
       formatters[0].format(value, withSuffix: withSuffix) :
       formatters[1].format(value / 1000.0, withSuffix: withSuffix)

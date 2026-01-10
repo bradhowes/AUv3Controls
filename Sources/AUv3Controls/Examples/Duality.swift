@@ -91,6 +91,8 @@ public struct DualityView: View {
   }
 }
 
+#if DEBUG
+
 struct DualityViewPreview: PreviewProvider {
   @MainActor
   static var previews: some View {
@@ -99,3 +101,5 @@ struct DualityViewPreview: PreviewProvider {
     }
   }
 }
+
+#endif // DEBUG

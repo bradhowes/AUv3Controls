@@ -159,6 +159,8 @@ public struct EnvelopeViews: View {
   private let synth = MockSynth()
   @Environment(\.colorScheme) private var colorScheme
 
+  public init() {}
+
   private func theme(title: String) -> Theme {
     var theme = Theme(colorScheme: colorScheme)
     theme.controlTrackStrokeStyle = StrokeStyle(lineWidth: 5, lineCap: .round)
@@ -188,6 +190,8 @@ public struct EnvelopeViews: View {
   }
 }
 
+#if DEBUG
+
 struct EnvelopeViewPreview: PreviewProvider {
   static var previews: some View {
     NavigationStack {
@@ -195,3 +199,5 @@ struct EnvelopeViewPreview: PreviewProvider {
     }
   }
 }
+
+#endif // DEBUG

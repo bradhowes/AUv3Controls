@@ -330,6 +330,8 @@ public struct KnobView: View {
   }
 }
 
+#if DEBUG
+
 struct KnobViewPreview: PreviewProvider {
   static let param = AUParameterTree.createParameter(
     withIdentifier: "RELEASE",
@@ -387,3 +389,5 @@ struct KnobViewPreview: PreviewProvider {
     }
   }
 }
+
+#endif // DEBUG

@@ -3,6 +3,9 @@
 import AudioUnit
 import Foundation
 
+/**
+ Provides transormations between normalized value and an AUParameter range.
+ */
 public struct NormValueTransform: Equatable {
   public let minimumValue: Double
   public let maximumValue: Double

@@ -13,7 +13,7 @@ public struct NumericValueEditing: ViewModifier {
   private let keyboardType: UIKeyboardType
 #endif
 
-  init(value: Binding<String>, valueEditorInfo: ValueEditorInfo) {
+  public init(value: Binding<String>, valueEditorInfo: ValueEditorInfo) {
     self._value = value
     self.valueEditorInfo = valueEditorInfo
 

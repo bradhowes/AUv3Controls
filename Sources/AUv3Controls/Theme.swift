@@ -225,6 +225,8 @@ extension Color {
   }
 }
 
+#if DEBUG
+
 #Preview {
   @Previewable @Environment(\.colorScheme) var colorScheme
   let theme = Theme(colorScheme: colorScheme)
@@ -249,3 +251,5 @@ extension Color {
     }
   }
 }
+
+#endif // DEBUG
