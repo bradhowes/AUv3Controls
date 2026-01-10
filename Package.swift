@@ -32,6 +32,7 @@ let package = Package(
       resources: [.process("Resources/Assets.xcassets")],
       swiftSettings: [
         .swiftLanguageMode(.v6),
+        .enableExperimentalFeature("NonisolatedNonsendingByDefault"),
         .enableExperimentalFeature("StrictConcurrency")
         // AVFAudio / Core Audio causes too many warnings when enabled
         // .strictMemorySafety()

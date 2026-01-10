@@ -1,43 +1,46 @@
 // Copyright © 2025 Brad Howes. All rights reserved.
 
-// Taken from TCA
-
 import OSLog
 
-public final class Logger {
-  @MainActor
-  public static let shared = Logger()
-  public var isEnabled = false
-  @Published public var logs: [String] = []
+private class BundleTag {}
 
-#if DEBUG
+extension Logger {
 
-  @available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
-  private var logger: os.Logger { os.Logger(subsystem: "AUv3Controls", category: "tracing") }
+  init(category: String) {
+    let subsystem = Bundle(for: BundleTag.self).bundleIdentifier?.lowercased() ?? "?"
+    self.init(subsystem: subsystem, category: category)
+  }
+}
 
-  public func log(level: OSLogType = .default, _ string: @autoclosure () -> String) {
-    guard self.isEnabled else { return }
+extension Logger {
 
-    let msg = string()
-    if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
-      print("\(msg)")
-    } else {
-      if #available(iOS 14, macOS 11, tvOS 14, watchOS 7, *) {
-        self.logger.log(level: level, "\(msg)")
-      }
-    }
-    self.logs.append(msg)
+  func measure<T>(_ label: String, _ block: () throws -> T) throws -> T {
+    let start = Date()
+    defer { self.info("\(label, privacy: .public) END - duration: \(Date().timeIntervalSince(start))s") }
+    self.info("\(label, privacy: .public) BEGIN")
+    return try block()
   }
 
-  public func clear() { self.logs = [] }
+  func measure<T>(_ label: String, _ block: () -> T) -> T {
+    let start = Date()
+    defer { self.info("\(label, privacy: .public) END - duration: \(Date().timeIntervalSince(start))s") }
+    self.info("\(label, privacy: .public) BEGIN")
+    return block()
+  }
 
-#else
+  func measure(_ label: String, _ block: () throws -> Void) throws {
+    let start = Date()
+    defer { self.info("\(label, privacy: .public) END - duration: \(Date().timeIntervalSince(start))s") }
+    self.info("\(label, privacy: .public) BEGIN")
+    try block()
+  }
 
-  @inlinable @inline(__always)
-  public func log(level: OSLogType = .default, _ string: @autoclosure () -> String) {}
-
-  @inlinable @inline(__always)
-  public func clear() {}
-
-#endif
+  func measure(_ label: String, _ block: () -> Void) {
+    let start = Date()
+    defer { self.info("\(label, privacy: .public) END - duration: \(Date().timeIntervalSince(start))s") }
+    self.info("\(label, privacy: .public) BEGIN")
+    block()
+  }
 }
+
+private let isRunningForPreviews = ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
