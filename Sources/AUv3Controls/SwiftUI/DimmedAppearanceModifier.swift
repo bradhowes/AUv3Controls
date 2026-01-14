@@ -29,6 +29,10 @@ extension View {
   }
 }
 
+#if DEBUG
+
 #Preview {
   EnvelopeViewPreview.previews
 }
+
+#endif // DEBUG
