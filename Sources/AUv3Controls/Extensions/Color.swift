@@ -23,7 +23,7 @@ extension Color {
 
    - parameter hex: the color specification to decode
    */
-  init?(hex: String) {
+  public init?(hex: String) {
     self.init(hex: Substring(hex))
   }
 
@@ -38,7 +38,7 @@ extension Color {
 
    - parameter hex: the color specification to decode
    */
-  init?(hex: Substring) {
+  public init?(hex: Substring) {
 
     func dropPrefix(_ hex: Substring) -> Substring {
       var hex = hex
@@ -82,7 +82,7 @@ extension Color {
    - parameter named: the name to look for
    - parameter bundle: where to look for the asset
    */
-  init?(named name: String, bundle: Bundle = .main) {
+  public init?(named name: String, bundle: Bundle = .main) {
 #if canImport(UIKit)
     guard let color = UIColor(named: name, in: bundle, compatibleWith: nil) else {
       return nil
@@ -104,7 +104,7 @@ extension Color {
    - parameter named: the name to look for
    - parameter bundle: where to look for the asset
    */
-  static func assetExists(named name: String, bundle: Bundle = .main) -> Bool {
+  public static func assetExists(named name: String, bundle: Bundle = .main) -> Bool {
 #if canImport(UIKit)
     return UIColor(named: name, in: bundle, compatibleWith: nil) != nil
 #elseif canImport(AppKit)
@@ -177,7 +177,7 @@ extension NativeColor {
 
 extension Color {
 
-  func mix(with rhs: Color, by fraction: CGFloat) -> Color {
+  public func mix(with rhs: Color, by fraction: CGFloat) -> Color {
     Color(NativeColor(self).mix(with: NativeColor(rhs), by: fraction))
   }
 }
