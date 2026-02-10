@@ -106,6 +106,7 @@ public struct KnobFeature {
     case observedValueChanged(AUValue)
     case performScrollTo(UInt64?)
     case setValue(Double)
+    case setValueSilently(Double)
     case stopValueObservation
     case task(theme: Theme)
     case title(TitleFeature.Action)
@@ -141,7 +142,8 @@ public struct KnobFeature {
       case let .editorDismissed(value): return editorDismissed(&state, value: value)
       case let .observedValueChanged(value): return valueChanged(&state, value: Double(value))
       case .performScrollTo(let id): return scrollTo(&state, id: id)
-      case let .setValue(value): return setValue(&state, value: value)
+      case let .setValue(value): return setValue(&state, value: value, silently: false)
+      case let .setValueSilently(value): return setValue(&state, value: value, silently: true)
       case .stopValueObservation: return stopObserving(&state)
       case .task(theme: let theme): return startObserving(&state, theme: theme)
       case .title(let action): return monitorTitleAction(&state, action: action)
@@ -213,7 +215,7 @@ private extension KnobFeature {
     return .none
   }
 
-  func setValue(_ state: inout State, value: Double) -> Effect<Action> {
+  func setValue(_ state: inout State, value: Double, silently: Bool) -> Effect<Action> {
     if let parameter = state.parameter,
        let observerToken = state.observerToken {
       parameter.setValue(
@@ -223,7 +225,7 @@ private extension KnobFeature {
         eventType: .value
       )
     }
-    return valueChanged(&state, value: value)
+    return silently ? reduce(into: &state, action: .track(.valueChanged(value))) : valueChanged(&state, value: value)
   }
 
   func showEditor(_ state: inout State, theme: Theme) -> Effect<Action> {

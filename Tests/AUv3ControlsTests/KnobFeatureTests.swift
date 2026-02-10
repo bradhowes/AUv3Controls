@@ -69,41 +69,70 @@ final class KnobFeatureTests: XCTestCase {
     XCTAssertEqual(ctx.changed[1], 2)
   }
 
-    @MainActor
-    func testDragChanged() async {
-      let ctx = Context()
-      await ctx.test.send(.track(.dragChanged(0.18))) { state in
-        state.track.norm = 0.18
-        state.title.formattedValue = "18"
-      }
-      XCTAssertEqual(ctx.test.state.value, 18.0)
+  @MainActor
+  func testValueChangedSilently() async {
+    let ctx = Context()
+    await ctx.test.send(.track(.dragChanged(0.36))) { state in
+      state.track.norm = 0.3600000000000
+      state.title.formattedValue = "36"
+    }
+    XCTAssertEqual(ctx.test.state.value, 36.0)
 
-      await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.showValueMilliseconds))
-      await ctx.test.receive(.title(.valueDisplayTimerFired)) {
-        $0.title.formattedValue = nil
-      }
-      await ctx.test.finish()
+    await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.showValueMilliseconds))
+    await ctx.test.receive(.title(.valueDisplayTimerFired)) {
+      $0.title.formattedValue = nil
     }
-  
-    @MainActor
-    func testDragEnded() async {
-      let ctx = Context()
-      await ctx.test.send(.track(.dragChanged(0.18))) { state in
-        state.track.norm = 0.180000000000000
-        state.title.formattedValue = "18"
-      }
-      XCTAssertEqual(ctx.test.state.value, 18.0)
-      await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.showValueMilliseconds))
-      await ctx.test.receive(.title(.valueDisplayTimerFired)) {
-        $0.title.formattedValue = nil
-      }
-      await ctx.test.send(.track(.dragEnded(0.30))) { state in
-        state.track.norm = 0.3
-      }
-      await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.showValueMilliseconds))
-      await ctx.test.receive(.title(.valueDisplayTimerFired))
-      await ctx.test.finish()
+
+    await ctx.test.send(.setValueSilently(25.0)) { state in
+      state.track.norm = 0.2500000000000
     }
+
+    await ctx.test.send(.track(.dragChanged(0.0))) { state in
+      state.track.norm = 0.0
+      state.title.formattedValue = "0"
+    }
+    await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.showValueMilliseconds))
+    await ctx.test.receive(.title(.valueDisplayTimerFired)) { state in
+      state.title.formattedValue = nil
+    }
+    XCTAssertEqual(ctx.changed[1], 2)
+  }
+
+  @MainActor
+  func testDragChanged() async {
+    let ctx = Context()
+    await ctx.test.send(.track(.dragChanged(0.18))) { state in
+      state.track.norm = 0.18
+      state.title.formattedValue = "18"
+    }
+    XCTAssertEqual(ctx.test.state.value, 18.0)
+
+    await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.showValueMilliseconds))
+    await ctx.test.receive(.title(.valueDisplayTimerFired)) {
+      $0.title.formattedValue = nil
+    }
+    await ctx.test.finish()
+  }
+
+  @MainActor
+  func testDragEnded() async {
+    let ctx = Context()
+    await ctx.test.send(.track(.dragChanged(0.18))) { state in
+      state.track.norm = 0.180000000000000
+      state.title.formattedValue = "18"
+    }
+    XCTAssertEqual(ctx.test.state.value, 18.0)
+    await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.showValueMilliseconds))
+    await ctx.test.receive(.title(.valueDisplayTimerFired)) {
+      $0.title.formattedValue = nil
+    }
+    await ctx.test.send(.track(.dragEnded(0.30))) { state in
+      state.track.norm = 0.3
+    }
+    await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.showValueMilliseconds))
+    await ctx.test.receive(.title(.valueDisplayTimerFired))
+    await ctx.test.finish()
+  }
 
   @MainActor
   func testShowEditor() async {
