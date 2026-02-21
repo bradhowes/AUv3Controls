@@ -24,7 +24,7 @@ public struct KnobFeature {
   public struct State: Equatable {
     public let id: UInt64
     public let parameter: AUParameter?
-    public let valueObservationCancelId: String?
+    public let valueObservationCancelId: UUID?
     public let displayName: String
 
     public var track: TrackFeature.State
@@ -52,9 +52,10 @@ public struct KnobFeature {
      - parameter formatter: optional KnobValueFormatter to use
      */
     public init(parameter: AUParameter, formatter: KnobValueFormatter? = nil) {
+      @Dependency(\.uuid) var uuid
       self.id = parameter.address
       self.parameter = parameter
-      self.valueObservationCancelId = "valueObservationCancelId[AUParameter: \(parameter.address)])"
+      self.valueObservationCancelId = uuid()
       self.displayName = parameter.displayName
 
       let normValueTransform = NormValueTransform(parameter: parameter)
@@ -83,6 +84,7 @@ public struct KnobFeature {
       maximumValue: Double,
       logarithmic: Bool
     ) {
+      @Dependency(\.uuid) var uuid
       let normValueTransform: NormValueTransform = .init(
         minimumValue: minimumValue,
         maximumValue: maximumValue,
@@ -91,7 +93,7 @@ public struct KnobFeature {
       self.normValueTransform = normValueTransform
       let formatter = KnobValueFormatter.general()
       self.formatter = formatter
-      self.id = UUID().asUInt64
+      self.id = uuid().asUInt64
       self.parameter = nil
       self.valueObservationCancelId = nil
       self.displayName = displayName
@@ -103,7 +105,6 @@ public struct KnobFeature {
   public enum Action: BindableAction, Equatable, Sendable {
     case binding(BindingAction<State>)
     case editorDismissed(String?)
-    case observedValueChanged(AUValue)
     case performScrollTo(UInt64?)
     case setValue(Double)
     case setValueSilently(Double)
@@ -115,19 +116,19 @@ public struct KnobFeature {
   }
 
   public init() {
-    self.parameterValueChanged = nil
+    self.notifyTrackValueChanged = nil
   }
 
   // Only used for unit tests
-  private let parameterValueChanged: ((AUParameterAddress) -> Void)?
+  private let notifyTrackValueChanged: ((AUParameterAddress) -> Void)?
 
   /**
    Intitialize instance (testing only)
 
    - parameter parameterValueChanged closure to invoke when the parameter value changes.
    */
-  init(_ parameterValueChanged: ((AUParameterAddress) -> Void)? = nil) {
-    self.parameterValueChanged = parameterValueChanged
+  init(_ notifyTrackValueChanged: ((AUParameterAddress) -> Void)? = nil) {
+    self.notifyTrackValueChanged = notifyTrackValueChanged
   }
 
   public var body: some Reducer<State, Action> {
@@ -139,16 +140,15 @@ public struct KnobFeature {
     Reduce { state, action in
       switch action {
       case .binding: return .none
-      case let .editorDismissed(value): return editorDismissed(&state, value: value)
-      case let .observedValueChanged(value): return valueChanged(&state, value: Double(value))
+      case .editorDismissed(let value): return editorDismissed(&state, value: value)
       case .performScrollTo(let id): return scrollTo(&state, id: id)
-      case let .setValue(value): return setValue(&state, value: value, silently: false)
-      case let .setValueSilently(value): return setValue(&state, value: value, silently: true)
-      case .stopValueObservation: return stopObserving(&state)
-      case .task(theme: let theme): return startObserving(&state, theme: theme)
-      case .title(let action): return monitorTitleAction(&state, action: action)
-      case .track(let action): return .concatenate(monitorTrackAction(&state, action: action), trackChanged(&state, action: action))
-      case .valueChanged(let value): return valueChanged(&state, value: value)
+      case .setValue(let value): return setValue(&state, value: value, silently: false)
+      case .setValueSilently(let value): return setValue(&state, value: value, silently: true)
+      case .stopValueObservation: return stopValueObservation(&state)
+      case .task(theme: let theme): return startValueObservation(&state, theme: theme)
+      case .title(let action): return processTitleAction(&state, action: action)
+      case .track(let action): return processTrackAction(&state, action: action)
+      case .valueChanged(let value): return parameterValueChanged(&state, value: value)
       }
     }
   }
@@ -163,37 +163,44 @@ private extension KnobFeature {
        let editorValue = Double(value) {
       let newValue = state.normValueTransform.normToValue(state.normValueTransform.valueToNorm(editorValue))
       return .merge(
-        setParameterEffect(state: state, value: newValue, cause: .value),
-        valueChanged(&state, value: newValue)
+        trackValueChanged(state: state, value: newValue, cause: .value),
+        parameterValueChanged(&state, value: newValue)
       )
     }
     return .none
   }
 
-  func monitorTitleAction(_ state: inout State, action: TitleFeature.Action) -> Effect<Action> {
+  func processTitleAction(_ state: inout State, action: TitleFeature.Action) -> Effect<Action> {
     if case .titleTapped(let theme) = action {
       return showEditor(&state, theme: theme)
     }
     return .none
   }
 
-  func monitorTrackAction(_ state: inout State, action: TrackFeature.Action) -> Effect<Action> {
+  func processTrackAction(_ state: inout State, action: TrackFeature.Action) -> Effect<Action> {
+    let effect: Effect<Action>
     switch action {
-    case .dragStarted: return reduce(into: &state, action: .title(.dragActive(true)))
-    case .dragChanged: return showValue(&state)
-    case .dragEnded: return reduce(into: &state, action: .title(.dragActive(false)))
-    case .normChanged(_): return .none
-    case .valueChanged(_): return .none
+    case .dragStarted: effect = reduce(into: &state, action: .title(.dragActive(true)))
+    case .dragChanged: effect = showValue(&state)
+    case .dragEnded: effect = reduce(into: &state, action: .title(.dragActive(false)))
+    case .normChanged(_): effect = .none
+    case .valueChanged(_): effect = .none
     case .viewTapped(let taps):
       if taps == 1 {
-        return showValue(&state)
+        effect = showValue(&state)
       } else if taps == 2 {
         if let theme = state.theme {
-          return showEditor(&state, theme: theme)
+          effect = showEditor(&state, theme: theme)
+        } else {
+          effect = .none
         }
+      } else {
+        effect = .none
       }
-      return .none
     }
+
+    let value = state.normValueTransform.normToValue(state.track.norm)
+    return .merge(effect, trackValueChanged(state: state, value: value, cause: action.cause))
   }
 
   func scrollTo(_ state: inout State, id: UInt64?) -> Effect<Action> {
@@ -201,31 +208,12 @@ private extension KnobFeature {
     return .none
   }
 
-  func setParameterEffect(state: State, value: Double, cause: AUParameterAutomationEventType?) -> Effect<Action> {
-    guard let cause,
-          let parameter = state.parameter
-    else {
-      return .none
-    }
-    let newValue = AUValue(value)
-    if parameter.value != newValue {
-      parameter.setValue(newValue, originator: state.observerToken, atHostTime: 0, eventType: cause)
-      parameterValueChanged?(parameter.address)
-    }
-    return .none
-  }
-
   func setValue(_ state: inout State, value: Double, silently: Bool) -> Effect<Action> {
-    if let parameter = state.parameter,
-       let observerToken = state.observerToken {
-      parameter.setValue(
-        Float(value),
-        originator: observerToken,
-        atHostTime: 0,
-        eventType: .value
-      )
+    if let observerToken = state.observerToken,
+       let parameter = state.parameter {
+      parameter.setValue(AUValue(value), originator: observerToken, atHostTime: 0, eventType: .value)
     }
-    return silently ? reduce(into: &state, action: .track(.valueChanged(value))) : valueChanged(&state, value: value)
+    return silently ? reduce(into: &state, action: .track(.valueChanged(value))) : parameterValueChanged(&state, value: value)
   }
 
   func showEditor(_ state: inout State, theme: Theme) -> Effect<Action> {
@@ -248,7 +236,7 @@ private extension KnobFeature {
     return reduce(into: &state, action: .title(.valueChanged(value)))
   }
 
-  func startObserving(_ state: inout State, theme: Theme) -> Effect<Action> {
+  func startValueObservation(_ state: inout State, theme: Theme) -> Effect<Action> {
     state.theme = theme
     guard
       let parameter = state.parameter,
@@ -264,34 +252,34 @@ private extension KnobFeature {
       if Task.isCancelled { return }
       for await value in stream.debounce(for: .milliseconds(duration)) {
         if Task.isCancelled { break }
-        await send(.observedValueChanged(value))
+        await send(.valueChanged(Double(value)))
       }
     }.cancellable(id: valueObservationCancelId, cancelInFlight: true)
   }
 
-  func stopObserving(_ state: inout State) -> Effect<Action> {
-
-    // This will tear down the AsyncStream since it causes the stream's continuation value to go out of scope. It should also
-    // cause the Task created to monitor the stream to stop, but we cancel it anyway just to be safe.
-    if let observerToken = state.observerToken,
-       let parameter = state.parameter {
-      parameter.removeParameterObserver(observerToken)
+  func stopValueObservation(_ state: inout State) -> Effect<Action> {
+    if let observerToken = state.observerToken {
+      state.parameter?.removeParameterObserver(observerToken)
       state.observerToken = nil
     }
-
     if let valueObservationCancelId = state.valueObservationCancelId {
       return .cancel(id: valueObservationCancelId)
     }
-
     return .none
   }
 
-  func trackChanged(_ state: inout State, action: TrackFeature.Action) -> Effect<Action> {
-    let value = state.normValueTransform.normToValue(state.track.norm)
-    return setParameterEffect(state: state, value: value, cause: action.cause)
+  func trackValueChanged(state: State, value: Double, cause: AUParameterAutomationEventType?) -> Effect<Action> {
+    if let cause, let parameter = state.parameter {
+      let newValue = AUValue(value)
+      if parameter.value != newValue {
+        parameter.setValue(newValue, originator: state.observerToken, atHostTime: 0, eventType: cause)
+        notifyTrackValueChanged?(parameter.address)
+      }
+    }
+    return .none
   }
 
-  func valueChanged(_ state: inout State, value: Double) -> Effect<Action> {
+  func parameterValueChanged(_ state: inout State, value: Double) -> Effect<Action> {
     return .merge(
       reduce(into: &state, action: .title(.valueChanged(value))),
       reduce(into: &state, action: .track(.valueChanged(value)))
@@ -335,60 +323,67 @@ public struct KnobView: View {
 #if DEBUG
 
 struct KnobViewPreview: PreviewProvider {
-  static let param = AUParameterTree.createParameter(
-    withIdentifier: "RELEASE",
-    name: "Release",
-    address: 1,
-    min: 0.0,
-    max: 100.0,
-    unit: .percent,
-    unitName: "%",
-    valueStrings: nil,
-    dependentParameters: nil
-  )
-  static var store = Store(initialState: KnobFeature.State(parameter: param)) { KnobFeature() }
+  struct Demo: View {
+    @State private var parameterValue: AUValue = 0.0
+    let store: StoreOf<KnobFeature>
+    let param: AUParameter
+    let tree: AUParameterTree
 
-  static var previews: some View {
-    NavigationStack {
-      VStack {
-        KnobView(store: store)
-          .frame(width: 140, height: 140)
-          .padding([.top, .bottom], 16)
-        Text("observedValueChanged:")
-        Button {
-          store.send(.observedValueChanged(0.0))
-        } label: {
-          Text("Go to 0")
+    init() {
+      let param = AUParameterTree.createParameter(
+        withIdentifier: "RELEASE",
+        name: "Release",
+        address: 1,
+        min: 0.0,
+        max: 100.0,
+        unit: .percent,
+        unitName: "%",
+        valueStrings: nil,
+        dependentParameters: nil
+      )
+      self.tree = AUParameterTree.createTree(withChildren: [param])
+      self.param = self.tree.parameter(withAddress: 1)!
+      self.store = Store(initialState: KnobFeature.State(parameter: param)) { KnobFeature() }
+    }
+
+    var body: some View {
+      NavigationStack {
+        VStack {
+          KnobView(store: store)
+            .frame(width: 140, height: 140)
+            .padding([.top, .bottom], 16)
+          Text("\(parameterValue)")
+          Button {
+            store.send(.setValue(0.0))
+          } label: {
+            Text("Go to 0")
+          }
+          Button {
+            store.send(.setValue(50.0))
+          } label: {
+            Text("Go to 50")
+          }
+          Button {
+            store.send(.setValue(100.0))
+          } label: {
+            Text("Go to 100")
+          }
         }
-        Button {
-          store.send(.observedValueChanged(50.0))
-        } label: {
-          Text("Go to 50")
-        }
-        Button {
-          store.send(.observedValueChanged(100.0))
-        } label: {
-          Text("Go to 100")
-        }
-        Text("setValue:")
-        Button {
-          store.send(.setValue(0.0))
-        } label: {
-          Text("Go to 0")
-        }
-        Button {
-          store.send(.setValue(50.0))
-        } label: {
-          Text("Go to 50")
-        }
-        Button {
-          store.send(.setValue(100.0))
-        } label: {
-          Text("Go to 100")
+        .knobValueEditor()
+        .onAppear {
+          Task {
+            let observationState = self.param.startObserving()
+            for await value in observationState.1 {
+              parameterValue = value
+            }
+          }
         }
       }
-      .knobValueEditor()
     }
+  }
+
+  static var previews: some View {
+    Demo()
   }
 }
 

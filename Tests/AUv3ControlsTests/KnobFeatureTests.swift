@@ -19,10 +19,12 @@ private final class Context {
 
   lazy var test = TestStore(initialState: .init(parameter: param)) {
     KnobFeature() { [weak self] address in
+      print(address)
       guard let self else { return }
       changed[address] = changed[address]! + 1
     }
   } withDependencies: {
+    $0.uuid = .incrementing
     $0.continuousClock = ImmediateClock()
     $0.mainQueue = mainQueue.eraseToAnyScheduler()
   }
@@ -30,6 +32,7 @@ private final class Context {
   lazy var live = Store(initialState: .init(parameter: param)) {
     KnobFeature()
   } withDependencies: {
+    $0.uuid = .incrementing
     $0.continuousClock = ImmediateClock()
     $0.mainQueue = DispatchQueue.main.eraseToAnyScheduler()
   }

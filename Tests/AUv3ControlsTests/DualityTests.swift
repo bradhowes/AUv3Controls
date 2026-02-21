@@ -35,6 +35,7 @@ private final class Context {
       changed[address] = changed[address]! + 1
     }
   } withDependencies: {
+    $0.uuid = .incrementing
     $0.continuousClock = clock
     $0.mainQueue = mainQueue.eraseToAnyScheduler()
   }
@@ -47,6 +48,7 @@ private final class Context {
   ) {
     KnobFeature()
   } withDependencies: {
+    $0.uuid = .incrementing
     $0.continuousClock = clock
     $0.mainQueue = mainQueue.eraseToAnyScheduler()
   }
@@ -70,10 +72,10 @@ final class DualityTests: XCTestCase {
     }
 
     ctx.boolParam.setValue(1.0, originator: nil)
-    await ctx.boolStore.receive(.observedValueChanged(1.0)) { $0.isOn = true }
+    await ctx.boolStore.receive(.valueChanged(1.0)) { $0.isOn = true }
 
     ctx.boolParam.setValue(0.0, originator: nil)
-    await ctx.boolStore.receive(.observedValueChanged(0.0)) { $0.isOn = false }
+    await ctx.boolStore.receive(.valueChanged(0.0)) { $0.isOn = false }
 
     await ctx.boolStore.send(.stopValueObservation) { $0.observerToken = nil }
     await ctx.boolStore.finish()
@@ -93,7 +95,7 @@ final class DualityTests: XCTestCase {
     ctx.floatParam.setValue(0.5, originator: nil)
     ctx.floatParam.setValue(1.0, originator: nil)
 
-    await ctx.floatStore.receive(.observedValueChanged(1.0)) {
+    await ctx.floatStore.receive(.valueChanged(1.0)) {
       $0.title.formattedValue = "1"
       $0.track.norm = 0.01
     }
@@ -106,7 +108,7 @@ final class DualityTests: XCTestCase {
 
     ctx.floatParam.setValue(12.5, originator: nil)
 
-    await ctx.floatStore.receive(.observedValueChanged(12.5)) {
+    await ctx.floatStore.receive(.valueChanged(12.5)) {
       $0.title.formattedValue = "12.5"
       $0.track.norm = 0.125
     }
@@ -119,7 +121,7 @@ final class DualityTests: XCTestCase {
 
     ctx.floatParam.setValue(100.0, originator: nil)
 
-    await ctx.floatStore.receive(.observedValueChanged(100.0)) {
+    await ctx.floatStore.receive(.valueChanged(100.0)) {
       $0.title.formattedValue = "100"
       $0.track.norm = 1.0
     }

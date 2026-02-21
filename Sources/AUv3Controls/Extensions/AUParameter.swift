@@ -4,15 +4,15 @@ import AudioToolbox
 import ComposableArchitecture
 
 extension AUParameter {
-  public typealias Observation = (AUParameterObserverToken, AsyncStream<AUValue>)
+  public typealias ObservationState = (AUParameterObserverToken, AsyncStream<AUValue>)
 
   /**
-   Obtain a stream of value changes from a parameter, presumably changed by another entity such as a MIDI
+   Obtain a stream of value changes from a parameter, presumably changed by another entity such as a AUv3 host or a MIDI
    connection.
 
-   - returns: 2-tuple containing a token for cancelling the observation and an AsyncStream of observed values
+   - returns: ObservationState tuple containing a token for cancelling the observation and an AsyncStream of observed values.
    */
-  public func startObserving(onTermination: (@Sendable (Any) -> Void)? = nil) -> Observation {
+  public func startObserving(onTermination: (@Sendable (Any) -> Void)? = nil) -> ObservationState {
     let (stream, continuation) = AsyncStream<AUValue>.makeStream()
     let observerToken = self.token(byAddingParameterObserver: { address, value in
       var lastSeen: AUValue?

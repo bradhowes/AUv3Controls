@@ -37,18 +37,18 @@ public struct ToggleFeature {
 
   public enum Action: BindableAction, Equatable, Sendable {
     case binding(BindingAction<State>)
-    case observedValueChanged(AUValue)
     case setValue(Bool)
     case stopValueObservation
     case task
     case toggleTapped(Bool)
+    case valueChanged(AUValue)
   }
 
   // Only used for unit tests
-  private let parameterValueChanged: ((AUParameterAddress) -> Void)?
+  private let notifyToggleValueChanged: ((AUParameterAddress) -> Void)?
 
-  public init(parameterValueChanged: ((AUParameterAddress) -> Void)? = nil) {
-    self.parameterValueChanged = parameterValueChanged
+  public init(notifyToggleValueChanged: ((AUParameterAddress) -> Void)? = nil) {
+    self.notifyToggleValueChanged = notifyToggleValueChanged
   }
 
   public var body: some Reducer<State, Action> {
@@ -56,14 +56,13 @@ public struct ToggleFeature {
     Reduce { state, action in
       switch action {
       case .binding: return .none
-      case let .observedValueChanged(value):
-        print("observedValueChanged: ", value)
+      case let .setValue(value): return setValue(&state, value: value)
+      case .stopValueObservation: return stopValueObservation(&state)
+      case .task: return startValueObservation(&state)
+      case .toggleTapped(let value): return setValue(&state, value: value)
+      case .valueChanged(let value):
         state.isOn = value.asBool
         return .none
-      case let .setValue(value): return setParameterEffect(&state, value: value)
-      case .stopValueObservation: return stopObserving(&state)
-      case .task: return startObserving(&state)
-      case let .toggleTapped(value): return setParameterEffect(&state, value: value)
       }
     }
   }
@@ -71,7 +70,7 @@ public struct ToggleFeature {
 
 extension ToggleFeature {
 
-  private func setParameterEffect(_ state: inout State, value: Bool) -> Effect<Action> {
+  private func setValue(_ state: inout State, value: Bool) -> Effect<Action> {
     state.isOn = value
     if let parameter = state.parameter,
        let observerToken = state.observerToken {
@@ -82,12 +81,12 @@ extension ToggleFeature {
         atHostTime: 0,
         eventType: .value
       )
-      parameterValueChanged?(parameter.address)
+      notifyToggleValueChanged?(parameter.address)
     }
     return .none
   }
 
-  private func startObserving(_ state: inout State) -> Effect<Action> {
+  private func startValueObservation(_ state: inout State) -> Effect<Action> {
     guard
       let parameter = state.parameter,
       let valueObservationCancelId = state.valueObservationCancelId
@@ -98,12 +97,12 @@ extension ToggleFeature {
     (state.observerToken, stream) = parameter.startObserving()
     return .run { send in
       for await value in stream {
-        await send(.observedValueChanged(value))
+        await send(.valueChanged(value))
       }
     }.cancellable(id: valueObservationCancelId, cancelInFlight: true)
   }
 
-  private func stopObserving(_ state: inout State) -> Effect<Action> {
+  private func stopValueObservation(_ state: inout State) -> Effect<Action> {
     guard
       let token = state.observerToken,
       let parameter = state.parameter,
@@ -176,12 +175,12 @@ struct ToggleViewPreview: PreviewProvider {
       ToggleView(store: store1) { Text(store1.displayName) }
       ToggleView(store: store2) { Text(store2.displayName) }
       Button {
-        store1.send(.observedValueChanged(store1.isOn ? 0.0 : 1.0))
+        store1.send(.valueChanged(store1.isOn ? 0.0 : 1.0))
       } label: {
         Text("Toggle Parameter 1")
       }
       Button {
-        store2.send(.observedValueChanged(store2.isOn ? 0.0 : 1.0))
+        store2.send(.valueChanged(store2.isOn ? 0.0 : 1.0))
       } label: {
         Text("Toggle Parameter 2")
       }
