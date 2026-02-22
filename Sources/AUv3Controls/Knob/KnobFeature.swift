@@ -352,7 +352,6 @@ struct KnobViewPreview: PreviewProvider {
           KnobView(store: store)
             .frame(width: 140, height: 140)
             .padding([.top, .bottom], 16)
-          Text("\(parameterValue)")
           Button {
             store.send(.setValue(0.0))
           } label: {
@@ -368,6 +367,7 @@ struct KnobViewPreview: PreviewProvider {
           } label: {
             Text("Go to 100")
           }
+          Text("AUParameter value: \(parameterValue)")
         }
         .knobValueEditor()
         .onAppear {

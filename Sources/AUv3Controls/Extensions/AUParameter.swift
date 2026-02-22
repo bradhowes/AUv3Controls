@@ -1,16 +1,23 @@
 // Copyright © 2025 Brad Howes. All rights reserved.
 
-import AudioToolbox
-import ComposableArchitecture
+import AudioToolbox.AUParameters
 
 extension AUParameter {
+
+  /// Tuple containing the results of ``startObserving``
   public typealias ObservationState = (AUParameterObserverToken, AsyncStream<AUValue>)
 
   /**
    Obtain a stream of value changes from a parameter, presumably changed by another entity such as a AUv3 host or a MIDI
    connection.
 
+   - parameter onTermination: optional closure to invoke when the stream is terminated
    - returns: ObservationState tuple containing a token for cancelling the observation and an AsyncStream of observed values.
+
+   Ideally, we would just return the AsyncStream, but the parameter APIs make use of the observer token to eliminate
+   notification loops.
+
+   Thus it is the responsibility of the caller to invoke ``AUParameter/removeParameterObserver(_:)``
    */
   public func startObserving(onTermination: (@Sendable (Any) -> Void)? = nil) -> ObservationState {
     let (stream, continuation) = AsyncStream<AUValue>.makeStream()
