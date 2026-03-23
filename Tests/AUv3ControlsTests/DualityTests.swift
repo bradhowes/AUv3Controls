@@ -95,38 +95,53 @@ final class DualityTests: XCTestCase {
     ctx.floatParam.setValue(0.5, originator: nil)
     ctx.floatParam.setValue(1.0, originator: nil)
 
-    await ctx.floatStore.receive(.valueChanged(1.0)) {
+    await ctx.floatStore.receive(.valueChanged(1.0))
+
+    await ctx.floatStore.receive(.title(.valueChanged(1))) {
       $0.title.formattedValue = "1"
+    }
+
+    await ctx.floatStore.receive(.track(.valueChanged(1))) {
       $0.track.norm = 0.01
     }
 
-    await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.showValueMilliseconds))
-
-    await ctx.floatStore.receive(.title(.valueDisplayTimerFired)) {
-      $0.title.formattedValue = nil
-    }
+    await ctx.clock.advance(by: .milliseconds(KnobConfig.default.showValueMilliseconds))
 
     ctx.floatParam.setValue(12.5, originator: nil)
 
-    await ctx.floatStore.receive(.valueChanged(12.5)) {
-      $0.title.formattedValue = "12.5"
-      $0.track.norm = 0.125
-    }
-
-    await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.showValueMilliseconds))
-
     await ctx.floatStore.receive(.title(.valueDisplayTimerFired)) {
       $0.title.formattedValue = nil
+    }
+
+    await ctx.floatStore.receive(.valueChanged(12.5))
+
+    await ctx.clock.advance(by: .milliseconds(KnobConfig.default.showValueMilliseconds))
+
+    await ctx.floatStore.receive(.title(.valueChanged(12.5))) {
+      $0.title.formattedValue = "12.5"
+    }
+
+    await ctx.floatStore.receive(.track(.valueChanged(12.5))) {
+      $0.track.norm = 0.125
     }
 
     ctx.floatParam.setValue(100.0, originator: nil)
 
-    await ctx.floatStore.receive(.valueChanged(100.0)) {
-      $0.title.formattedValue = "100"
-      $0.track.norm = 1.0
+    await ctx.floatStore.receive(.title(.valueDisplayTimerFired)) {
+      $0.title.formattedValue = nil
     }
 
-    await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.showValueMilliseconds))
+    await ctx.floatStore.receive(.valueChanged(100.0))
+
+    await ctx.clock.advance(by: .milliseconds(KnobConfig.default.showValueMilliseconds))
+
+    await ctx.floatStore.receive(.title(.valueChanged(100))) {
+      $0.title.formattedValue = "100"
+    }
+
+    await ctx.floatStore.receive(.track(.valueChanged(100))) {
+      $0.track.norm = 1
+    }
 
     await ctx.floatStore.receive(.title(.valueDisplayTimerFired)) {
       $0.title.formattedValue = nil
@@ -134,7 +149,6 @@ final class DualityTests: XCTestCase {
 
     await ctx.floatStore.send(.stopValueObservation) {
       $0.observerToken = nil
-      $0.title.formattedValue = nil
     }
 
     await ctx.floatStore.finish()
@@ -147,23 +161,33 @@ final class DualityTests: XCTestCase {
       await ctx.floatStore.send(.task(theme: ctx.theme))
     }
 
-    await ctx.floatStore.send(.setValue(100.0)) {
-      $0.track.norm = 1.0
+    await ctx.floatStore.send(.setValue(100.0))
+
+    await ctx.floatStore.receive(.title(.valueChanged(100))) {
       $0.title.formattedValue = "100"
     }
 
-    await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.showValueMilliseconds))
+    await ctx.floatStore.receive(.track(.valueChanged(100))) {
+      $0.track.norm = 1.0
+    }
+
+    await ctx.clock.advance(by: .milliseconds(KnobConfig.default.showValueMilliseconds))
 
     await ctx.floatStore.receive(.title(.valueDisplayTimerFired)) {
       $0.title.formattedValue = nil
     }
 
-    await ctx.floatStore.send(.setValue(50.0)) {
-      $0.track.norm = 0.5
+    await ctx.floatStore.send(.setValue(50.0))
+
+    await ctx.floatStore.receive(.title(.valueChanged(50))) {
       $0.title.formattedValue = "50"
     }
 
-    await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.showValueMilliseconds))
+    await ctx.floatStore.receive(.track(.valueChanged(50))) {
+      $0.track.norm = 0.5
+    }
+
+    await ctx.clock.advance(by: .milliseconds(KnobConfig.default.showValueMilliseconds))
 
     await ctx.floatStore.receive(.title(.valueDisplayTimerFired)) {
       $0.title.formattedValue = nil
@@ -187,12 +211,17 @@ final class DualityTests: XCTestCase {
       await ctx.floatStore.send(.task(theme: ctx.theme))
     }
 
-    await ctx.floatStore.send(.setValue(1.23)) {
-      $0.track.norm = 0.0123
+    await ctx.floatStore.send(.setValue(1.23))
+
+    await ctx.floatStore.receive(.title(.valueChanged(1.23))) {
       $0.title.formattedValue = "1.23"
     }
 
-    await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.showValueMilliseconds))
+    await ctx.floatStore.receive(.track(.valueChanged(1.23))) {
+      $0.track.norm = 0.0123
+    }
+
+    await ctx.clock.advance(by: .milliseconds(KnobConfig.default.showValueMilliseconds))
 
     $valueEditorInfo.withLock {
       $0 = ValueEditorInfo(
@@ -205,7 +234,7 @@ final class DualityTests: XCTestCase {
       )
     }
 
-    await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.showValueMilliseconds))
+    await ctx.clock.advance(by: .milliseconds(KnobConfig.default.showValueMilliseconds))
 
     await ctx.floatStore.receive(.title(.valueDisplayTimerFired)) {
       $0.title.formattedValue = nil

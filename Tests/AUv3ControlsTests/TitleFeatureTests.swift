@@ -41,18 +41,36 @@ final class TitleFeatureTests: XCTestCase {
     let ctx = Context()
     XCTAssertNil(ctx.test.state.formattedValue)
   }
-  
+
   @MainActor
   func testValueChanged() async {
     let ctx = Context()
     await ctx.test.send(.valueChanged(12.34)) { state in
       state.formattedValue = "12.34"
     }
-    await ctx.clock.advance(by: .milliseconds(ctx.config.showValueMilliseconds) / 2.0)
+
+    await ctx.clock.advance(by: .milliseconds(ctx.config.showValueMilliseconds))
+
+    await ctx.test.receive(.valueDisplayTimerFired) {
+      $0.formattedValue = nil
+    }
+  }
+
+  @MainActor
+  func testValueChangedMultipleTimes() async {
+    let ctx = Context()
+    await ctx.test.send(.valueChanged(12.34)) { state in
+      state.formattedValue = "12.34"
+    }
+
+    await ctx.clock.advance(by: .milliseconds(ctx.config.showValueMilliseconds / 2))
+
     await ctx.test.send(.valueChanged(56.78)) { state in
       state.formattedValue = "56.78"
     }
-    await ctx.mainQueue.advance(by: .milliseconds(KnobConfig.default.showValueMilliseconds))
+
+    await ctx.clock.advance(by: .milliseconds(ctx.config.showValueMilliseconds))
+
     await ctx.test.receive(.valueDisplayTimerFired) {
       $0.formattedValue = nil
     }

@@ -180,9 +180,9 @@ private extension KnobFeature {
   func processTrackAction(_ state: inout State, action: TrackFeature.Action) -> Effect<Action> {
     let effect: Effect<Action>
     switch action {
-    case .dragStarted: effect = reduce(into: &state, action: .title(.dragActive(true)))
+    case .dragStarted: effect = .send(.title(.dragActive(true)))
     case .dragChanged: effect = showValue(&state)
-    case .dragEnded: effect = reduce(into: &state, action: .title(.dragActive(false)))
+    case .dragEnded: effect = .send(.title(.dragActive(false)))
     case .normChanged(_): effect = .none
     case .valueChanged(_): effect = .none
     case .viewTapped(let taps):
@@ -213,7 +213,7 @@ private extension KnobFeature {
        let parameter = state.parameter {
       parameter.setValue(AUValue(value), originator: observerToken, atHostTime: 0, eventType: .value)
     }
-    return silently ? reduce(into: &state, action: .track(.valueChanged(value))) : parameterValueChanged(&state, value: value)
+    return silently ? .send(.track(.valueChanged(value))) : parameterValueChanged(&state, value: value)
   }
 
   func showEditor(_ state: inout State, theme: Theme) -> Effect<Action> {
@@ -233,7 +233,7 @@ private extension KnobFeature {
 
   func showValue(_ state: inout State) -> Effect<Action> {
     let value = state.normValueTransform.normToValue(state.track.norm)
-    return reduce(into: &state, action: .title(.valueChanged(value)))
+    return .send(.title(.valueChanged(value)))
   }
 
   func startValueObservation(_ state: inout State, theme: Theme) -> Effect<Action> {
@@ -281,8 +281,8 @@ private extension KnobFeature {
 
   func parameterValueChanged(_ state: inout State, value: Double) -> Effect<Action> {
     return .merge(
-      reduce(into: &state, action: .title(.valueChanged(value))),
-      reduce(into: &state, action: .track(.valueChanged(value)))
+      .send(.title(.valueChanged(value))),
+      .send(.track(.valueChanged(value)))
     )
   }
 }

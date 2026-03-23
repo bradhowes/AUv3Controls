@@ -69,11 +69,13 @@ private extension TitleFeature {
   }
 
   func startTitleTimerEffect2(_ state: inout State) -> Effect<Action> {
+    @Dependency(\.continuousClock) var clock
     return .run { send in
+      try await clock.sleep(for: .milliseconds(KnobConfig.default.showValueMilliseconds))
       if !Task.isCancelled {
         await send(.valueDisplayTimerFired, animation: .linear)
       }
-    }.debounce(id: state.showValueCancelId, for: .milliseconds(KnobConfig.default.showValueMilliseconds), scheduler: mainQueue)
+    }.cancellable(id: state.showValueCancelId, cancelInFlight: true)
   }
 }
 
