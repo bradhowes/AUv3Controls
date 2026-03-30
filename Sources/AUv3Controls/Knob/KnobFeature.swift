@@ -102,8 +102,9 @@ public struct KnobFeature {
     }
   }
 
-  public enum Action: BindableAction, Equatable, Sendable {
-    case binding(BindingAction<State>)
+  // public enum Action: BindableAction, Equatable, Sendable {
+  public enum Action: Equatable, Sendable {
+    // case binding(BindingAction<State>)
     case editorDismissed(String?)
     case performScrollTo(UInt64?)
     case setValue(Double)
@@ -132,14 +133,14 @@ public struct KnobFeature {
   }
 
   public var body: some Reducer<State, Action> {
-    BindingReducer()
+    // BindingReducer()
 
     Scope(state: \.track, action: \.track) { TrackFeature() }
     Scope(state: \.title, action: \.title) { TitleFeature() }
 
     Reduce { state, action in
       switch action {
-      case .binding: return .none
+      // case .binding: return .none
       case .editorDismissed(let value): return editorDismissed(&state, value: value)
       case .performScrollTo(let id): return scrollTo(&state, id: id)
       case .setValue(let value): return setValue(&state, value: value, silently: false)
@@ -288,7 +289,7 @@ private extension KnobFeature {
 }
 
 public struct KnobView: View {
-  @Bindable private var store: StoreOf<KnobFeature>
+  @State private var store: StoreOf<KnobFeature>
   @Environment(\.isEnabled) var enabled
   @Environment(\.auv3ControlsTheme) var theme
   @Environment(\.scrollViewProxy) var proxy: ScrollViewProxy?

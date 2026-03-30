@@ -46,7 +46,7 @@ final class DemoPreviewTests: XCTestCase {
     try withDependencies { $0 = .live } operation: {
       let view = EnvelopeViewPreview.previews
       try withSnapshotTesting(record: .failed) {
-        try assertSnapshot(matching: view, size: CGSize(width: 400, height: 800))
+        try assertSnapshot(matching: view, size: CGSize(width: 800, height: 400))
       }
     }
   }

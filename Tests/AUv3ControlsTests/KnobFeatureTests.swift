@@ -277,7 +277,7 @@ final class KnobFeatureTests: XCTestCase {
     try withDependencies { $0 = .live } operation: {
       let view = KnobViewPreview.previews
       try withSnapshotTesting(record: .failed) {
-        try assertSnapshot(matching: view, size: .init(width: 220, height: 800))
+        try assertSnapshot(matching: view, size: .init(width: 400, height: 600))
       }
     }
   }

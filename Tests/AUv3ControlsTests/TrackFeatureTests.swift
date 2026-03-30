@@ -211,7 +211,10 @@ final class TrackFeatureTests: XCTestCase {
   @MainActor
   func testPreview() async throws {
     try withSnapshotTesting(record: .failed) {
-      try assertSnapshot(matching: TrackViewPreview.previews)
+      try assertSnapshot(
+        matching: TrackViewPreview.previews,
+        size: .init(width: 220, height: 420)
+      )
     }
   }
 }
