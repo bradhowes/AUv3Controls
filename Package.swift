@@ -14,10 +14,10 @@ let package = Package(
       targets: ["AUv3Controls"])
   ],
   dependencies: [
-    .package(url: "https://github.com/pointfreeco/swift-composable-architecture", from: "1.20.0"),
-    .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", from: "1.18.0"),
-    .package(url: "https://github.com/apple/swift-async-algorithms", from: "1.0.4"),
-    .package(url: "https://github.com/apple/swift-docc-plugin", from: "1.0.0"),
+    .package(url: "https://github.com/pointfreeco/swift-composable-architecture", from: "1.25.4"),
+    .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", from: "1.19.2"),
+    .package(url: "https://github.com/apple/swift-async-algorithms", from: "1.1.3"),
+    .package(url: "https://github.com/apple/swift-docc-plugin", from: "1.4.0"),
     .package(url: "https://github.com/divadretlaw/CustomAlert.git", from: "6.0.0")
   ],
   targets: [
